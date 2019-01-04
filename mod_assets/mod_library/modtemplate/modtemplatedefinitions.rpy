@@ -1,8 +1,11 @@
+label modtemplatedef:
+
 #Explanation for Definitions
 #This section defines stuff for the game: sprite poses for the girls, music, and backgrounds
 #If you plan on adding new content, pop them over down there and mimic the appropriate lines!
 #Added Back in definitions.rpy after DDML 1.0.8 Patch
     
+
 init python:
     config.keymap['hide_windows'].append('mouseup_3')
     config.keymap['self_voicing'] = []
@@ -1294,6 +1297,7 @@ define _dismiss_pause = config.developer
 # These exist across all saves
 
 default persistent.playername = ""
+default player = persistent.playername
 default persistent.playthrough = 0
 default persistent.yuri_kill = 0
 default persistent.seen_eyes = None
@@ -1375,3 +1379,5 @@ default sayori_confess = True
 
 # We read Natsuki's confession poem in chapter 23.
 default natsuki_23 = None
+
+return

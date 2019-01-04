@@ -14,7 +14,7 @@ label gobfadupolicygobfadu:
         #Here you can change the Name of Mod Template to your Mod (e.g. Monika After Story)
         "Mod Template":
             #Here you should call your script (e.g. MASScript.rpy)
-            call MTDay1
+            call scripttemplate
             return
         #"Tutorial":
             #menu:
