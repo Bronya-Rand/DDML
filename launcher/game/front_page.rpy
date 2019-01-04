@@ -191,7 +191,6 @@ screen front_page_project:
 
                     textbutton _("Browse Game Directory") action OpenDirectory("game")
                     textbutton _("Delete Persistent") action Jump("rmpersistent")
-                    textbutton _("Delete scripts.rpa") action Jump("script_removal")
                     # textbutton _("save") action None style "l_list"
                 # textbutton "Relaunch" action Relaunch
             

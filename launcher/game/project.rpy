@@ -652,7 +652,7 @@ label choose_modzip_directory:
         if is_default:
             interface.info(_("DDML has set the ZIP directory to:"), "[pathmz!q]", path=path)
 
-        persistent.mzip_directory = pathm
+        persistent.mzip_directory = pathmz
 
     return
 
@@ -714,34 +714,32 @@ label add_a_mod:
 
         interface.interaction(_("Extracting"), _("Extracting Mod ZIP, Please Wait..."),)
 
-        import zipfile
-
         with zipfile.ZipFile(persistent.mzip_directory + '/' + modzip_name + ".zip", "r") as z:
             z.extractall(persistent.projects_directory + "/temp")
 
-            mzt = persistent.projects_directory + '/temp'
+            mzt = persistent.projects_directory + "/temp/"
 
         import glob
 
-        if glob.glob(mzt + "game"):
-            shutil.move(mzt + 'game', project_dir)
-        elif glob.glob(mzt + '*.rpa'):
-            shutil.move(mzt + "*.rpa", project_dir + '/' + 'game')
-        elif glob.glob(mzt + "mod_assets"):
-            shutil.move(mzt + "mod_assets", project_dir + '/' + 'game')
-            if glob.glob(mzt + "*.rpyc"):
-                shutil.move(mzt + "*.rpyc", project_dir + '/' + 'game')
-            elif glob.glob(mzt + "*.rpy"):
-                shutil.move(mzt + "*.rpy", project_dir + '/' + 'game')
-        elif glob.glob(mzt + "*.rpyc"):
-            shutil.move(mzt + "*.rpyc", project_dir + '/' + 'game')
-        elif glob.glob(mzt + "*.rpy"):
-            shutil.move(mzt + "*.rpy", project_dir + '/' + 'game')
-        #elif renpy.exists(mzt + "advanced_scripts"):
-            #shutil.move(mzt + "**.rpy", project_dir + '/' + 'game')
-        #else:
-           # interface.error(_("This ZIP does not contain any DDLC Mod Related Files. Re-select the Mod ZIP again."))
-            
+        if glob.glob(mzt + '/game'):
+            shutil.move(mzt + '/' + 'game', project_dir)
+        if glob.glob(mzt + '/game/mod_assets'):
+            shutil.move(mzt + '/game/mod_assets', project_dir + '/game')
+        if glob.glob(mzt + '/game/gui'):
+            shutil.move(mzt + '/game/gui', project_dir + '/game')
+        if glob.glob(mzt + '/game/python_packages'):
+            shutil.move(mzt + '/game/python_packages', project_dir + '/game')
+        if glob.glob(mzt + '/game/submods'):
+            shutil.move(mzt + '/game/submods', project_dir + '/game')
+
+        mydict = {
+            mzt + '/game': ['rpa','rpyc','rpy', 'txt'],
+        }
+        for destination, extensions in mydict.items():
+            for ext in extensions:
+                for file in glob.glob(mzt + '*.' + ext):
+                    print(file)
+                    shutil.move(file, project_dir + '/game')    
         
         project.manager.scan()
 

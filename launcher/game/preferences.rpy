@@ -99,7 +99,7 @@ screen preferences:
                     
                     add SPACER
 
-                    # Text editor selection.
+                    # ZIP selection.
                     add SEPARATOR2
 
                     frame:
@@ -121,6 +121,30 @@ screen preferences:
                                     action Jump("projects_zip_preference")
                                     alt _("ZIP directory: [text]")
 
+                    add SPACER
+
+                    # Mod ZIP
+                    add SEPARATOR2
+
+                    frame:
+                        style "l_indent"
+                        yminimum 75
+                        has vbox
+
+                        text _("Mod ZIP Directory:")
+
+                        add HALF_SPACER
+
+                        frame style "l_indent":
+                            if persistent.zip_directory:
+                                textbutton _("[persistent.mzip_directory!q]"):
+                                    action Jump("projects_mzip_preference")
+                                    alt _("ZIP directory: [text]")
+                            else:
+                                textbutton _("Not Set"):
+                                    action Jump("projects_mzip_preference")
+                                    alt _("ZIP directory: [text]")
+
     textbutton _("Return") action Jump("front_page") style "l_left_button"
 
 label projects_directory_preference:
@@ -129,6 +153,10 @@ label projects_directory_preference:
 
 label projects_zip_preference:
     call choose_zip_directory
+    jump preferences
+
+label projects_mzip_preference:
+    call choose_modzip_directory
     jump preferences
 
 label preferences:
