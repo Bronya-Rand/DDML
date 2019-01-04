@@ -672,3 +672,431 @@ may consider it more useful to permit linking proprietary applications with
 the library.  If this is what you want to do, use the GNU Lesser General
 Public License instead of this License.  But first, please read
 <https://www.gnu.org/licenses/why-not-lgpl.html>.
+
+Python License
+==============
+
+ 1. This LICENSE AGREEMENT is between the Python Software Foundation
+ ("PSF"), and the Individual or Organization ("Licensee") accessing and
+ otherwise using Python 2.3 software in source or binary form and its
+ associated documentation.
+
+ 2. Subject to the terms and conditions of this License Agreement, PSF
+ hereby grants Licensee a nonexclusive, royalty-free, world-wide
+ license to reproduce, analyze, test, perform and/or display publicly,
+ prepare derivative works, distribute, and otherwise use Python 2.3
+ alone or in any derivative version, provided, however, that PSF's
+ License Agreement and PSF's notice of copyright, i.e., "Copyright (c)
+ 2001, 2002 Python Software Foundation; All Rights Reserved" are
+ retained in Python 2.3 alone or in any derivative version prepared by
+ Licensee.
+
+ 3. In the event Licensee prepares a derivative work that is based on
+ or incorporates Python 2.3 or any part thereof, and wants to make
+ the derivative work available to others as provided herein, then
+ Licensee hereby agrees to include in any such work a brief summary of
+ the changes made to Python 2.3.
+
+ 4. PSF is making Python 2.3 available to Licensee on an "AS IS"
+ basis.  PSF MAKES NO REPRESENTATIONS OR WARRANTIES, EXPRESS OR
+ IMPLIED.  BY WAY OF EXAMPLE, BUT NOT LIMITATION, PSF MAKES NO AND
+ DISCLAIMS ANY REPRESENTATION OR WARRANTY OF MERCHANTABILITY OR FITNESS
+ FOR ANY PARTICULAR PURPOSE OR THAT THE USE OF PYTHON 2.3 WILL NOT
+ INFRINGE ANY THIRD PARTY RIGHTS.
+
+ 5. PSF SHALL NOT BE LIABLE TO LICENSEE OR ANY OTHER USERS OF PYTHON
+ 2.3 FOR ANY INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES OR LOSS AS
+ A RESULT OF MODIFYING, DISTRIBUTING, OR OTHERWISE USING PYTHON 2.3,
+ OR ANY DERIVATIVE THEREOF, EVEN IF ADVISED OF THE POSSIBILITY THEREOF.
+
+ 6. This License Agreement will automatically terminate upon a material
+ breach of its terms and conditions.
+
+ 7. Nothing in this License Agreement shall be deemed to create any
+ relationship of agency, partnership, or joint venture between PSF and
+ Licensee.  This License Agreement does not grant permission to use PSF
+ trademarks or trade name in a trademark sense to endorse or promote
+ products or services of Licensee, or any third party.
+
+ 8. By copying, installing or otherwise using Python 2.3, Licensee
+ agrees to be bound by the terms and conditions of this License
+ Agreement.
+
+Jpeg License
+============
+
+ In plain English:
+
+ 1. We don't promise that this software works.  (But if you find any bugs,
+    please let us know!)
+ 2. You can use this software for whatever you want.  You don't have to pay us.
+ 3. You may not pretend that you wrote this software.  If you use it in a
+    program, you must acknowledge somewhere in your documentation that
+    you've used the IJG code.
+
+ In legalese:
+
+ The authors make NO WARRANTY or representation, either express or implied,
+ with respect to this software, its quality, accuracy, merchantability, or
+ fitness for a particular purpose.  This software is provided "AS IS", and you,
+ its user, assume the entire risk as to its quality and accuracy.
+
+ This software is copyright (C) 1991-1998, Thomas G. Lane.
+ All Rights Reserved except as specified below.
+
+ Permission is hereby granted to use, copy, modify, and distribute this
+ software (or portions thereof) for any purpose, without fee, subject to these
+ conditions:
+ (1) If any part of the source code for this software is distributed, then this
+ README file must be included, with this copyright and no-warranty notice
+ unaltered; and any additions, deletions, or changes to the original files
+ must be clearly indicated in accompanying documentation.
+ (2) If only executable code is distributed, then the accompanying
+ documentation must state that "this software is based in part on the work of
+ the Independent JPEG Group".
+ (3) Permission for use of this software is granted only if the user accepts
+ full responsibility for any undesirable consequences; the authors accept
+ NO LIABILITY for damages of any kind.
+
+ These conditions apply to any software derived from or based on the IJG code,
+ not just to the unmodified library.  If you use our work, you ought to
+ acknowledge us.
+
+ Permission is NOT granted for the use of any IJG author's name or company name
+ in advertising or publicity relating to this software or products derived from
+ it.  This software may be referred to only as "the Independent JPEG Group's
+ software".
+
+ We specifically permit and encourage the use of this software as the basis of
+ commercial products, provided that all warranty or liability claims are
+ assumed by the product vendor.
+
+
+PNG License
+===========
+
+ The PNG Reference Library is supplied "AS IS".  The Contributing Authors
+ and Group 42, Inc. disclaim all warranties, expressed or implied,
+ including, without limitation, the warranties of merchantability and of
+ fitness for any purpose.  The Contributing Authors and Group 42, Inc.
+ assume no liability for direct, indirect, incidental, special, exemplary,
+ or consequential damages, which may result from the use of the PNG
+ Reference Library, even if advised of the possibility of such damage.
+
+ Permission is hereby granted to use, copy, modify, and distribute this
+ source code, or portions hereof, for any purpose, without fee, subject
+ to the following restrictions:
+
+ 1. The origin of this source code must not be misrepresented.
+
+ 2. Altered versions must be plainly marked as such and must not
+    be misrepresented as being the original source.
+
+ 3. This Copyright notice may not be removed or altered from any
+    source or altered source distribution.
+
+ The Contributing Authors and Group 42, Inc. specifically permit, without
+ fee, and encourage the use of this source code as a component to
+ supporting the PNG file format in commercial products.  If you use this
+ source code in a product, acknowledgment is not required but would be
+ appreciated.
+
+Zlib License
+============
+
+  This software is provided 'as-is', without any express or implied
+  warranty.  In no event will the authors be held liable for any damages
+  arising from the use of this software.
+
+  Permission is granted to anyone to use this software for any purpose,
+  including commercial applications, and to alter it and redistribute it
+  freely, subject to the following restrictions:
+
+  1. The origin of this software must not be misrepresented; you must not
+     claim that you wrote the original software. If you use this software
+     in a product, an acknowledgment in the product documentation would be
+     appreciated but is not required.
+  2. Altered source versions must be plainly marked as such, and must not be
+     misrepresented as being the original software.
+  3. This notice may not be removed or altered from any source distribution.
+
+
+Bzip2 License
+=============
+
+ This program, "bzip2", the associated library "libbzip2", and all
+ documentation, are copyright (C) 1996-2005 Julian R Seward.  All
+ rights reserved.
+
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions
+ are met:
+
+ 1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+
+ 2. The origin of this software must not be misrepresented; you must
+    not claim that you wrote the original software.  If you use this
+    software in a product, an acknowledgment in the product
+    documentation would be appreciated but is not required.
+
+ 3. Altered source versions must be plainly marked as such, and must
+    not be misrepresented as being the original software.
+
+ 4. The name of the author may not be used to endorse or promote
+    products derived from this software without specific prior written
+    permission.
+
+ THIS SOFTWARE IS PROVIDED BY THE AUTHOR ''AS IS'' AND ANY EXPRESS
+ OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+ GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+Modified BSD License
+====================
+
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
+
+ * Redistributions of source code must retain the above copyright notice,
+   this list of conditions and the following disclaimer.
+ * Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+ * The name of the author may be used to endorse or promote products
+   derived from this software without specific prior written permission.
+
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ THE POSSIBILITY OF SUCH DAMAGE.
+
+
+Artistic License
+================
+
+                              The Artistic License
+                          Version 2.0beta4, October 2000
+
+                          Copyright (C) 2000, Larry Wall.
+         Everyone is permitted to copy and distribute verbatim copies
+          of this license document, but changing it is not allowed.
+
+                                   Preamble
+
+ This copyright license states the terms under which a given free
+ software Package may be copied, modified and/or redistributed, while the
+ Originator(s) maintain some artistic control over the future development
+ of that Package (at least as much artistic control as can be given under
+ copyright law while still making the Package open source and free software).
+
+ This license is bound by copyright law, and thus it legally applies only
+ to works which the copyright holder has permitted copying, distribution
+ or modification under the terms of the Artistic License, Version 2.0.
+
+ You are reminded that You are always permitted to make arrangements
+ wholly outside of a given copyright license directly with the copyright
+ holder(s) of a given Package. If the terms of this license impede your
+ ability to make full use of the Package, You are encouraged to contact
+ the copyright holder(s) and seek a different licensing arrangement.
+
+                                 Definitions
+
+ "Package" refers to the collection of files distributed by the
+ Originator(s), and derivatives of that collection of files created
+ through textual modification.
+
+ "Standard Version" refers to the Package if it has not been modified, or
+ has been modified only in ways suggested by the Originator(s).
+
+ "Modified Version" refers to the Package, if it has been changed by You
+ via textual modification of the source code, and such changes were not
+ suggested by the Originator(s).
+
+ "Originator" refers to the author(s) and/or copyright holder(s) of the
+ Standard Version of the Package.
+
+ "You" and "Your" refers to any person who would like to copy,
+ distribute, or modify the Package.
+
+ "Distribution Fee" is any fee that You charge for providing a copy of
+ this Package to another party. It does not refer to licensing fees.
+
+ "Freely Available" means that:
+
+        (a) no fee is charged for the right to use the item (though a
+            Distribution Fee may be charged).
+
+        (b) recipients of the item may redistribute it under the same
+            conditions they received it.
+
+        (c) If the item is a binary, object code, bytecode, the complete
+            corresponding machine-readable source code is included with the
+            item.
+
+
+          Permission for Use and Modification Without Redistribution
+
+   (1) You are permitted to use the Standard Version and create and use
+       Modified Versions for any purpose without restriction, provided that
+       you do not redistribute the Modified Version to others outside of your
+       company or organization.
+
+
+            Permissions for Redistribution of the Standard Version
+
+   (2) You may make available verbatim copies of the source code of the
+       Standard Version of this Package in any medium without restriction,
+       either gratis or for a Distribution Fee, provided that you duplicate
+       all of the original copyright notices and associated disclaimers.  At
+       Your discretion, such verbatim copies may or may not include compiled
+       bytecode, object code or binary versions of the corresponding source
+       code in the same medium.
+
+   (3) You may apply any bug fixes, portability changes, and other
+       modifications made available from any of the Originator(s).  The
+       resulting modified Package will still be considered the Standard
+       Version, and may be copied, modified and redistributed under the terms
+       of the original license of the Standard Version as if it were the
+       Standard Version.
+
+
+  Permissions for Redistribution of Modified Versions of the Package as Source
+
+   (4) You may modify your copy of the source code of this Package in any way
+       and distribute that Modified Version (either gratis or for a
+       Distribution Fee, and with or without a corresponding binary, bytecode
+       or object code version of the Modified Version) provided that You
+       clearly indicate what changes You made to the Package, and provided
+       that You do at least ONE of the following:
+
+        (a) make the Modified Version available to the Originator(s) of the
+            Standard Version, under the exact license of the Standard
+            Version, so that the Originator(s) may include your modifications
+            into the Standard Version (at their discretion).
+
+        (b) modify any installation scripts and procedures so that
+            installation of the Modified Version will never conflict with an
+            installation of the Standard Version, include for each program
+            installed by the Modified Version clear documentation describing
+            how it differs from the Standard Version, and rename your
+            Modified Version so that the name is substantially different from
+            the Standard Version.
+
+        (c) permit and encourage anyone who receives a copy of the Modified
+            Version permission to make your modifications Freely Available in
+            some specific way.
+
+       If Your Modified Version is in turn derived from a Modified Version
+       made by a third party, then You are still required to ensure that Your
+       Modified Version complies with the requirements of this license.
+
+
+       Permissions for Redistribution of Non-Source Versions of Package
+
+   (5) You may distribute binary, object code, bytecode or other non-source
+       versions of the Standard Version of the Package, provided that you
+       include complete instructions on where to get the source code of the
+       Standard Version.  Such instructions must be valid at the time of Your
+       distribution.  If these instructions, at any time while You are
+       carrying our such distribution, become invalid, you must provide new
+       instructions on demand or cease further distribution.  If You cease
+       distribution within thirty days after You become aware that the
+       instructions are invalid, then You do not forfeit any of Your rights
+       under this license.
+
+   (6) You may distribute binary, object code, bytecode or other non-source
+       versions of a Modified Version provided that You do at least ONE of
+       the following:
+
+        (a) include a copy of the corresponding source code for the Modified
+            Version under the terms indicated in (4).
+
+        (b) ensure that the installation of Your non-source Modified Version
+            does not conflict in any way with an installation of the Standard
+            Version, include for each program installed by the Modified
+            Version clear documentation describing how it differs from the
+            Standard Version, and rename your Modified Version so that the
+            name is substantially different from the Standard Version.
+
+        (c) ensure that the Modified Version includes notification of the
+            changes made from the Standard Version, and offer to provide
+            machine-readable source code (under a license that permits making
+            that source code Freely Available) of the Modified Version via
+            mail order.
+
+
+         Permissions for Inclusion of the Package in Aggregate Works
+
+   (7) You may aggregate this Package (either the Standard Version or
+       Modified Version) with other packages and distribute the resulting
+       aggregation provided that You do not charge a licensing fee for the
+       Package.  Distribution Fees are permitted, and licensing fees for
+       other packages in the aggregation are permitted.  Your permission to
+       distribute Standard or Modified Versions of the Package is still
+       subject to the other terms set forth in other sections of this
+       license.
+
+   (8) In addition to the permissions given elsewhere by this license, You
+       are also permitted to link Modified and Standard Versions of this
+       Package with other works and distribute the result without
+       restriction, provided You have produced binary program(s) that do not
+       overtly expose the interfaces of the Package.  This includes
+       permission to embed the Package in a larger work of your own without
+       exposing a direct interface to the Package.  This also includes
+       permission to build stand-alone binary or bytecode versions of your
+       scripts that require the Package, but do not otherwise give the casual
+       user direct access to the Package itself.
+
+
+         Items That are Never Considered Part of a Modified Version Package
+
+   (9) Works (including, but not limited to, subroutines and scripts) that
+       you have linked or aggregated with the Package that merely extend or
+       make use of the Package, but are not intended to cause the Package to
+       operate differently from the Standard Version, do not, by themselves,
+       cause the Package to be a Modified Version.  In addition, such works
+       are not considered parts of the Package itself, and are not bound by
+       the terms of the Package's license.
+
+
+               Acceptance of License and Disclaimer of Warranty
+
+  (10) You are not required to accept this License, since you have not signed
+       it.  However, nothing else grants you permission to copy, modify or
+       distribute the Standard or Modified Versions of the Package.  These
+       actions are prohibited by copyright law if you do not accept this
+       License.  Therefore, by copying, modifying or distributing Standard
+       and Modified Versions of the Package, you indicate your acceptance of
+       the license of the Package.
+
+
+  (11) Disclaimer of Warranty:
+
+        THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+        "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+        LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+        A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT UNLESS REQUIRED BY
+        LAW OR AGREED TO IN WRITING WILL ANY COPYRIGHT HOLDER OR CONTRIBUTOR
+        BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+        OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+        OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, PROFITS; OR
+        BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+        WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+        OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+        EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
