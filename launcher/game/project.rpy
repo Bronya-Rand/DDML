@@ -660,8 +660,19 @@ label add_a_mod:
 
     python hide:
 
+        if persistent.zip_directory is None:
+
+            interface.interaction(_("ZIP Directory"), _("Please choose the directory in which your DDLC ZIP is located."), _("Make sure it is set to ddlc-win.zip in the directory it is located."),)
+
+            pathm, is_default = choose_directory(persistent.zip_directory)
+
+            if is_default:
+                interface.info(_("DDML has set the ZIP directory to:"), "[pathm!q]", path=path)
+
+            persistent.zip_directory = pathm
+
         modinstall_foldername = interface.input(
-            _("PROJECT NAME"),
+            _("Mod Folder Name"),
             _("Please enter the name of your project:"),
             filename=True,
             cancel=Jump("front_page"))
