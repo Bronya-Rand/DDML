@@ -30,8 +30,6 @@ label scripttemplate:
 #this is where you call your scripts aka your story
 if persistent.playthrough == 0:
 
-    call MTDay1
-
 elif persitent.playthrough == 1:
 
     return

@@ -1,12 +1,19 @@
-label modtemplatedef:
+label modtemplatedefinitions:
 
 #Explanation for Definitions
 #This section defines stuff for the game: sprite poses for the girls, music, and backgrounds
 #If you plan on adding new content, pop them over down there and mimic the appropriate lines!
 #Added Back in definitions.rpy after DDML 1.0.8 Patch
-    
+define persistent.demo = False
+define persistent.steam = False
+define config.developer = False #Change this flag to True to enable dev tools
+
+python early:
+    import singleton
+    me = singleton.SingleInstance()
 
 init python:
+    config.keymap['game_menu'].remove('mouseup_3')
     config.keymap['hide_windows'].append('mouseup_3')
     config.keymap['self_voicing'] = []
     config.keymap['clipboard_voicing'] = []
@@ -51,14 +58,17 @@ define audio.t3g3 = "<loop 4.618>bgm/3g2.ogg"
 define audio.t3m = "<loop 4.618>bgm/3.ogg"
 define audio.t4 = "<loop 19.451>bgm/4.ogg"  #Poem minigame
 define audio.t4g = "<loop 1.000>bgm/4g.ogg"
+
 define audio.t5 = "<loop 4.444>bgm/5.ogg"   #Sharing poems...... 'Okay Everyone~!'
 define audio.tmonika = "<loop 4.444>bgm/5_monika.ogg" #I'm the only one with pianos x3
 define audio.tsayori = "<loop 4.444>bgm/5_sayori.ogg" #Hxppy Thoughts with Ukelele & Snapping~!
 define audio.tnatsuki = "<loop 4.444>bgm/5_natsuki.ogg" #Was it always cute on purpose?
 define audio.tyuri = "<loop 4.444>bgm/5_yuri.ogg" #Fancy harps and instruments!
 
+
 #Ff you want to define music, make sure it exists in the appropriate folder
 #Define its "audio.name" and see how it goes! (this should always be .ogg)
+
 define audio.t5b = "<loop 4.444>bgm/5.ogg"
 define audio.t5c = "<loop 4.444>bgm/5.ogg"
 define audio.t6 = "<loop 10.893>bgm/6.ogg"  #Yuri/Natsuki theme
