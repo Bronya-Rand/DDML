@@ -27,11 +27,10 @@ image splash_warning = ParameterizedText(style="splash_text", xalign=0.5, yalign
 
 ##Here's where you can change the logo file to whatever you want
 image menu_logo:
-    "/moni32/DDMLIcon.png"
+    "moni32/DDMLMM.png"
     subpixel True
-    xcenter 240
-    ycenter 120
-    zoom 0.60
+    xcenter 646
+    ycenter 530
     menu_logo_move
 
 image menu_bg:
@@ -51,34 +50,37 @@ image menu_fade:
 image menu_art_y:
     subpixel True
     "gui/menu_art_y.png"
-    xcenter 600
-    ycenter 335
-    zoom 0.60
+    xcenter 450
+    ycenter 410
+    zoom 0.70
     menu_art_move(0.54, 600, 0.60)
 
 image menu_art_n:
     subpixel True
     "gui/menu_art_n.png"
-    xcenter 750
-    ycenter 385
-    zoom 0.58
+    xcenter 740
+    ycenter 400
+    zoom 0.70
     menu_art_move(0.58, 750, 0.58)
 
 image menu_art_s:
     subpixel True
     "gui/menu_art_s.png"
-    xcenter 510
-    ycenter 500
-    zoom 0.68
+    xcenter 190
+    ycenter 530
+    zoom 1.75
     menu_art_move(0.68, 510, 0.68)
 
 image menu_art_m:
     subpixel True
     "gui/menu_art_m.png"
-    xcenter 1000
-    ycenter 640
-    zoom 1.00
+    xcenter 1140
+    ycenter 625
+    zoom 0.05
     menu_art_move(1.00, 1000, 1.00)
+
+image DDTTRMain:
+    "moni32/DDTTRMain.png"
 
 image menu_art_y_ghost:
     subpixel True
@@ -121,8 +123,7 @@ image menu_art_s_glitch:
     menu_art_move(.8, 470, .8)
 
 image menu_nav:
-    "gui/overlay/main_menu.png"
-    menu_nav_move
+    "moni32/DDTTRMain.png"
 
 image menu_particles:
     2.481
@@ -156,9 +157,10 @@ transform menu_bg_loop:
 
 transform menu_logo_move:
     subpixel True
-    yoffset -300
+    yoffset 1020
+    zoom 0.82
     time 1.925
-    easein_bounce 1.5 yoffset 0
+    easein_bounce 2.0 yoffset 0
 
 transform menu_nav_move:
     subpixel True
@@ -189,6 +191,7 @@ image intro:
     "white"
     0.5
     "bg/splash.png" with Dissolve(0.5, alpha=True)
+    #"mod_assets/moni32/SplashWhiteModFinal.png" with Dissolve(0.5, alpha=True)
     2.5
     "white" with Dissolve(0.5, alpha=True)
     0.5
@@ -218,10 +221,11 @@ label splashscreen:
         pause 1.0
         "[config.name] is a Doki Doki Literature Club Mod Launcher that is not affiliated with Team Salvato."
         "It is designed to be used only after the official game has been completed, and contains spoilers for the official game."
-        "All Mods that use [config.name] are a Doki Doki Literature Club Mod that is not affiliated with Team Salvato or GanstaKingofSA."
+        "All Mods that use [config.name] are a Doki Doki Literature Club Mod that are unaffilated with Team Salvato or GanstaKingofSA."
         "Game files for Doki Doki Literature Club are required to play this mod and can be downloaded for free at: http://ddlc.moe"
+
         menu:
-            "By playing [config.name] you agree that you have completed Doki Doki Literature Club and accept any spoilers contained within."
+            "By playing [config.name] you agree that you have completed Doki Doki Literature Club, and accept any spoilers contained within."
             "I agree.":
                 pass
         scene tos2
@@ -279,7 +283,7 @@ label after_load:
     if anticheat != persistent.anticheat:
         stop music
         scene black
-        "The save file could not be loaded."
+        "Monika OS Error: The save file could not be loaded."
         "Are you trying to cheat?"
         #Handle however you want, default is to force reset all save data
         $ renpy.utter_restart()
