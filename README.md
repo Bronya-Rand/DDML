@@ -29,4 +29,5 @@ This program contains free software licensed under a number of licenses,
 DDML is distributed with many licenses apart from the one given. Read **LICENSE** for more details.
 
 **DMCA**
+
 Doki Doki Mod Launcher or the creator of the mod will not be held for any released modifications of protected property made by the user who used this mod in an unauthorized way. All DMCA's should be directed to the user of the unauthorized modification, not the creator of this mod.
