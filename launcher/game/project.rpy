@@ -715,7 +715,7 @@ label add_a_mod:
 
         modzip_name = interface.input(
             _("Mod ZIP Name"),
-            _("Please enter the name of your ZIP. It is recommended to rename the ZIP for easy installation.:"),
+            _("Please enter the name of your ZIP. It is recommended to rename the ZIP for easy installation."),
             filename=True,
             cancel=Jump("front_page"))
 
@@ -728,10 +728,11 @@ label add_a_mod:
         with zipfile.ZipFile(persistent.mzip_directory + '/' + modzip_name + ".zip", "r") as z:
             z.extractall(persistent.projects_directory + "/temp")
 
-            mzt = persistent.projects_directory + "/temp/"
+            mzt = persistent.projects_directory + "/temp"
 
         import glob
 
+        #Normal Scanning
         if glob.glob(mzt + '/game'):
             shutil.move(mzt + '/' + 'game', project_dir)
         if glob.glob(mzt + '/game/mod_assets'):
@@ -741,16 +742,37 @@ label add_a_mod:
         if glob.glob(mzt + '/game/python_packages'):
             shutil.move(mzt + '/game/python_packages', project_dir + '/game')
         if glob.glob(mzt + '/game/submods'):
-            shutil.move(mzt + '/game/submods', project_dir + '/game')
+            shutil.move(mzt + '/game/submods', project_dir + '/game')       
 
         mydict = {
-            mzt + '/game': ['rpa','rpyc','rpy', 'txt'],
+            mzt + '/game': ['rpa','rpyc','rpy','txt'],
         }
         for destination, extensions in mydict.items():
             for ext in extensions:
                 for file in glob.glob(mzt + '*.' + ext):
                     print(file)
                     shutil.move(file, project_dir + '/game')    
+
+        #Extended Scanning (If Contents during extract are inside another folder (Yuri-1.0/script-ch1.rpyc))
+        if glob.glob(mzt + '/*' + '/game'):
+            shutil.move(mzt + '/*' + '/game', project_dir)
+        if glob.glob(mzt + '/*' + '/game/mod_assets'):
+            shutil.move(mzt + '/*' + '/game/mod_assets', project_dir + '/game')
+        if glob.glob(mzt + '/*' +'/game/gui'):
+            shutil.move(mzt + '/*' +'/game/gui', project_dir + '/game')
+        if glob.glob(mzt + '/*' + '/game/python_packages'):
+            shutil.move(mzt + '/*' +'/game/python_packages', project_dir + '/game')
+        if glob.glob(mzt + '/*' + '/game/submods'):
+            shutil.move(mzt + '/*' + '/game/submods', project_dir + '/game')   
+
+        mydictext = {
+            mzt + '/*' + '/game': ['rpa','rpyc','rpy','txt'],
+        }
+        for destination, extensions in mydictext.items():
+            for ext in extensions:
+                for file in glob.glob(mzt + '/*' + '/*.' + ext):
+                    print(file)
+                    shutil.move(file, project_dir + '/game')  
         
         project.manager.scan()
 
