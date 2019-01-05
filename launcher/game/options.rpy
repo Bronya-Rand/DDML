@@ -44,11 +44,11 @@ init -1 python hide:
     # This controls the title of the window, when Ren'Py is
     # running in a window.
 
-    config.window_title = u"DDML 5.0 Experimental"
+    config.window_title = u"DDML 5.0"
 
     # These control the name and version of the game, that are reported
     # with tracebacks and other debugging logs.
-    config.name = "DDML 5.0 Experimental"
+    config.name = "DDML 5.0"
     config.version = "5.1.0R"
 
     #####################
@@ -160,7 +160,7 @@ init -1 python hide:
     # stored. (It needs to be set early, before any other init code
     # is run, so the persistent information can be found by the init code.)
 python early:
-    config.save_directory = "ML5Test"
+    config.save_directory = "DDML5"
 
 init -1 python hide:
     #####################
