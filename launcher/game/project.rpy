@@ -635,7 +635,7 @@ label choose_zip_directory:
         pathm, is_default = choose_directory(persistent.zip_directory)
 
         if is_default:
-            interface.info(_("DDML has set the ZIP directory to:"), "[pathm!q]", path=path)
+            interface.info(_("DDML has set the ZIP directory to:"), "[pathm!q]", pathm=pathm)
 
         persistent.zip_directory = pathm
 
@@ -650,7 +650,7 @@ label choose_modzip_directory:
         pathmz, is_default = choose_directory(persistent.mzip_directory)
 
         if is_default:
-            interface.info(_("DDML has set the ZIP directory to:"), "[pathmz!q]", path=path)
+            interface.info(_("DDML has set the ZIP directory to:"), "[pathmz!q]", pathmz=pathmz)
 
         persistent.mzip_directory = pathmz
 
@@ -658,19 +658,30 @@ label choose_modzip_directory:
 
 label add_a_mod:
 
-    python hide:
+    # Checks if user set Mod Install Folder
+    if persistent.projects_directory is None:
+        call choose_projects_directory
+
+    # Ren'Py Failsafe
+    if persistent.projects_directory is None:
+        $ interface.error(_("The Mod directory could not be set. Giving up."))       
+    # Checks if user set DDLC ZIP Location (All OS)
+    if persistent.zip_directory is None:
+        call choose_zip_directory
         
-        # Checks if user set DDLC ZIP Location (All OS)
-        if persistent.zip_directory is None:
+    # Ren'Py Failsafe 2
+    if persistent.zip_directory is None:
+        $ interface.error(_("The DDLC ZIP directory could not be set. Giving up."))
 
-            interface.interaction(_("ZIP Directory"), _("Please choose the directory in which your DDLC ZIP is located."), _("Make sure it is set to ddlc-win.zip in the directory it is located."),)
+    # Checks if User set Mod ZIP Directory
+    if persistent.mzip_directory is None:
+        call choose_modzip_directory
 
-            pathm, is_default = choose_directory(persistent.zip_directory)
+    # Ren'Py Failsafe 3
+    if persistent.mzip_directory is None:
+        $ interface.error(_("The Mod ZIP directory could not be set. Giving up."))
 
-            if is_default:
-                interface.info(_("DDML has set the ZIP directory to:"), "[pathm!q]", path=path)
-
-            persistent.zip_directory = pathm
+    python hide:       
 
         # Asks User the name of the folder they want their mod folder to be
         modinstall_foldername = interface.input(
@@ -704,18 +715,6 @@ label add_a_mod:
         import shutil
 
         shutil.move(ddlc, project_dir)
-        
-        # Checks if User set Mod ZIP Directory
-        if persistent.mzip_directory is None:
-
-            interface.interaction(_("Mod ZIP Download Directory"), _("Please choose the directory in which your Mod ZIP is located."), _("This will make DDML find the Mod ZIP in this folder."),)
-
-            pathmz, is_default = choose_directory(persistent.mzip_directory)
-
-            if is_default:
-                interface.info(_("DDML has set the ZIP directory to:"), "[pathmz!q]", path=path)
-
-            persistent.mzip_directory = pathmz
         
         # Asks User name of ZIP (Ren'Py already states only ASCII)
         modzip_name = interface.input(
