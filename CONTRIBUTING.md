@@ -1,0 +1,1 @@
+To contribute to ML's development, fork this respository via the Fork Button and make any edits you like to it. Afterwards request a PR here with your build and your build will be taken into review and into consideration. Thanks for improving DDML!
