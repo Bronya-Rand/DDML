@@ -758,27 +758,34 @@ label add_a_mod:
                 for file in glob.glob(mzt + '/*.' + ext):
                     print(file)
                     shutil.move(file, project_dir + '/game')    
+        
+        #Terra Code
+        # def get_immediate_subdirectories(a_dir):
+        #     return [mzt for mzt in os.listdir(a_dir)
+        #         if os.path.isdir(os.path.join(a_dir, mzt))]
 
-        #Extended Scanning (If Contents during extract are inside another folder (Yuri-1.0/script-ch1.rpyc))
-        if glob.glob(mzt + '/*' + '/game'):
-            shutil.move(mzt + '/*' + '/game', project_dir)
-        if glob.glob(mzt + '/*' + '/mod_assets'):
-            shutil.move(mzt + '/*' + '/mod_assets', project_dir + '/game')
-        if glob.glob(mzt + '/*' +'/gui'):
-            shutil.move(mzt + '/*' +'/gui', project_dir + '/game')
-        if glob.glob(mzt + '/*' + '/python_packages'):
-            shutil.move(mzt + '/*' +'/python_packages', project_dir + '/game')
-        if glob.glob(mzt + '/*' + '/submods'):
-            shutil.move(mzt + '/*' + '/submods', project_dir + '/game')   
+        # mzte = mzt + '/' + str(get_immediate_subdirectories(mzt))
 
-        mydictext = {
-            'DDLC Mod Files': ['rpa','rpyc','rpy','txt'],
-        }
-        for destination, extensions in mydictext.items():
-            for ext in extensions:
-                for file in glob.glob(mzt + '/*' + '/*.' + ext):
-                    print(file)
-                    shutil.move(file, project_dir + '/game')
+        # #Extended Scanning (If Contents during extract are inside another folder (Yuri-1.0/script-ch1.rpyc))
+        # if glob.glob(mzte + '/game'):
+        #     shutil.copytree(mzte + '/game', project_dir)
+        # if glob.glob(mzte + '/mod_assets'):
+        #     shutil.copytree(mzte + '/mod_assets', project_dir + '/game')
+        # if glob.glob(mzte + '/gui'):
+        #     shutil.copytree(mzte + '/gui', project_dir + '/game')
+        # if glob.glob(mzte + '/python_packages'):
+        #     shutil.copytree(mzte + '/python_packages', project_dir + '/game')
+        # if glob.glob(mzte + '/submods'):
+        #     shutil.copytree(mzte + '/submods', project_dir + '/game')   
+
+        # mydictext = {
+        #     'DDLC Mod Files': ['rpa','rpyc','rpy','txt'],
+        # }
+        # for destination, extensions in mydictext.items():
+        #     for ext in extensions:
+        #         for file in glob.glob(mzte + '/*.' + ext):
+        #             print(file)
+        #             shutil.move(file, project_dir + '/game')
 
         # Prevents copy of any other RPA or other mod files 
         shutil.rmtree(persistent.projects_directory + '/temp')
