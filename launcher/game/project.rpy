@@ -789,11 +789,70 @@ label add_a_mod:
                         shutil.move(file, project_dir + '/game')
 
         # Prevents copy of any other RPA or other mod files 
-        shutil.rmtree(persistent.projects_directory + '/temp')
+        #shutil.rmtree(persistent.projects_directory + '/temp')
         
         # Auto-Refresh
         project.manager.scan()
 
+    return
+
+label add_base_game:
+
+    # Checks if user set Mod Install Folder
+    if persistent.projects_directory is None:
+        call choose_projects_directory
+
+    # Ren'Py Failsafe
+    if persistent.projects_directory is None:
+        $ interface.error(_("The Mod directory could not be set. Giving up."))    
+
+    # Checks if user set DDLC ZIP Location (All OS)
+    if persistent.zip_directory is None:
+        call choose_zip_directory
+        
+    # Ren'Py Failsafe 2
+    if persistent.zip_directory is None:
+        $ interface.error(_("The DDLC ZIP directory could not be set. Giving up."))
+
+    python hide:
+        # Asks User the name of the folder they want their mod folder to be
+        modinstall_foldername = interface.input(
+            _("Mod Folder Name"),
+            _("Please enter the name of your project:"),
+            filename=True,
+            cancel=Jump("front_page"))
+
+        modinstall_foldername = modinstall_foldername.strip()
+        if not modinstall_foldername:
+            interface.error(_("The mod name may not be empty."))
+
+        project_dir = os.path.join(persistent.projects_directory, modinstall_foldername)
+
+        if project.manager.get(modinstall_foldername) is not None:
+            interface.error(_("[modinstall_foldername!q] already exists. Please choose a different project name."), modinstall_foldername=modinstall_foldername)
+
+        if os.path.exists(project_dir):
+            interface.error(_("[project_dir!q] already exists. Please choose a different project name."), project_dir=project_dir)
+        
+        interface.interaction(_("Making a Mod Folder"), _("Extracting DDLC, Please Wait..."),)
+
+        # Extract DDLC (Win/Linux)
+        import zipfile
+
+        with zipfile.ZipFile(persistent.zip_directory + '/ddlc-win.zip', "r") as z:
+            z.extractall(persistent.projects_directory + "/temp")
+
+            ddlc = persistent.projects_directory + '/temp' + '/DDLC-1.1.1-pc'
+
+        import shutil
+
+        shutil.move(ddlc, project_dir)
+
+        # Prevents copy of any other RPA or other mod files 
+        shutil.rmtree(persistent.projects_directory + '/temp')
+
+        project.manager.scan()
+        
     return
 
 init python:

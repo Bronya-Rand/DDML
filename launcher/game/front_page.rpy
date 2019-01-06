@@ -121,8 +121,25 @@ screen front_page:
                             left_margin (HALF_INDENT) 
                             action Jump("choose_projects_directory")
 
+                    add HALF_SPACER
+                    add SEPARATOR
+                    add HALF_SPACER
+
+                    hbox:
+                        xfill True
                         textbutton _("+ Add a Mod"):
+                            left_margin (HALF_INDENT) 
                             action Jump("add_a_mod")
+
+                    add HALF_SPACER
+                    add SEPARATOR
+                    add HALF_SPACER
+                    hbox:
+                        xfill True
+                        textbutton _("+ Add Base Game Only"):
+                            left_margin (HALF_INDENT) 
+                            action Jump("add_base_game")
+
 
         # Project section - on right.
 

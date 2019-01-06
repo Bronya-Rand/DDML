@@ -119,7 +119,7 @@ screen preferences:
                             else:
                                 textbutton _("Not Set"):
                                     action Jump("projects_zip_preference")
-                                    alt _("ZIP directory: [text]")
+                                    alt _("DDLC ZIP directory: [text]")
 
                     add SPACER
 
@@ -143,7 +143,7 @@ screen preferences:
                             else:
                                 textbutton _("Not Set"):
                                     action Jump("projects_mzip_preference")
-                                    alt _("ZIP directory: [text]")
+                                    alt _("Mod ZIP directory: [text]")
 
     textbutton _("Return") action Jump("front_page") style "l_left_button"
 
