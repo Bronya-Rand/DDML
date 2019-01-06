@@ -119,7 +119,7 @@ screen front_page:
 
                         textbutton _("+ Change Mod Directory"):
                             left_margin (HALF_INDENT) 
-                            action Jump("choose_projects_directory")
+                            action Jump("move_mod_folder")
 
                     add HALF_SPACER
                     add SEPARATOR
@@ -207,7 +207,7 @@ screen front_page_project:
                     has vbox
 
                     textbutton _("Browse Game Directory") action OpenDirectory("game")
-                    textbutton _("Delete Persistent") action Jump("rmpersistent")
+                    textbutton _("Delete Saves") action Jump("rmpersistent")
                     # textbutton _("save") action None style "l_list"
                 # textbutton "Relaunch" action Relaunch
             
@@ -249,7 +249,7 @@ label lint:
 label rmpersistent:
 
     python hide:
-        interface.processing(_("Deleting persistent data..."))
+        interface.processing(_("Deleting save data..."))
         project.current.launch([ 'rmpersistent' ], wait=True)
 
     jump front_page

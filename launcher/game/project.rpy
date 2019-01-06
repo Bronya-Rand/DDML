@@ -626,6 +626,30 @@ label choose_projects_directory:
 
     return
 
+# User Moves Mod Directory to Move All Mods to that New Directory
+label move_mod_folder:
+
+    python hide:
+
+        oldmod_dir = persistent.projects_directory
+
+        interface.interaction(_("Mod Directory"), _("Please choose the Mod directory using the directory chooser.\n{b}The directory chooser may have opened behind this window.{/b}"), _("This launcher will scan for mods in this directory, will create new mods in this directory, and will place built mods into this directory."),)
+
+        pathnew, is_default = choose_directory(persistent.projects_directory)
+
+        if is_default:
+            $ interface.error(_("The operation has been cancelled."))   
+
+        persistent.projects_directory = pathnew
+
+        #Moving Files!
+        import shutil
+        shutil.move(oldmod_dir, persistent.projects_directory)
+
+        project.manager.scan()
+    
+    return
+
 label choose_zip_directory:
 
     python hide:
@@ -655,6 +679,30 @@ label choose_modzip_directory:
         persistent.mzip_directory = pathmz
 
     return
+
+label delete_mod_folder:
+
+    python hide:
+
+        mod_delete_response = interface.input(
+            _("Deleting a Mod"),
+            _("Are you sure you want to delete this mod? This action is irreversiable"),
+            filename=False,
+            cancel=Jump("front_page"))
+
+        mod_delete_response = mod_delete_response.strip()
+
+        if not mod_delete_response:
+            interface.error(_("The operation has been cancelled."))
+
+        mod_response = mod_delete_response
+
+        if mod_response == "No" or mod_response == "no":
+            interface.error(_("The operation has been cancelled."))
+        elif mod_response == "Yes" or mod_response == "yes":
+
+        else:
+            interface.error(_("Invalid Input."))
 
 label add_a_mod:
 
@@ -789,7 +837,7 @@ label add_a_mod:
                         shutil.move(file, project_dir + '/game')
 
         # Prevents copy of any other RPA or other mod files 
-        #shutil.rmtree(persistent.projects_directory + '/temp')
+        shutil.rmtree(persistent.projects_directory + '/temp')
         
         # Auto-Refresh
         project.manager.scan()
@@ -852,7 +900,7 @@ label add_base_game:
         shutil.rmtree(persistent.projects_directory + '/temp')
 
         project.manager.scan()
-        
+
     return
 
 init python:
