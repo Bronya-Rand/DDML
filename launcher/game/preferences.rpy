@@ -115,7 +115,7 @@ screen preferences:
                             if persistent.zip_directory:
                                 textbutton _("[persistent.zip_directory!q]"):
                                     action Jump("projects_zip_preference")
-                                    alt _("ZIP directory: [text]")
+                                    alt _("DDLC ZIP directory: [text]")
                             else:
                                 textbutton _("Not Set"):
                                     action Jump("projects_zip_preference")
@@ -136,10 +136,10 @@ screen preferences:
                         add HALF_SPACER
 
                         frame style "l_indent":
-                            if persistent.zip_directory:
+                            if persistent.mzip_directory:
                                 textbutton _("[persistent.mzip_directory!q]"):
                                     action Jump("projects_mzip_preference")
-                                    alt _("ZIP directory: [text]")
+                                    alt _("Mod ZIP directory: [text]")
                             else:
                                 textbutton _("Not Set"):
                                     action Jump("projects_mzip_preference")
