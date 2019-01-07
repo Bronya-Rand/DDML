@@ -389,6 +389,16 @@ init python in project:
 
             self.projects_directory = persistent.projects_directory
 
+            if (persistent.zip_directory is not None) and not os.path.isdir(persistent.zip_directory):
+                persistent.zip_directory = None
+
+            self.ddlc_directory = persistent.zip_directory
+
+            if (persistent.mzip_directory is not None) and not os.path.isdir(persistent.mzip_directory):
+                persistent.mzip_directory = None
+
+            self.ddlcmod_directory = persistent.zip_directory
+
             self.projects = [ ]
             self.templates = [ ]
             self.all_projects = [ ]
@@ -638,7 +648,7 @@ label move_mod_folder:
         pathnew, is_default = choose_directory(persistent.projects_directory)
 
         if is_default:
-            $ interface.error(_("The operation has been cancelled."))   
+            interface.error(_("The operation has been cancelled."))   
 
         persistent.projects_directory = pathnew
 
@@ -680,29 +690,29 @@ label choose_modzip_directory:
 
     return
 
-label delete_mod_folder:
+# label delete_mod_folder:
 
-    python hide:
+#     python hide:
 
-        mod_delete_response = interface.input(
-            _("Deleting a Mod"),
-            _("Are you sure you want to delete this mod? This action is irreversiable"),
-            filename=False,
-            cancel=Jump("front_page"))
+#         mod_delete_response = interface.input(
+#             _("Deleting a Mod"),
+#             _("Are you sure you want to delete this mod? This action is irreversiable"),
+#             filename=False,
+#             cancel=Jump("front_page"))
 
-        mod_delete_response = mod_delete_response.strip()
+#         mod_delete_response = mod_delete_response.strip()
 
-        if not mod_delete_response:
-            interface.error(_("The operation has been cancelled."))
+#         if not mod_delete_response:
+#             interface.error(_("The operation has been cancelled."))
 
-        mod_response = mod_delete_response
+#         mod_response = mod_delete_response
 
-        if mod_response == "No" or mod_response == "no":
-            interface.error(_("The operation has been cancelled."))
-        elif mod_response == "Yes" or mod_response == "yes":
-
-        else:
-            interface.error(_("Invalid Input."))
+#         if mod_response == "No" or mod_response == "no":
+#             interface.error(_("The operation has been cancelled."))
+#         elif mod_response == "Yes" or mod_response == "yes":
+#             os.remove
+#         else:
+#             interface.error(_("Invalid Input."))
 
 label add_a_mod:
 
