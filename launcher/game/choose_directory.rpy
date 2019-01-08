@@ -109,3 +109,78 @@ init python:
             path = os.path.expanduser("~")
 
         return path, is_default
+
+    def choose_directory(pathm):
+        """
+        Pops up a directory chooser.
+
+        `pathm`
+            The directory that is selected by default. If None, config.renpy_base
+            is selected.
+
+        Returns a (path, is_default) tuple, where path is the chosen directory,
+        and is_default is true if and only if it was chosen by default mechanism
+        rather than user choice.
+        """
+
+        if pathm:
+            default_pathm = pathm
+        else:
+            try:
+                default_pathm = os.path.dirname(os.path.abspath(config.renpy_base))
+            except:
+                default_pathm = os.path.abspath(config.renpy_base)
+
+        if EasyDialogs:
+
+            choicem = EasyDialogs.AskFolder(defaultLocation=default_pathm, wanted=unicode)
+
+            if choicem is not None:
+                pathm = choice
+            else:
+                pathm = None
+
+        else:
+
+            try:
+
+                cmdm = [ "/usr/bin/python", os.path.join(config.gamedir, "tkaskdir.py"), renpy.fsencode(default_pathm) ]
+
+                pm = subprocess.Popen(cmdm, stdout=subprocess.PIPE)
+                choicem = pm.stdout.read()
+                codem = pm.wait()
+
+            except:
+                import traceback
+                traceback.print_exc()
+
+                codem = 0
+                choicem = ""
+                pathm = None
+
+                interface.error(_("Ren'Py was unable to run python with tkinter to choose the directory. Please install the python-tk or tkinter package."), label=None)
+
+            if codem:
+                interface.error(_("Ren'Py was unable to run python with tkinter to choose the directory. Please install the python-tk or tkinter package."), label=None)
+
+            elif choicem:
+                pathm = choicem.decode("utf-8")
+
+        is_defaultm = False
+
+        if pathm is None:
+            pathm = default_path
+            is_defaultm = True
+
+        pathm = renpy.fsdecode(pathm)
+
+        if (not os.path.isdir(pathm)) or (not directory_is_writable(pathm)):
+            interface.error(_("The selected mod directory is not writable."))
+            pathm = default_pathm
+            is_defaultm = True
+
+        if is_defaultm and (not directory_is_writable(pathm)):
+            pathm = os.path.expanduser("~")
+
+        return pathm, is_defaultm
+
