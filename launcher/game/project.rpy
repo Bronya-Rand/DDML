@@ -389,6 +389,16 @@ init python in project:
 
             self.projects_directory = persistent.projects_directory
 
+            if (persistent.zip_directory is not None) and not os.path.isdir(persistent.zip_directory):
+                persistent.zip_directory = None
+
+            self.ddlc_directory = persistent.zip_directory
+
+            if (persistent.mzip_directory is not None) and not os.path.isdir(persistent.mzip_directory):
+                persistent.mzip_directory = None
+
+            self.ddlcmod_directory = persistent.zip_directory
+
             self.projects = [ ]
             self.templates = [ ]
             self.all_projects = [ ]
