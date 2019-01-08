@@ -654,7 +654,7 @@ label move_mod_folder:
 
         #Moving Files!
         import shutil
-        shutil.move(oldmod_dir, persistent.projects_directory)
+        shutil.copytree(oldmod_dir, persistent.projects_directory)
 
         project.manager.scan()
 
@@ -901,20 +901,25 @@ label add_base_game:
 
         interface.interaction(_("Making a Mod Folder"), _("Extracting DDLC, Please Wait..."),)
 
-        # Extract DDLC (Win/Linux)
-        import zipfile
+        if steam == True:
+            # Copy DDLC (Steam Release)
+            import shutil
+            shutil.copytree(persistent.zip_directory + "/Doki Doki Literature Club", project_dir)
+        else:
+            # Extract DDLC (Win/Linux)
+            import zipfile
 
-        with zipfile.ZipFile(persistent.zip_directory + '/ddlc-win.zip', "r") as z:
-            z.extractall(persistent.projects_directory + "/temp")
+            with zipfile.ZipFile(persistent.zip_directory + '/ddlc-win.zip', "r") as z:
+                z.extractall(persistent.projects_directory + "/temp")
 
-            ddlc = persistent.projects_directory + '/temp' + '/DDLC-1.1.1-pc'
+                ddlc = persistent.projects_directory + '/temp' + '/DDLC-1.1.1-pc'
 
-        import shutil
+            import shutil
 
-        shutil.move(ddlc, project_dir)
+            shutil.move(ddlc, project_dir)
 
-        # Prevents copy of any other RPA or other mod files
-        shutil.rmtree(persistent.projects_directory + '/temp')
+            # Prevents copy of any other RPA or other mod files
+            shutil.rmtree(persistent.projects_directory + '/temp')
 
         project.manager.scan()
 
