@@ -136,7 +136,7 @@ init python:
             choicem = EasyDialogs.AskFolder(defaultLocation=default_pathm, wanted=unicode)
 
             if choicem is not None:
-                pathm = choice
+                pathm = choicem
             else:
                 pathm = None
 
@@ -169,7 +169,7 @@ init python:
         is_defaultm = False
 
         if pathm is None:
-            pathm = default_path
+            pathm = default_pathm
             is_defaultm = True
 
         pathm = renpy.fsdecode(pathm)
