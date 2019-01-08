@@ -648,7 +648,7 @@ label move_mod_folder:
         pathnew, is_default = choose_directory(persistent.projects_directory)
 
         if is_default:
-            interface.error(_("The operation has been cancelled."))   
+            interface.error(_("The operation has been cancelled."))
 
         persistent.projects_directory = pathnew
 
@@ -657,23 +657,23 @@ label move_mod_folder:
         shutil.move(oldmod_dir, persistent.projects_directory)
 
         project.manager.scan()
-    
-    return
-
-label choose_zip_directory:
-
-    python hide:
-
-        interface.interaction(_("ZIP Directory"), _("Please choose the directory in which your DDLC ZIP is located."), _("Make sure it is set to ddlc-win.zip in the directory it is located."),)
-
-        pathm, is_default = choose_directory(persistent.zip_directory)
-
-        if is_default:
-            interface.info(_("DDML has set the ZIP directory to:"), "[pathm!q]", pathm=pathm)
-
-        persistent.zip_directory = pathm
 
     return
+
+# label choose_zip_directory:
+
+#     python hide:
+
+#         interface.interaction(_("ZIP Directory"), _("Please choose the directory in which your DDLC ZIP is located."), _("Make sure it is set to ddlc-win.zip in the directory it is located."),)
+
+#         pathm, is_default = choose_directory(persistent.zip_directory)
+
+#         if is_default:
+#             interface.info(_("DDML has set the ZIP directory to:"), "[pathm!q]", pathm=pathm)
+
+#         persistent.zip_directory = pathm
+
+#     return
 
 label choose_modzip_directory:
 
@@ -722,11 +722,11 @@ label add_a_mod:
 
     # Ren'Py Failsafe
     if persistent.projects_directory is None:
-        $ interface.error(_("The Mod directory could not be set. Giving up."))       
+        $ interface.error(_("The Mod directory could not be set. Giving up."))
     # Checks if user set DDLC ZIP Location (All OS)
     if persistent.zip_directory is None:
-        call choose_zip_directory
-        
+        call new_project
+
     # Ren'Py Failsafe 2
     if persistent.zip_directory is None:
         $ interface.error(_("The DDLC ZIP directory could not be set. Giving up."))
@@ -739,7 +739,7 @@ label add_a_mod:
     if persistent.mzip_directory is None:
         $ interface.error(_("The Mod ZIP directory could not be set. Giving up."))
 
-    python hide:       
+    python hide:
 
         # Asks User the name of the folder they want their mod folder to be
         modinstall_foldername = interface.input(
@@ -759,21 +759,28 @@ label add_a_mod:
 
         if os.path.exists(project_dir):
             interface.error(_("[project_dir!q] already exists. Please choose a different project name."), project_dir=project_dir)
-        
+
         interface.interaction(_("Making a Mod Folder"), _("Extracting DDLC, Please Wait..."),)
 
-        # Extract DDLC (Win/Linux)
-        import zipfile
+        if steam == True:
+            # Copy DDLC (Win/Linux?/Mac?) (Steam Release)
+            import zipfile
+            import shutil
 
-        with zipfile.ZipFile(persistent.zip_directory + '/ddlc-win.zip', "r") as z:
-            z.extractall(persistent.projects_directory + "/temp")
+            shutil.copytree(persistent.zip_directory + "/Doki Doki Literature Club", project_dir)
+        else:
+            # Extract DDLC (Win/Linux) (Moe/ZIP Release)
+            import zipfile
 
-            ddlc = persistent.projects_directory + '/temp' + '/DDLC-1.1.1-pc'
+            with zipfile.ZipFile(persistent.zip_directory + '/ddlc-win.zip', "r") as z:
+                z.extractall(persistent.projects_directory + "/temp")
 
-        import shutil
+                ddlc = persistent.projects_directory + '/temp' + '/DDLC-1.1.1-pc'
 
-        shutil.move(ddlc, project_dir)
-        
+            import shutil
+
+            shutil.move(ddlc, project_dir)
+
         # Asks User name of ZIP (Ren'Py already states only ASCII)
         modzip_name = interface.input(
             _("Mod ZIP Name"),
@@ -805,7 +812,7 @@ label add_a_mod:
         if glob.glob(mzt + '/python_packages'):
             shutil.move(mzt + '/python_packages', project_dir + '/game')
         if glob.glob(mzt + '/submods'):
-            shutil.move(mzt + '/submods', project_dir + '/game')       
+            shutil.move(mzt + '/submods', project_dir + '/game')
 
         mydict = {
             'DDLC Mod Files': ['rpa','rpyc','rpy','txt'],
@@ -814,8 +821,8 @@ label add_a_mod:
             for ext in extensions:
                 for file in glob.glob(mzt + '/*.' + ext):
                     print(file)
-                    shutil.move(file, project_dir + '/game')    
-        
+                    shutil.move(file, project_dir + '/game')
+
         mzte = [x[0] for x in os.walk(mzt)]
 
         try:
@@ -823,7 +830,7 @@ label add_a_mod:
             mztex = True
         except IndexError:
             mztex = False
-        
+
         if mztex == True:
             #Extended Scanning (If Contents during extract are inside another folder (Yuri-1.0/script-ch1.rpyc))
             if glob.glob(str(mzte[1]) + '/game'):
@@ -835,7 +842,7 @@ label add_a_mod:
             if glob.glob(str(mzte[1]) + '/python_packages'):
                 shutil.move(str(mzte[1]) + '/python_packages', project_dir + '/game')
             if glob.glob(str(mzte[1]) + '/submods'):
-                shutil.move(str(mzte[1]) + '/submods', project_dir + '/game')   
+                shutil.move(str(mzte[1]) + '/submods', project_dir + '/game')
 
             mydictext = {
                 'DDLC Mod Files': ['rpa','rpyc','rpy','txt'],
@@ -846,9 +853,9 @@ label add_a_mod:
                         print(file)
                         shutil.move(file, project_dir + '/game')
 
-        # Prevents copy of any other RPA or other mod files 
+        # Prevents copy of any other RPA or other mod files
         shutil.rmtree(persistent.projects_directory + '/temp')
-        
+
         # Auto-Refresh
         project.manager.scan()
 
@@ -862,12 +869,12 @@ label add_base_game:
 
     # Ren'Py Failsafe
     if persistent.projects_directory is None:
-        $ interface.error(_("The Mod directory could not be set. Giving up."))    
+        $ interface.error(_("The Mod directory could not be set. Giving up."))
 
     # Checks if user set DDLC ZIP Location (All OS)
     if persistent.zip_directory is None:
         call choose_zip_directory
-        
+
     # Ren'Py Failsafe 2
     if persistent.zip_directory is None:
         $ interface.error(_("The DDLC ZIP directory could not be set. Giving up."))
@@ -891,7 +898,7 @@ label add_base_game:
 
         if os.path.exists(project_dir):
             interface.error(_("[project_dir!q] already exists. Please choose a different project name."), project_dir=project_dir)
-        
+
         interface.interaction(_("Making a Mod Folder"), _("Extracting DDLC, Please Wait..."),)
 
         # Extract DDLC (Win/Linux)
@@ -906,7 +913,7 @@ label add_base_game:
 
         shutil.move(ddlc, project_dir)
 
-        # Prevents copy of any other RPA or other mod files 
+        # Prevents copy of any other RPA or other mod files
         shutil.rmtree(persistent.projects_directory + '/temp')
 
         project.manager.scan()
