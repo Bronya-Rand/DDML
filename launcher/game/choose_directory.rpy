@@ -1,4 +1,4 @@
-﻿# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+# Copyright 2004-2018 Tom Rothamel <pytom@bishoujo.us>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -36,14 +36,42 @@ init python:
         except:
             return False
 
+    def directory_is_writable(pathm):
+        testm = os.path.join(pathm, "renpy test do not use")
+
+        try:
+            if os.path.isdir(testm):
+                os.rmdir(testm)
+
+            os.mkdir(testm)
+            os.rmdir(testm)
+
+            return True
+
+        except:
+            return False
+
+    def directory_is_writable(pathmz):
+        testmz = os.path.join(pathmz, "renpy test do not use")
+
+        try:
+            if os.path.isdir(testmz):
+                os.rmdir(testmz)
+
+            os.mkdir(testmz)
+            os.rmdir(testmz)
+
+            return True
+
+        except:
+            return False
+
     def choose_directory(path):
         """
         Pops up a directory chooser.
-
         `path`
             The directory that is selected by default. If None, config.renpy_base
             is selected.
-
         Returns a (path, is_default) tuple, where path is the chosen directory,
         and is_default is true if and only if it was chosen by default mechanism
         rather than user choice.
@@ -94,14 +122,15 @@ init python:
 
         is_default = False
 
-        if path is None:
+        # Path being None or "" means nothing was selected.
+        if not path:
             path = default_path
             is_default = True
 
         path = renpy.fsdecode(path)
 
         if (not os.path.isdir(path)) or (not directory_is_writable(path)):
-            interface.error(_("The selected mod directory is not writable."))
+            interface.error(_("The selected projects directory is not writable."))
             path = default_path
             is_default = True
 
@@ -113,11 +142,9 @@ init python:
     def choose_directory(pathm):
         """
         Pops up a directory chooser.
-
         `pathm`
             The directory that is selected by default. If None, config.renpy_base
             is selected.
-
         Returns a (pathm, is_defaultm) tuple, where pathm is the chosen directory,
         and is_defaultm is true if and only if it was chosen by default mechanism
         rather than user choice.
@@ -168,14 +195,15 @@ init python:
 
         is_defaultm = False
 
-        if pathm is None:
+        # pathm being None or "" means nothing was selected.
+        if not pathm:
             pathm = default_pathm
             is_defaultm = True
 
         pathm = renpy.fsdecode(pathm)
 
         if (not os.path.isdir(pathm)) or (not directory_is_writable(pathm)):
-            interface.error(_("The selected mod directory is not writable."))
+            interface.error(_("The selected projects directory is not writable."))
             pathm = default_pathm
             is_defaultm = True
 
@@ -187,27 +215,25 @@ init python:
     def choose_directory(pathmz):
         """
         Pops up a directory chooser.
-
         `pathmz`
             The directory that is selected by default. If None, config.renpy_base
             is selected.
-
         Returns a (pathmz, is_defaultmz) tuple, where pathmz is the chosen directory,
         and is_defaultmz is true if and only if it was chosen by default mechanism
         rather than user choice.
         """
 
         if pathmz:
-            default_pathm = pathmz
+            default_pathmz = pathmz
         else:
             try:
-                default_pathm = os.path.dirname(os.path.abspath(config.renpy_base))
+                default_pathmz = os.path.dirname(os.path.abspath(config.renpy_base))
             except:
-                default_pathm = os.path.abspath(config.renpy_base)
+                default_pathmz = os.path.abspath(config.renpy_base)
 
         if EasyDialogs:
 
-            choice = EasyDialogs.AskFolder(defaultLocation=default_pathm, wanted=unicode)
+            choice = EasyDialogs.AskFolder(defaultLocation=default_pathmz, wanted=unicode)
 
             if choice is not None:
                 pathmz = choice
@@ -218,7 +244,7 @@ init python:
 
             try:
 
-                cmd = [ "/usr/bin/python", os.path.join(config.gamedir, "tkaskdir.py"), renpy.fsencode(default_pathm) ]
+                cmd = [ "/usr/bin/python", os.path.join(config.gamedir, "tkaskdir.py"), renpy.fsencode(default_pathmz) ]
 
                 p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
                 choice = p.stdout.read()
@@ -242,18 +268,19 @@ init python:
 
         is_defaultmz = False
 
-        if pathmz is None:
-            pathmz = default_pathm
+        # pathmz being None or "" means nothing was selected.
+        if not pathmz:
+            pathmz = default_pathmz
             is_defaultmz = True
 
         pathmz = renpy.fsdecode(pathmz)
 
         if (not os.path.isdir(pathmz)) or (not directory_is_writable(pathmz)):
-            interface.error(_("The selected mod directory is not writable."))
-            pathmz = default_pathm
+            interface.error(_("The selected projects directory is not writable."))
+            pathmz = default_pathmz
             is_defaultmz = True
 
         if is_defaultmz and (not directory_is_writable(pathmz)):
             pathmz = os.path.expanduser("~")
 
-        return pathmz, is_defaultm
+        return pathmz, is_defaultmz
