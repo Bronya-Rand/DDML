@@ -666,9 +666,9 @@ label move_mod_folder:
 
 #         interface.interaction(_("ZIP Directory"), _("Please choose the directory in which your DDLC ZIP is located."), _("Make sure it is set to ddlc-win.zip in the directory it is located."),)
 
-#         pathm, is_default = choose_directory(persistent.zip_directory)
+#         pathm, is_defaultm = choose_directory(persistent.zip_directory)
 
-#         if is_default:
+#         if is_defaultm:
 #             interface.info(_("DDML has set the ZIP directory to:"), "[pathm!q]", pathm=pathm)
 
 #         persistent.zip_directory = pathm
@@ -681,9 +681,9 @@ label choose_modzip_directory:
 
         interface.interaction(_("Mod ZIP Download Directory"), _("Please choose the directory in which your Mod ZIP is located."), _("This will make DDML find the Mod ZIP in this folder."),)
 
-        pathmz, is_default = choose_directory(persistent.mzip_directory)
+        pathmz, is_defaultmz = choose_directory(persistent.mzip_directory)
 
-        if is_default:
+        if is_defaultmz:
             interface.info(_("DDML has set the ZIP directory to:"), "[pathmz!q]", pathmz=pathmz)
 
         persistent.mzip_directory = pathmz
@@ -725,7 +725,7 @@ label add_a_mod:
         $ interface.error(_("The Mod directory could not be set. Giving up."))
     # Checks if user set DDLC ZIP Location (All OS)
     if persistent.zip_directory is None:
-        call new_project
+        call ddlc_location
 
     # Ren'Py Failsafe 2
     if persistent.zip_directory is None:
@@ -763,7 +763,7 @@ label add_a_mod:
         interface.interaction(_("Making a Mod Folder"), _("Extracting DDLC, Please Wait..."),)
 
         if steam == True:
-            # Copy DDLC (Win/Linux?/Mac?) (Steam Release)
+            # Copy DDLC (Win/Linux?/Mac?) (Steam Release) (Assuming Steam Copy is Unmodded)
             import zipfile
             import shutil
 

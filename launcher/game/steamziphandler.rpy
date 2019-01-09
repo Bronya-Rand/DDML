@@ -35,7 +35,7 @@ init python:
 
 
         # Check for a translation of the words "New GUI Interface".
-        if (language is None) or (__("New GUI Interface") != "New GUI Interface"):
+        if (language is None) or (__("Steam Release") != "Steam Release"):
             new = True
 
         try:
@@ -66,37 +66,44 @@ label ddlc_location:
 
         check_language_support()
 
-        gui_kind = interface.choice(
+        release_kind = interface.choice(
             _("Which DDLC release do you have. If you downloaded DDLC from Steam, select Steam Release. If you downloaded DDLC from ddlc.moe, select DDLC ZIP/DDLC.moe Release."),
             [ ( 'ddlc_steam_release', _("Steam Release") ), ( 'ddlc_moe_release', _("DDLC ZIP/DDLC.moe Release")) ],
             "ddlc_steam_release",
             cancel=Jump("front_page"),
             )
 
-        renpy.jump(gui_kind)
+        renpy.jump(release_kind)
 
 label ddlc_moe_release:
 
-    interface.interaction(_("DDLC ZIP/DDLC.moe Directory"), _("Please choose the location of your DDLC ZIP."), _("This will make DDML find DDLC and copy it to your Mod Folder for Mods."),)
+    python hide:
 
-    moepath, is_default = choose_directory(persistent.zip_directory)
+        interface.interaction(_("DDLC ZIP/DDLC.moe Directory"), _("Please choose the location of your DDLC ZIP."), _("This will make DDML find DDLC and copy it to your Mod Folder for Mods."),)
 
-    if is_default:
-        interface.info(_("DDML has set the ZIP directory to:"), "[moepath!q]", steampath=steampath)
+        moepath, is_default = choose_directory(persistent.zip_directory)
 
-    persistent.zip_directory = moepath
+        if is_default:
+            interface.info(_("DDML has set the DDLC ZIP directory to:"), "[moepath!q]", moepath=moepath)
+
+        persistent.zip_directory = moepath
+
+    $ steam = False
 
     jump front_page
 
 label ddlc_steam_release:
 
-    interface.interaction(_("Steam Directory"), _("Please choose the location of your Steam's common folder."), _("This will make DDML find DDLC and copy it to your Mod Folder for Mods."),)
+    python hide:
+        interface.interaction(_("Steam Directory"), _("Please choose the location of your Steam's common folder."), _("This will make DDML find DDLC and copy it to your Mod Folder for Mods."),)
 
-    steampath, is_default = choose_directory(persistent.zip_directory)
+        steampath, is_default = choose_directory(persistent.zip_directory)
 
-    if is_default:
-        interface.info(_("DDML has set the Steam directory to:"), "[steampath!q]", steampath=steampath)
+        if is_default:
+            interface.info(_("DDML has set the Steam directory to:"), "[steampath!q]", steampath=steampath)
 
-    persistent.zip_directory = steampath
+        persistent.zip_directory = steampath
+
+    $ steam = True
 
     return

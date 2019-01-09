@@ -151,8 +151,12 @@ label projects_directory_preference:
     call choose_projects_directory
     jump preferences
 
+# label projects_zip_preference:
+#     call choose_zip_directory
+#     jump preferences
+
 label projects_zip_preference:
-    call choose_zip_directory
+    call ddlc_location
     jump preferences
 
 label projects_mzip_preference:
