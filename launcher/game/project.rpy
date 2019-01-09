@@ -813,6 +813,8 @@ label add_a_mod:
             shutil.move(mzt + '/python_packages', project_dir + '/game')
         if glob.glob(mzt + '/submods'):
             shutil.move(mzt + '/submods', project_dir + '/game')
+        if glob.glob(mzt + '/advanced_scripts'):
+            shutil.move(mzt + '/advanced_scripts', project_dir + '/game')
 
         mydict = {
             'DDLC Mod Files': ['rpa','rpyc','rpy','txt'],
@@ -843,6 +845,8 @@ label add_a_mod:
                 shutil.move(str(mzte[1]) + '/python_packages', project_dir + '/game')
             if glob.glob(str(mzte[1]) + '/submods'):
                 shutil.move(str(mzte[1]) + '/submods', project_dir + '/game')
+            if glob.glob(str(mzte[1]) + '/advanced_scripts'):
+                shutil.move(str(mzte[1]) + '/advanced_scripts', project_dir + '/game')
 
             mydictext = {
                 'DDLC Mod Files': ['rpa','rpyc','rpy','txt'],
