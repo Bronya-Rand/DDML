@@ -19,6 +19,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+default persistent.steam_release = None 
 init python:
     import shutil
     import os
@@ -88,7 +89,7 @@ label ddlc_moe_release:
 
         persistent.zip_directory = moepath
 
-    $ steam = False
+    $ persistent.steam_release = False
 
     jump front_page
 
@@ -104,6 +105,6 @@ label ddlc_steam_release:
 
         persistent.zip_directory = steampath
 
-    $ steam = True
+    $ persistent.steam_release = True
 
     return

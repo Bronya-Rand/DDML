@@ -145,6 +145,45 @@ screen preferences:
                                     action Jump("projects_mzip_preference")
                                     alt _("Mod ZIP directory: [text]")
 
+                frame:
+                    style "l_indent"
+                    xmaximum ONETHIRD
+                    xfill True
+
+                    has vbox
+                    add SEPARATOR2
+
+                    frame:
+                        style "l_indent"
+                        yminimum 75
+                        has vbox
+
+                        text _("Is DDLC Directory Steam Release?")
+                        add HALF_SPACER
+
+                        frame style "l_indent":
+                            if persistent.steam_release == True:
+                                text _("Yes")
+                            else:
+                                text _("No")
+
+                    add SPACER
+                    add SEPARATOR2
+
+                    frame:
+                        style "l_indent"
+                        yminimum 75
+                        has vbox
+
+                        text _("Is DDLC Directory DDLC ZIP/DDLC.moe Release?")
+                        add HALF_SPACER
+
+                        frame style "l_indent":
+                            if persistent.steam_release == False:
+                                text _("Yes")
+                            else:
+                                text _("No")
+
     textbutton _("Return") action Jump("front_page") style "l_left_button"
 
 label projects_directory_preference:
