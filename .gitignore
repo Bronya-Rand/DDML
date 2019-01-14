@@ -4,7 +4,5 @@ errors.txt
 log.txt
 traceback.txt
 *.rpyc
-launcher\game\cache\bytecode.rpyb
-launcher\game\cache\pyanalysis.rpyb
-launcher\game\cache\screens.rpyb
-launcher\game\saves\persistent
+*.rpyb
+persistent
