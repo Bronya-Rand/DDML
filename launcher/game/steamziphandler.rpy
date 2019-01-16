@@ -107,4 +107,4 @@ label ddlc_steam_release:
 
     $ persistent.steam_release = True
 
-    return
+    jump front_page

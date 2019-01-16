@@ -762,20 +762,25 @@ label add_a_mod:
 
         interface.interaction(_("Making a Mod Folder"), _("Extracting DDLC, Please Wait..."),)
 
-        if steam == True:
+        if persistent.steam_release == True:
             # Copy DDLC (Win/Linux?/Mac?) (Steam Release) (Assuming Steam Copy is Unmodded)
             import zipfile
             import shutil
 
-            shutil.copytree(persistent.zip_directory + "/Doki Doki Literature Club", project_dir)
+            try: shutil.copytree(persistent.zip_directory + "/Doki Doki Literature Club", project_dir)
+            except:
+                interface.error(_("Cannot Locate Your Doki Doki Literature Club Folder"), _("Make sure it is set to your 'Steam\steamapps\common' folder."),)
         else:
             # Extract DDLC (Win/Linux) (Moe/ZIP Release)
             import zipfile
 
-            with zipfile.ZipFile(persistent.zip_directory + '/ddlc-win.zip', "r") as z:
-                z.extractall(persistent.projects_directory + "/temp")
+            try: 
+                with zipfile.ZipFile(persistent.zip_directory + '/ddlc-win.zip', "r") as z:
+                    z.extractall(persistent.projects_directory + "/temp")
 
-                ddlc = persistent.projects_directory + '/temp' + '/DDLC-1.1.1-pc'
+                    ddlc = persistent.projects_directory + '/temp' + '/DDLC-1.1.1-pc'
+
+            except: interface.error(_("Cannot Locate Your 'ddlc-win.zip' ZIP File in [persistent.zip_directory!q]."), _("Make sure you have DDLC downloaded from 'https://ddlc.moe' and check your ZIP Folder if it exists."),)
 
             import shutil
 
@@ -795,11 +800,14 @@ label add_a_mod:
         # Extract Mod
         interface.interaction(_("Extracting"), _("Extracting Mod ZIP, Please Wait..."),)
 
-        with zipfile.ZipFile(persistent.mzip_directory + '/' + modzip_name + ".zip", "r") as z:
-            z.extractall(persistent.projects_directory + "/temp")
+        try:
+            with zipfile.ZipFile(persistent.mzip_directory + '/' + modzip_name + ".zip", "r") as z:
+                z.extractall(persistent.projects_directory + "/temp")
 
-            mzt = persistent.projects_directory + "/temp"
+                mzt = persistent.projects_directory + "/temp"
 
+        except: 
+            interface.error(_("Cannot locate [modzip_name!q].zip in [persistent.mzip_directory!q]."), _("Check the name of your Mod ZIP File and try again."))
         import glob
 
         #Normal Scanning
@@ -905,18 +913,28 @@ label add_base_game:
 
         interface.interaction(_("Making a Mod Folder"), _("Extracting DDLC, Please Wait..."),)
 
-        if steam == True:
+        if persistent.steam_release == True:
             # Copy DDLC (Steam Release)
             import shutil
-            shutil.copytree(persistent.zip_directory + "/Doki Doki Literature Club", project_dir)
+
+            try:
+                shutil.copytree(persistent.zip_directory + "/Doki Doki Literature Club", project_dir)
+            except:
+                interface.error(_("Cannot Locate Your Doki Doki Literature Club Folder"), _("Make sure it is set to your 'Steam\steamapps\common' folder."),)
+
         else:
+
             # Extract DDLC (Win/Linux)
             import zipfile
 
-            with zipfile.ZipFile(persistent.zip_directory + '/ddlc-win.zip', "r") as z:
-                z.extractall(persistent.projects_directory + "/temp")
+            try:
+                with zipfile.ZipFile(persistent.zip_directory + '/ddlc-win.zip', "r") as z:
+                    z.extractall(persistent.projects_directory + "/temp")
 
-                ddlc = persistent.projects_directory + '/temp' + '/DDLC-1.1.1-pc'
+                    ddlc = persistent.projects_directory + '/temp' + '/DDLC-1.1.1-pc'
+
+            except:
+                interface.error(_("Cannot Locate Your 'ddlc-win.zip' ZIP File in [persistent.zip_directory!q]."), _("Make sure you have DDLC downloaded from 'https://ddlc.moe' and check your ZIP Folder if it exists."),)
 
             import shutil
 
@@ -928,6 +946,141 @@ label add_base_game:
         project.manager.scan()
 
     return
+
+label add_mod_existingfolder:
+
+    # Checks if user set Mod Install Folder
+    if persistent.projects_directory is None:
+        call choose_projects_directory
+
+    # Ren'Py Failsafe
+    if persistent.projects_directory is None:
+        $ interface.error(_("The Mod directory could not be set. Giving up."))
+    # Checks if user set DDLC ZIP Location (All OS)
+    if persistent.zip_directory is None:
+        call ddlc_location
+
+    # Ren'Py Failsafe 2
+    if persistent.zip_directory is None:
+        $ interface.error(_("The DDLC ZIP directory could not be set. Giving up."))
+
+    # Checks if User set Mod ZIP Directory
+    if persistent.mzip_directory is None:
+        call choose_modzip_directory
+
+    # Ren'Py Failsafe 3
+    if persistent.mzip_directory is None:
+        $ interface.error(_("The Mod ZIP directory could not be set. Giving up."))
+
+    python hide:
+
+        # Asks User the name of the folder they want their mod folder to be
+        modinstall_foldername = interface.input(
+            _("Mod Folder Name"),
+            _("Please enter the name of your project:"),
+            filename=True,
+            cancel=Jump("front_page"))
+
+        modinstall_foldername = modinstall_foldername.strip()
+        if not modinstall_foldername:
+            interface.error(_("The mod name may not be empty."))
+
+        project_dir = os.path.join(persistent.projects_directory, modinstall_foldername)
+
+        modzip_name = interface.input(
+            _("Mod ZIP Name"),
+            _("Please enter the name of your ZIP. It is recommended to rename the ZIP for easy installation."),
+            filename=True,
+            cancel=Jump("front_page"))
+
+        modzip_name = modzip_name.strip()
+        if not modzip_name:
+            interface.error(_("The mod zip name may not be empty."))
+
+        # Before Extract, Scan For Existing .rpyc or mod_assets.rpa, etc.
+        # Prevents 2 Mod in 1 Install
+        myexist = {
+            'DDLC Mod Files': ['rpa','rpyc','rpy','txt'],
+        }
+        for destination, extensions in myexist.items():
+            for ext in extensions:
+                for file in glob.glob(mzt + '/*.' + ext):
+                    print(file)
+                    shutil.move(file, project_dir + '/game')
+
+        # Extract Mod
+        interface.interaction(_("Extracting"), _("Extracting Mod ZIP, Please Wait..."),)
+
+        try:
+            with zipfile.ZipFile(persistent.mzip_directory + '/' + modzip_name + ".zip", "r") as z:
+                z.extractall(persistent.projects_directory + "/temp")
+
+                mzt = persistent.projects_directory + "/temp"
+
+        except: 
+            interface.error(_("Cannot locate [modzip_name!q].zip in [persistent.mzip_directory!q]."), _("Check the name of your Mod ZIP File and try again."))
+        import glob
+
+        #Normal Scanning
+        if glob.glob(mzt + '/game'):
+            shutil.move(mzt + '/' + 'game', project_dir)
+        if glob.glob(mzt + '/mod_assets'):
+            shutil.move(mzt + '/mod_assets', project_dir + '/game')
+        if glob.glob(mzt + '/gui'):
+            shutil.move(mzt + '/gui', project_dir + '/game')
+        if glob.glob(mzt + '/python_packages'):
+            shutil.move(mzt + '/python_packages', project_dir + '/game')
+        if glob.glob(mzt + '/submods'):
+            shutil.move(mzt + '/submods', project_dir + '/game')
+        if glob.glob(mzt + '/advanced_scripts'):
+            shutil.move(mzt + '/advanced_scripts', project_dir + '/game')
+
+        mydict = {
+            'DDLC Mod Files': ['rpa','rpyc','rpy','txt'],
+        }
+        for destination, extensions in mydict.items():
+            for ext in extensions:
+                for file in glob.glob(mzt + '/*.' + ext):
+                    print(file)
+                    shutil.move(file, project_dir + '/game')
+
+        mzte = [x[0] for x in os.walk(mzt)]
+
+        try:
+            mzte[1]
+            mztex = True
+        except IndexError:
+            mztex = False
+
+        if mztex == True:
+            #Extended Scanning (If Contents during extract are inside another folder (Yuri-1.0/script-ch1.rpyc))
+            if glob.glob(str(mzte[1]) + '/game'):
+                shutil.move(str(mzte[1]) + '/game', project_dir)
+            if glob.glob(str(mzte[1]) + '/mod_assets'):
+                shutil.move(str(mzte[1]) + '/mod_assets', project_dir + '/game')
+            if glob.glob(str(mzte[1]) + '/gui'):
+                shutil.move(str(mzte[1]) + '/gui', project_dir + '/game')
+            if glob.glob(str(mzte[1]) + '/python_packages'):
+                shutil.move(str(mzte[1]) + '/python_packages', project_dir + '/game')
+            if glob.glob(str(mzte[1]) + '/submods'):
+                shutil.move(str(mzte[1]) + '/submods', project_dir + '/game')
+            if glob.glob(str(mzte[1]) + '/advanced_scripts'):
+                shutil.move(str(mzte[1]) + '/advanced_scripts', project_dir + '/game')
+
+            mydictext = {
+                'DDLC Mod Files': ['rpa','rpyc','rpy','txt'],
+            }
+            for destination, extensions in mydictext.items():
+                for ext in extensions:
+                    for file in glob.glob(str(mzte[1]) + '/*.' + ext):
+                        print(file)
+                        shutil.move(file, project_dir + '/game')
+
+        # Prevents copy of any other RPA or other mod files
+        shutil.rmtree(persistent.projects_directory + '/temp')
+
+        # Auto-Refresh
+        project.manager.scan()
 
 init python:
 
