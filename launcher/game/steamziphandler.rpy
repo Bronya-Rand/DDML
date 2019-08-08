@@ -67,8 +67,8 @@ label ddlc_location:
         check_language_support()
 
         release_kind = interface.choice(
-            _("Which DDLC release do you have. If you downloaded DDLC from Steam, select Steam Release. If you downloaded DDLC from ddlc.moe, select DDLC ZIP/DDLC.moe Release."),
-            [ ( 'ddlc_steam_release', _("Steam Release") ), ( 'ddlc_moe_release', _("DDLC ZIP/DDLC.moe Release")) ],
+            _("Which DDLC release do you have? If you downloaded DDLC from Steam, select Steam Release. If you downloaded DDLC from ddlc.moe, select DDLC.moe Release."),
+            [ ( 'ddlc_steam_release', _("Steam Release") ), ( 'ddlc_moe_release', _("DDLC.moe Release")) ],
             "ddlc_steam_release",
             cancel=Jump("front_page"),
             )
@@ -90,7 +90,7 @@ label ddlc_moe_release:
 
     $ persistent.steam_release = False
 
-    jump front_page
+    return
 
 label ddlc_steam_release:
 
@@ -106,4 +106,4 @@ label ddlc_steam_release:
 
     $ persistent.steam_release = True
 
-    jump front_page
+    return

@@ -1,9 +1,8 @@
-
 .DS_Store
 errors.txt
 log.txt
 traceback.txt
-*.rpyc
-*.rpyb
-persistent
-*.save
+launcher/game/*.rpyc
+launcher/game/cache/*.rpyb
+launcher/game/persistent
+launcher/game/saves*.save

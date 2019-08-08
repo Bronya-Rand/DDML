@@ -23,8 +23,6 @@ init python:
     if persistent.gl_enable is None:
         persistent.gl_enable = True
 
-    persistent.steam_release = None
-
     config.gl_enable = persistent.gl_enable
 
     if persistent.show_edit_funcs is None:
