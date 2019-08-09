@@ -805,26 +805,31 @@ label add_a_mod:
 
         if mztex == False:
             #Normal Scanning
+            
             if glob.glob(mzt + '/game'):
-                shutil.move(mzt + '/game', project_dir + '/Contents/Resources/autorun')
-
-            import os
-            for file in os.listdir(mzt):
-                print file
-                src_file = os.path.join(mzt, file)
-                dst_file = os.path.join(project_dir + '/Contents/Resources/autorun/game', file)
-                shutil.move(src_file, dst_file)
+                shutil.move(mzt + '/game', project_dir + '/Content/Resources/autorun')
+            else:
+                import os
+                for file in os.listdir(mzt):
+                    print file
+                    src_file = os.path.join(mzt, file)
+                    dst_file = os.path.join(project_dir + '/game', file)
+                    shutil.move(src_file, dst_file)
         else:
             #Extended Scanning (If Contents during extract are inside another folder (Yuri-1.0/script-ch1.rpyc))
             if glob.glob(str(mzte[1]) + '/game'):
-                shutil.move(str(mzte[1]) + '/game', project_dir + '/Contents/Resources/autorun')
-            
-            import os
-            for file in os.listdir(str(mzte[1])):
-                print file
-                src_file = os.path.join(str(mzte[1]), file)
-                dst_file = os.path.join(project_dir + '/Contents/Resources/autorun/game', file)
-                shutil.move(src_file, dst_file)
+                for file in os.listdir(str(mzte[1]) + '/game'):
+                    print file
+                    src_file = os.path.join(str(mzte[1]) + '/game', file)
+                    dst_file = os.path.join(project_dir + '/Contents/Resources/autorun/game', file)
+                    shutil.move(src_file, dst_file)
+            else:
+                import os
+                for file in os.listdir(str(mzte[1])):
+                    print file
+                    src_file = os.path.join(str(mzte[1]), file)
+                    dst_file = os.path.join(project_dir + '/Contents/Resources/autorun/game', file)
+                    shutil.move(src_file, dst_file)
 
         # Prevents copy of any other RPA or other mod files 
         shutil.rmtree(persistent.projects_directory + '/temp')
