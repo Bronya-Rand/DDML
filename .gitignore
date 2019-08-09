@@ -4,3 +4,4 @@ traceback.txt
 *.rpyb
 *.rpyc
 persistent
+*.save
