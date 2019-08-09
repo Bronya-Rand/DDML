@@ -119,27 +119,14 @@ screen front_page:
 
                         textbutton _("+ Change Mod Folder"):
                             left_margin (HALF_INDENT) 
-                            action Jump("move_mod_folder")
+                            action Jump("choose_projects_directory")
 
-                    add HALF_SPACER
-                    add SEPARATOR
-                    add HALF_SPACER
-
-                    hbox:
-                        xfill True
                         textbutton _("+ Add a Mod"):
-                            left_margin (HALF_INDENT) 
                             action Jump("add_a_mod")
-
-                    add HALF_SPACER
-                    add SEPARATOR
-                    add HALF_SPACER
-                    hbox:
-                        xfill True
+                        
                         textbutton _("+ Add DDLC Only"):
                             left_margin (HALF_INDENT) 
                             action Jump("add_base_game")
-
 
         # Project section - on right.
 
@@ -207,7 +194,7 @@ screen front_page_project:
                     has vbox
 
                     textbutton _("Browse Game Directory") action OpenDirectory("game")
-                    textbutton _("Delete Saves") action Jump("rmpersistent")
+                    textbutton _("Delete Persistent") action Jump("rmpersistent")
                     # textbutton _("save") action None style "l_list"
                 # textbutton "Relaunch" action Relaunch
             
@@ -250,7 +237,7 @@ label lint:
 label rmpersistent:
 
     python hide:
-        interface.processing(_("Deleting save data..."))
+        interface.processing(_("Deleting persistent data..."))
         project.current.launch([ 'rmpersistent' ], wait=True)
 
     jump front_page

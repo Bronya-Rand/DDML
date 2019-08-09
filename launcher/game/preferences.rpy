@@ -115,11 +115,11 @@ screen preferences:
                             if persistent.zip_directory:
                                 textbutton _("[persistent.zip_directory!q]"):
                                     action Jump("projects_zip_preference")
-                                    alt _("DDLC ZIP directory: [text]")
+                                    alt _("ZIP directory: [text]")
                             else:
                                 textbutton _("Not Set"):
                                     action Jump("projects_zip_preference")
-                                    alt _("DDLC ZIP directory: [text]")
+                                    alt _("ZIP directory: [text]")
 
                     add SPACER
 
@@ -136,61 +136,18 @@ screen preferences:
                         add HALF_SPACER
 
                         frame style "l_indent":
-                            if persistent.mzip_directory:
+                            if persistent.zip_directory:
                                 textbutton _("[persistent.mzip_directory!q]"):
                                     action Jump("projects_mzip_preference")
-                                    alt _("Mod ZIP directory: [text]")
+                                    alt _("ZIP directory: [text]")
                             else:
                                 textbutton _("Not Set"):
                                     action Jump("projects_mzip_preference")
-                                    alt _("Mod ZIP directory: [text]")
-
-                frame:
-                    style "l_indent"
-                    xmaximum ONETHIRD
-                    xfill True
-
-                    has vbox
-                    add SEPARATOR2
-
-                    frame:
-                        style "l_indent"
-                        yminimum 75
-                        has vbox
-
-                        text _("Is DDLC Directory Steam Release?")
-                        add HALF_SPACER
-
-                        frame style "l_indent":
-                            if persistent.steam_release == True:
-                                text _("Yes")
-                            else:
-                                text _("No")
-
-                    add SPACER
-                    add SEPARATOR2
-
-                    frame:
-                        style "l_indent"
-                        yminimum 75
-                        has vbox
-
-                        text _("Is DDLC Directory DDLC ZIP/DDLC.moe Release?")
-                        add HALF_SPACER
-
-                        frame style "l_indent":
-                            if persistent.steam_release == False:
-                                if persistent.steam_release == None:
-                                    text _("No")
-                                else:
-                                    text _("Yes")
-                            else:
-                                text _("No")
+                                    alt _("ZIP directory: [text]")
 
     textbutton _("Return") action Jump("front_page") style "l_left_button"
 
 label projects_directory_preference:
-
     check_language_support()
 
     release_kind = interface.choice(
@@ -200,10 +157,10 @@ label projects_directory_preference:
         cancel=Jump("preferences"),
         )
 
-        renpy.jump(release_kind)
+    renpy.jump(release_kind)
 
 label projects_zip_preference:
-    call ddlc_location
+    call choose_zip_directory
     jump preferences
 
 label projects_mzip_preference:
