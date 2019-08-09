@@ -117,7 +117,7 @@ screen front_page:
                     hbox:
                         xfill True
 
-                        textbutton _("+ Change Mod Directory"):
+                        textbutton _("+ Change Mod Folder"):
                             left_margin (HALF_INDENT) 
                             action Jump("move_mod_folder")
 
@@ -136,7 +136,7 @@ screen front_page:
                     add HALF_SPACER
                     hbox:
                         xfill True
-                        textbutton _("+ Add Base Game Only"):
+                        textbutton _("+ Add DDLC Only"):
                             left_margin (HALF_INDENT) 
                             action Jump("add_base_game")
 
@@ -219,6 +219,7 @@ screen front_page_project:
                     has vbox
 
                     textbutton _("Browse Mod Directory") action OpenDirectory(persistent.projects_directory)
+                    textbutton _("Delete Mod") action Jump("delete_mod_folder")
 
 label main_menu:
     return

@@ -623,7 +623,7 @@ label choose_projects_directory:
 
     python hide:
 
-        interface.interaction(_("Mod Directory"), _("Please choose the Mod directory using the directory chooser.\n{b}The directory chooser may have opened behind this window.{/b}"), _("This launcher will scan for mods in this directory, will create new mods in this directory, and will place built mods into this directory."),)
+        interface.interaction(_("Mod Directory"), _("Please choose the Mod directory using the directory chooser.\n{b}The directory chooser may have opened behind this window.{/b}"), _("This launcher will scan for mods in this directory, will create new mods and DDLC Installs, and will place mods and DDLC into this directory."),)
 
         path, is_default = choose_directory(persistent.projects_directory)
 
@@ -636,14 +636,16 @@ label choose_projects_directory:
 
     return
 
-# User Moves Mod Directory to Move All Mods to that New Directory
 label move_mod_folder:
 
     python hide:
 
+        import os
+        import shutil
+
         oldmod_dir = persistent.projects_directory
 
-        interface.interaction(_("Mod Directory"), _("Please choose the Mod directory using the directory chooser.\n{b}The directory chooser may have opened behind this window.{/b}"), _("This launcher will scan for mods in this directory, will create new mods in this directory, and will place built mods into this directory."),)
+        interface.interaction(_("Mod Directory"), _("Please choose the new mod directory using the directory chooser.\n{b}The directory chooser may have opened behind this window.{/b}"), _("This launcher will create new mods in this directory, and will place old and new mods into this directory."),)
 
         pathnew, is_default = choose_directory(persistent.projects_directory)
 
@@ -653,27 +655,16 @@ label move_mod_folder:
         persistent.projects_directory = pathnew
 
         #Moving Files!
-        import shutil
-        shutil.copytree(oldmod_dir, persistent.projects_directory)
+        for file in os.listdir(oldmod_dir):
+            print file
+            src_file = os.path.join(oldmod_dir, file)
+            dst_file = os.path.join(persistent.projects_directory, file)
+            shutil.move(src_file, dst_file)
 
         project.manager.scan()
 
     return
 
-label choose_zip_directory:
-
-    python hide:
-
-        interface.interaction(_("ZIP Directory"), _("Please choose the directory in which your DDLC ZIP is located."), _("Make sure it is set to ddlc-win.zip in the directory it is located."),)
-
-        pathm, is_defaultm = choose_directory(persistent.zip_directory)
-
-        if is_defaultm:
-            interface.info(_("DDML has set the ZIP directory to:"), "[pathm!q]", pathm=pathm)
-
-        persistent.zip_directory = pathm
-
-    return
 
 label choose_modzip_directory:
 
@@ -684,7 +675,7 @@ label choose_modzip_directory:
         pathmz, is_defaultmz = choose_directory(persistent.mzip_directory)
 
         if is_defaultmz:
-            interface.info(_("DDML has set the ZIP directory to:"), "[pathmz!q]", pathmz=pathmz)
+            interface.error(_("The operation has been cancelled."))
 
         persistent.mzip_directory = pathmz
 
@@ -696,7 +687,8 @@ label delete_mod_folder:
 
         mod_delete_response = interface.input(
             _("Deleting a Mod"),
-            _("Are you sure you want to delete this mod? This action is irreversiable"),
+            _("Are you sure you want to delete this mod? Type either Yes or No."),
+            _("THIS ACTION IS IRREVERSABLE!"),
             filename=False,
             cancel=Jump("front_page"))
 
@@ -710,9 +702,17 @@ label delete_mod_folder:
         if mod_response == "No" or mod_response == "no":
             interface.error(_("The operation has been cancelled."))
         elif mod_response == "Yes" or mod_response == "yes":
-            shutil.rmtree(persistent.projects_directory + "/[p.name!q]")
+            deleted_mod_name = project.current.name
+            shutil.rmtree(persistent.projects_directory + '/' + project.current.name)
         else:
             interface.error(_("Invalid Input."))
+
+        interface.info(deleted_mod_name + " has been deleted.")
+        deleted_mod_name = None
+
+        project.manager.scan()
+
+    jump front_page
 
 label add_a_mod:
 
