@@ -159,7 +159,7 @@ label projects_directory_preference:
             cancel=Jump("preferences"),
             )
 
-            renpy.jump(release_kind)
+        renpy.jump(release_kind)
             
     jump preferences
 
