@@ -204,8 +204,8 @@ screen front_page_project:
 
                 frame style "l_indent":
                     has vbox
-
-                    textbutton _("Browse Mod Directory") action OpenDirectory(persistent.projects_directory)
+                    if persistent.projects_directory:
+                        textbutton _("Browse Mod Directory") action OpenDirectory(persistent.projects_directory)
                     textbutton _("Delete Mod") action Jump("delete_mod_folder")
 
 label main_menu:

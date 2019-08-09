@@ -793,25 +793,17 @@ label add_a_mod:
         
         import glob
         mzte = [x[0] for x in os.walk(mzt)]
+
         try:
             mzte[1]
-            mztex = True
+            if (str(mzte[1]) == mzt + "\\gui" or str(mzte[1]) == mzt + "\\mod_assets" or str(mzte[1]) == mzt + "\\images" or str(mzte[1]) == mzt + "\\fonts" or str(mzte[1]) == mzt + "\\audio" or str(mzte[1]) == mzt + "\\python-packages" or str(mzte[1]) == mzt + "\\submods"):
+                mztex = False
+            else:
+                mztex = True
         except IndexError:
             mztex = False
 
-        if mztex == True:
-            #Extended Scanning (If Contents during extract are inside another folder (Yuri-1.0/script-ch1.rpyc))
-            if glob.glob(str(mzte[1]) + '/game'):
-                shutil.move(str(mzte[1]) + '/game', project_dir + '/Contents/Resources/autorun')
-            
-            import os
-            for file in os.listdir(str(mzte[1])):
-                print file
-                src_file = os.path.join(str(mzte[1]), file)
-                dst_file = os.path.join(project_dir + '/Contents/Resources/autorun/game', file)
-                shutil.move(src_file, dst_file)
-
-        else:
+        if mztex == False:
             #Normal Scanning
             if glob.glob(mzt + '/game'):
                 shutil.move(mzt + '/game', project_dir + '/Contents/Resources/autorun')
@@ -820,6 +812,17 @@ label add_a_mod:
             for file in os.listdir(mzt):
                 print file
                 src_file = os.path.join(mzt, file)
+                dst_file = os.path.join(project_dir + '/Contents/Resources/autorun/game', file)
+                shutil.move(src_file, dst_file)
+        else:
+            #Extended Scanning (If Contents during extract are inside another folder (Yuri-1.0/script-ch1.rpyc))
+            if glob.glob(str(mzte[1]) + '/game'):
+                shutil.move(str(mzte[1]) + '/game', project_dir + '/Contents/Resources/autorun')
+            
+            import os
+            for file in os.listdir(str(mzte[1])):
+                print file
+                src_file = os.path.join(str(mzte[1]), file)
                 dst_file = os.path.join(project_dir + '/Contents/Resources/autorun/game', file)
                 shutil.move(src_file, dst_file)
 
