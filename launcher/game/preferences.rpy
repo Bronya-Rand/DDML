@@ -191,16 +191,19 @@ screen preferences:
 
 label projects_directory_preference:
 
-    check_language_support()
+    python:
+        check_language_support()
 
-    release_kind = interface.choice(
-        _("Are you wanting to move your existing mod folder to a new folder or set a new one?"),
-        [ ( 'move_mod_folder', _("Move Existing Mod Folder to a New Folder") ), ( 'choose_projects_directory', _("Setup a New One")) ],
-        "choose_projects_directory",
-        cancel=Jump("preferences"),
-        )
+        release_kind = interface.choice(
+            _("Are you wanting to move your existing mod folder to a new folder or set a new one?"),
+            [ ( 'move_mod_folder', _("Move Existing Mod Folder to a New Folder") ), ( 'choose_projects_directory', _("Setup a New One")) ],
+            "choose_projects_directory",
+            cancel=Jump("preferences"),
+            )
 
-        renpy.jump(release_kind)
+            renpy.jump(release_kind)
+            
+    jump preferences
 
 label projects_zip_preference:
     call ddlc_location
