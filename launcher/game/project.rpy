@@ -776,11 +776,8 @@ label add_a_mod:
 
         with zipfile.ZipFile(persistent.mzip_directory + '/' + modzip_name + ".zip", "r") as z:
             z.extractall(persistent.projects_directory + "/temp")
-
             mzt = persistent.projects_directory + "/temp"
 
-        except: 
-            interface.error(_("Cannot locate [modzip_name!q].zip in [persistent.mzip_directory!q]."), _("Check the name of your Mod ZIP File and try again."))
         import glob
 
         mzte = [x[0] for x in os.walk(mzt)]
@@ -807,7 +804,7 @@ label add_a_mod:
             #Normal Scanning
             
             if glob.glob(mzt + '/game'):
-                shutil.move(mzt + '/game', project_dir)
+                shutil.move(mzt + '/game', project_dir + '/Contents/Resources/autorun')
 
             import os
             for file in os.listdir(mzt):
