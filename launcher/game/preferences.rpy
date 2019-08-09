@@ -61,7 +61,7 @@ screen preferences:
 
             has vbox
 
-            label _("Launcher Preferences")
+            label _("Settings")
 
             add HALF_SPACER
 
