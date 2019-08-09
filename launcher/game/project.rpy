@@ -877,7 +877,6 @@ label add_base_game:
 
                 ddlc = persistent.projects_directory + '/temp' + '/DDLC.app'
         except:
-            except:
             interface.error(_("Cannot find 'ddlc-mac.zip' in [persistent.zip_directory!q]."), _("Please make sure 'ddlc-mac.zip' exists in [persistent.zip_directory!q]."),)
         
         import shutil
