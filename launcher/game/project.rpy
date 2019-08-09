@@ -796,7 +796,7 @@ label add_a_mod:
 
         try:
             mzte[1]
-            if (str(mzte[1]) == mzt + "\\gui" or str(mzte[1]) == mzt + "\\mod_assets" or str(mzte[1]) == mzt + "\\images" or str(mzte[1]) == mzt + "\\fonts" or str(mzte[1]) == mzt + "\\audio" or str(mzte[1]) == mzt + "\\python-packages" or str(mzte[1]) == mzt + "\\submods"):
+            if (str(mzte[1]) == mzt + "/gui" or str(mzte[1]) == mzt + "/mod_assets" or str(mzte[1]) == mzt + "/images" or str(mzte[1]) == mzt + "/fonts" or str(mzte[1]) == mzt + "/audio" or str(mzte[1]) == mzt + "/python-packages" or str(mzte[1]) == mzt + "/submods"):
                 mztex = False
             else:
                 mztex = True
