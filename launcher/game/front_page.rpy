@@ -119,11 +119,23 @@ screen front_page:
 
                         textbutton _("+ Change Mod Folder"):
                             left_margin (HALF_INDENT) 
-                            action Jump("choose_projects_directory")
+                            action Jump("move_mod_folder")
 
+                    add HALF_SPACER
+                    add SEPARATOR
+                    add HALF_SPACER
+
+                    hbox:
+                        xfill True
                         textbutton _("+ Add a Mod"):
+                            left_margin (HALF_INDENT) 
                             action Jump("add_a_mod")
-                        
+
+                    add HALF_SPACER
+                    add SEPARATOR
+                    add HALF_SPACER
+                    hbox:
+                        xfill True
                         textbutton _("+ Add DDLC Only"):
                             left_margin (HALF_INDENT) 
                             action Jump("add_base_game")

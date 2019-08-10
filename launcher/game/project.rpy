@@ -618,7 +618,7 @@ label choose_projects_directory:
         path, is_default = choose_directory(persistent.projects_directory)
 
         if is_default:
-            interface.error(_("The operation has been cancelled."))
+            interface.info(_("DDML has set the Mod directory to:"), "[path!q]", path=path)
 
         persistent.projects_directory = path
 
@@ -665,7 +665,7 @@ label choose_modzip_directory:
         pathmz, is_defaultmz = choose_directory(persistent.mzip_directory)
 
         if is_defaultmz:
-            interface.error(_("The operation has been cancelled."))
+            interface.info(_("DDML has set the Mod directory to:"), "[pathmz!q]", path=path)
 
         persistent.mzip_directory = pathmz
 
@@ -677,12 +677,12 @@ label choose_zip_directory:
 
         interface.interaction(_("DDLC ZIP Download Directory"), _("Please choose the directory in which your DDLC ZIP is located."), _("This will make DDML find the ZIP in this folder."),)
 
-        pathz, is_defaultz = choose_directory(persistent.mzip_directory)
+        pathz, is_defaultz = choose_directory(persistent.zip_directory)
 
         if is_defaultz:
-            interface.error(_("The operation has been cancelled."))
+            interface.info(_("DDML has set the Mod directory to:"), "[pathz!q]", path=path)
 
-        persistent.zip_directory = pathmz
+        persistent.zip_directory = pathz
 
     return
 
@@ -768,7 +768,7 @@ label add_a_mod:
 
                 ddlc = persistent.projects_directory + '/temp' + '/DDLC.app'
         except:
-            interface.error(_("Cannot find 'ddlc-mac.zip' in [persistent.zip_directory!q]."), _("Please make sure 'ddlc-mac.zip' exists in [persistent.zip_directory!q]."),)
+            interface.error(_("Cannot find 'ddlc-mac.zip' in [persistent.zip_directory!q]."), _("Make sure you have DDLC downloaded from 'https://ddlc.moe'."),)
 
         import shutil
         shutil.move(ddlc, project_dir)
@@ -789,8 +789,7 @@ label add_a_mod:
                 z.extractall(persistent.projects_directory + "/temp")
                 mzt = persistent.projects_directory + "/temp"
         except:
-            interface.error(_("Cannot find '[modzip_name!q].zip' in [persistent.mzip_directory!q]."), _("Please make sure '[modzip_name!q].zip' exists in [persistent.mzip_directory!q]."),)
-        
+            interface.error(_("Cannot find ZIP in [persistent.mzip_directory!q]."), _("Check the name of your Mod ZIP File and try again."))
         import glob
         mzte = [x[0] for x in os.walk(mzt)]
 
@@ -805,9 +804,8 @@ label add_a_mod:
 
         if mztex == False:
             #Normal Scanning
-            
             if glob.glob(mzt + '/game'):
-                shutil.move(mzt + '/game', project_dir + '/Content/Resources/autorun')
+                shutil.move(mzt + '/game', project_dir + '/Contents/Resources/autorun')
             else:
                 import os
                 for file in os.listdir(mzt):
@@ -848,7 +846,7 @@ label add_base_game:
         $ interface.error(_("The Mod directory could not be set. Giving up."))
     # Checks if user set DDLC ZIP Location (All OS)
     if persistent.zip_directory is None:
-        call ddlc_location
+        call choose_zip_directory
     # Ren'Py Failsafe 2
     if persistent.zip_directory is None:
         $ interface.error(_("The DDLC ZIP directory could not be set. Giving up."))
@@ -882,7 +880,7 @@ label add_base_game:
 
                 ddlc = persistent.projects_directory + '/temp' + '/DDLC.app'
         except:
-            interface.error(_("Cannot find 'ddlc-mac.zip' in [persistent.zip_directory!q]."), _("Please make sure 'ddlc-mac.zip' exists in [persistent.zip_directory!q]."),)
+            interface.error(_("Cannot find 'ddlc-mac.zip' in [persistent.zip_directory!q]."), _("Make sure you have DDLC downloaded from 'https://ddlc.moe'."),)
         
         import shutil
         shutil.move(ddlc, project_dir)
