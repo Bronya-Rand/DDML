@@ -788,7 +788,7 @@ label add_a_mod:
         # Asks User name of ZIP (Ren'Py already states only ASCII)
         modzip_name = interface.input(
             _("Mod ZIP Name"),
-            _("Please enter the name of your ZIP. It is recommended to rename the ZIP for easy installation."),
+            _("Please enter the name of your Mod ZIP File. It is recommended to rename the ZIP for easy installation."),
             filename=True,
             cancel=Jump("front_page"))
 
@@ -806,7 +806,7 @@ label add_a_mod:
                 mzt = persistent.projects_directory + "/temp"
 
         except: 
-            interface.error(_("Cannot locate [modzip_name!q].zip in [persistent.mzip_directory!q]."), _("Check the name of your Mod ZIP File and try again."))
+            interface.error(_("Cannot locate ZIP in [persistent.mzip_directory!q]."), _("Check the name of your Mod ZIP File and try again."))
         import glob
 
         mzte = [x[0] for x in os.walk(mzt)]
