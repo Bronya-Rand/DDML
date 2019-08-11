@@ -44,12 +44,12 @@ init -1 python hide:
     # This controls the title of the window, when Ren'Py is
     # running in a window.
 
-    config.window_title = u"DDML 5.0"
+    config.window_title = u"DDML"
 
     # These control the name and version of the game, that are reported
     # with tracebacks and other debugging logs.
     config.name = "DDML"
-    config.version = "5.1.0-Mac-Release"
+    config.version = "5.1.1-Mac-Release"
 
     #####################
     # Themes
