@@ -107,7 +107,7 @@ screen preferences:
                         yminimum 75
                         has vbox
 
-                        text _("DDLC ZIP Directory:")
+                        text _("DDLC ZIP/Folder Directory:")
 
                         add HALF_SPACER
 
@@ -145,12 +145,66 @@ screen preferences:
                                     action Jump("projects_mzip_preference")
                                     alt _("ZIP directory: [text]")
 
+                frame:
+                    style "l_indent"
+                    xmaximum ONETHIRD
+                    xfill True
+
+                    has vbox
+                    add SEPARATOR2
+
+                    frame:
+                        style "l_indent"
+                        yminimum 75
+                        has vbox
+
+                        text _("Browser Selected")
+                        add HALF_SPACER
+
+                        frame style "l_indent":
+                            if persistent.safari != None:
+                                if persistent.safari == True:
+                                    text _("Safari/Safari Safe Files On")
+                                else:
+                                    text _("Chrome/Firefox/Safari Safe Files Off")
+                            else:
+                                text _("None Selected")
+
+                    add SPACER
+                    add SEPARATOR2
+
+                    frame:
+                        style "l_indent"
+                        yminimum 75
+                        has vbox
+
+                        text _("OS Release")
+                        add HALF_SPACER
+
+                        frame style "l_indent":
+                            if persistent.osx == False:
+                                if persistent.macosx == None:
+                                    text _("None Selected")
+                                else:
+                                    text _("MacOS Sierra or Higher")
+                            else:
+                                if persistent.osx == None:
+                                    text _("None Selected")
+                                else:
+                                    text _("OS X Maverics to El Capitan")
+
+                    add SPACER
+                    add SEPARATOR2        
+                    textbutton _("Change Browser") action Jump("browser")
+                    add SPACER
+                    add SEPARATOR2
+                    textbutton _("Change OS") action Jump("macosx")
+
     textbutton _("Return") action Jump("front_page") style "l_left_button"
 
 label projects_directory_preference:
 
     python:
-        check_language_support()
 
         release_kind = interface.choice(
             _("Are you wanting to move your existing mod folder to a new folder or set a new one?"),

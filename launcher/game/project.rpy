@@ -693,7 +693,6 @@ label delete_mod_folder:
         mod_delete_response = interface.input(
             _("Deleting a Mod"),
             _("Are you sure you want to delete this mod? Type either Yes or No."),
-            _("THIS ACTION IS IRREVERSABLE!"),
             filename=False,
             cancel=Jump("front_page"))
 
@@ -708,6 +707,7 @@ label delete_mod_folder:
             interface.error(_("The operation has been cancelled."))
         elif mod_response == "Yes" or mod_response == "yes":
             deleted_mod_name = project.current.name
+            import shutil
             shutil.rmtree(persistent.projects_directory + '/' + project.current.name)
         else:
             interface.error(_("Invalid Input."))
@@ -726,7 +726,19 @@ label add_a_mod:
         call choose_projects_directory
     # Ren'Py Failsafe
     if persistent.projects_directory is None:
-        $ interface.error(_("The Mod directory could not be set. Giving up."))       
+        $ interface.error(_("The Mod directory could not be set. Giving up."))  
+    # Browser Set?
+    if persistent.safari is None:
+        call browser
+    # Ren'Py Failsafe
+    if persistent.safari is None:
+        $ interface.error(_("The browser could not be set. Giving up."))   
+    # OS Set?
+    if persistent.osx is None or persistent.macosx is None:
+        call macosx
+    # Ren'Py Failsafe
+    if persistent.osx is None or persistent.macosx is None:
+        $ interface.error(_("The Operating System could not be set. Giving up."))    
     # Checks if user set DDLC ZIP Location (Disabled Steam)
     if persistent.zip_directory is None:
         call choose_zip_directory
@@ -741,7 +753,7 @@ label add_a_mod:
         $ interface.error(_("The Mod ZIP directory could not be set. Giving up."))
 
     python hide:
-
+        import os
         modinstall_foldername = interface.input(
             _("Mod Folder Name"),
             _("Please enter the name of your project:"),
@@ -759,19 +771,29 @@ label add_a_mod:
 
         if os.path.exists(project_dir):
             interface.error(_("[project_dir!q] already exists. Please choose a different project name."), project_dir=project_dir)
-        
-        interface.interaction(_("Making a Mod Folder"), _("Extracting DDLC, Please Wait..."),)
-        import zipfile
-        try:
-            with zipfile.ZipFile(persistent.zip_directory + '/ddlc-mac.zip', "r") as z:
-                z.extractall(persistent.projects_directory + "/temp")
 
-                ddlc = persistent.projects_directory + '/temp' + '/DDLC.app'
-        except:
-            interface.error(_("Cannot find 'ddlc-mac.zip' in [persistent.zip_directory!q]."), _("Make sure you have DDLC downloaded from 'https://ddlc.moe'."),)
+        if persistent.osx == True or persistent.safari == False:
+            # El Capitan or Lower or Chrome/Firefox (Safari Safe Mode Off)
+            interface.interaction(_("Making a Mod Folder"), _("Extracting DDLC, Please Wait..."),)
+            import zipfile
+            try:
+                with zipfile.ZipFile(persistent.zip_directory + '/ddlc-mac.zip', "r") as z:
+                    z.extractall(persistent.projects_directory + "/temp")
 
-        import shutil
-        shutil.move(ddlc, project_dir)
+                    ddlc = persistent.projects_directory + '/temp' + '/DDLC.app'
+            except:
+                interface.error(_("Cannot find 'ddlc-mac.zip' in [persistent.zip_directory!q]."), _("Make sure you have DDLC downloaded from 'https://ddlc.moe'."),)
+
+            import shutil
+            shutil.move(ddlc, project_dir)
+
+        else:
+            interface.interaction(_("Making a Mod Folder"), _("Copying DDLC, Please Wait..."),)
+            import shutil
+            try:
+                shutil.copytree(persistent.zip_directory + "/ddlc-mac", project_dir)
+            except:
+                interface.error(_("Cannot find DDLC.app."). _("Please make sure your OS and ZIP Directory are set correctly."),)
 
         modzip_name = interface.input(
             _("Mod ZIP Name"),
@@ -784,18 +806,25 @@ label add_a_mod:
             interface.error(_("The mod zip name may not be empty."))
 
         interface.interaction(_("Extracting"), _("Extracting Mod ZIP, Please Wait..."),)
-        try:
-            with zipfile.ZipFile(persistent.mzip_directory + '/' + modzip_name + ".zip", "r") as z:
-                z.extractall(persistent.projects_directory + "/temp")
-                mzt = persistent.projects_directory + "/temp"
-        except:
-            interface.error(_("Cannot find ZIP in [persistent.mzip_directory!q]."), _("Check the name of your Mod ZIP File and try again."))
+        if persistent.osx == True or persistent.safari == False:
+            try:
+                with zipfile.ZipFile(persistent.mzip_directory + '/' + modzip_name + ".zip", "r") as z:
+                    z.extractall(persistent.projects_directory + "/temp")
+            except:
+                interface.error(_("Cannot find ZIP in [persistent.mzip_directory!q]."), _("Check the name of your Mod ZIP File and try again."))
+        else:
+            try:
+                shutil.copytree(persistent.mzip_directory + '/' + modzip_name, persistent.projects_directory + '/temp')
+            except:
+                interface.error(_("Cannot find Folder in [persistent.mzip_directory!q]."), _("Check the name of your Mod ZIP File and try again."))
+        
+        mzt = persistent.projects_directory + "/temp"
         import glob
         mzte = [x[0] for x in os.walk(mzt)]
 
         try:
             mzte[1]
-            if (str(mzte[1]) == mzt + "/gui" or str(mzte[1]) == mzt + "/mod_assets" or str(mzte[1]) == mzt + "/images" or str(mzte[1]) == mzt + "/fonts" or str(mzte[1]) == mzt + "/audio" or str(mzte[1]) == mzt + "/python-packages" or str(mzte[1]) == mzt + "/submods"):
+            if (str(mzte[1]) == mzt + "/cache" or str(mzte[1]) == mzt + "/gui" or str(mzte[1]) == mzt + "/mod_assets" or str(mzte[1]) == mzt + "/images" or str(mzte[1]) == mzt + "/fonts" or str(mzte[1]) == mzt + "/audio" or str(mzte[1]) == mzt + "/python-packages" or str(mzte[1]) == mzt + "/saves" or str(mzte[1]) == mzt + "/submods"):
                 mztex = False
             else:
                 mztex = True
@@ -805,13 +834,13 @@ label add_a_mod:
         if mztex == False:
             #Normal Scanning
             if glob.glob(mzt + '/game'):
-                shutil.move(mzt + '/game', project_dir + '/Contents/Resources/autorun')
+                shutil.move(mzt + '/game', project_dir + '/DDLC.app/Contents/Resources/autorun')
             else:
                 import os
                 for file in os.listdir(mzt):
                     print file
                     src_file = os.path.join(mzt, file)
-                    dst_file = os.path.join(project_dir + '/game', file)
+                    dst_file = os.path.join(project_dir + '/DDLC.app/Contents/Resources/autorun/game', file)
                     shutil.move(src_file, dst_file)
         else:
             #Extended Scanning (If Contents during extract are inside another folder (Yuri-1.0/script-ch1.rpyc))
@@ -819,18 +848,18 @@ label add_a_mod:
                 for file in os.listdir(str(mzte[1]) + '/game'):
                     print file
                     src_file = os.path.join(str(mzte[1]) + '/game', file)
-                    dst_file = os.path.join(project_dir + '/Contents/Resources/autorun/game', file)
+                    dst_file = os.path.join(project_dir + '/DDLC.app/Contents/Resources/autorun/game', file)
                     shutil.move(src_file, dst_file)
             else:
                 import os
                 for file in os.listdir(str(mzte[1])):
                     print file
                     src_file = os.path.join(str(mzte[1]), file)
-                    dst_file = os.path.join(project_dir + '/Contents/Resources/autorun/game', file)
+                    dst_file = os.path.join(project_dir + '/DDLC.app/Contents/Resources/autorun/game', file)
                     shutil.move(src_file, dst_file)
 
         # Prevents copy of any other RPA or other mod files 
-        shutil.rmtree(persistent.projects_directory + '/temp')
+        #shutil.rmtree(persistent.projects_directory + '/temp')
 
         project.manager.scan()
 
@@ -890,6 +919,52 @@ label add_base_game:
 
         project.manager.scan()
 
+    return
+
+label macosx:
+
+    python:
+
+        os_kind = interface.choice(
+            _("Which Version of MacOS are you using?"),
+            [ ( 'os_x', _("OS X Mavericks to El Capitan") ), ( 'mac_os', _("MacOS Sierra or Higher")) ],
+            "mac_os",
+            cancel=Jump("front_page"),
+            )
+
+        renpy.jump(os_kind)
+
+    return
+
+label browser:
+
+    python:
+
+        browser_kind = interface.choice(
+            _("How did you download DDLC or your Mods from? Safari or Chrome/Firefox/Opera?"),
+            [ ( 'safari_download', _("Safari/Safari Safe Files On") ), ( 'regular_download', _("Chrome/Firefox/Opera/Safari Safe Files Off")) ],
+            "safari_download",
+            cancel=Jump("front_page"),
+            )
+
+        renpy.jump(browser_kind)
+
+label safari_download:
+    $ persistent.safari = True
+    return
+
+label regular_download:
+    $ persistent.safari = False
+    return
+
+label os_x:
+    $ persistent.osx = True
+    $ persistent.macosx = False
+    return
+
+label mac_os:
+    $ persistent.macosx = True
+    $ persistent.osx = False
     return
 
 init python:
