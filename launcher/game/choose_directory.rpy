@@ -118,8 +118,8 @@ init python:
             The directory that is selected by default. If None, config.renpy_base
             is selected.
 
-        Returns a (path, is_default) tuple, where path is the chosen directory,
-        and is_default is true if and only if it was chosen by default mechanism
+        Returns a (pathm, is_defaultm) tuple, where pathm is the chosen directory,
+        and is_defaultm is true if and only if it was chosen by default mechanism
         rather than user choice.
         """
 
@@ -133,10 +133,10 @@ init python:
 
         if EasyDialogs:
 
-            choicem = EasyDialogs.AskFolder(defaultLocation=default_pathm, wanted=unicode)
+            choice = EasyDialogs.AskFolder(defaultLocation=default_pathm, wanted=unicode)
 
-            if choicem is not None:
-                pathm = choicem
+            if choice is not None:
+                pathm = choice
             else:
                 pathm = None
 
@@ -144,27 +144,27 @@ init python:
 
             try:
 
-                cmdm = [ "/usr/bin/python", os.path.join(config.gamedir, "tkaskdir.py"), renpy.fsencode(default_pathm) ]
+                cmd = [ "/usr/bin/python", os.path.join(config.gamedir, "tkaskdir.py"), renpy.fsencode(default_pathm) ]
 
-                pm = subprocess.Popen(cmdm, stdout=subprocess.PIPE)
-                choicem = pm.stdout.read()
-                codem = pm.wait()
+                p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+                choice = p.stdout.read()
+                code = p.wait()
 
             except:
                 import traceback
                 traceback.print_exc()
 
-                codem = 0
-                choicem = ""
+                code = 0
+                choice = ""
                 pathm = None
 
                 interface.error(_("Ren'Py was unable to run python with tkinter to choose the directory. Please install the python-tk or tkinter package."), label=None)
 
-            if codem:
+            if code:
                 interface.error(_("Ren'Py was unable to run python with tkinter to choose the directory. Please install the python-tk or tkinter package."), label=None)
 
-            elif choicem:
-                pathm = choicem.decode("utf-8")
+            elif choice:
+                pathm = choice.decode("utf-8")
 
         is_defaultm = False
 
@@ -184,3 +184,76 @@ init python:
 
         return pathm, is_defaultm
 
+    def choose_directory(pathmz):
+        """
+        Pops up a directory chooser.
+
+        `pathmz`
+            The directory that is selected by default. If None, config.renpy_base
+            is selected.
+
+        Returns a (pathmz, is_defaultmz) tuple, where pathmz is the chosen directory,
+        and is_defaultmz is true if and only if it was chosen by default mechanism
+        rather than user choice.
+        """
+
+        if pathmz:
+            default_pathm = pathmz
+        else:
+            try:
+                default_pathm = os.path.dirname(os.path.abspath(config.renpy_base))
+            except:
+                default_pathm = os.path.abspath(config.renpy_base)
+
+        if EasyDialogs:
+
+            choice = EasyDialogs.AskFolder(defaultLocation=default_pathm, wanted=unicode)
+
+            if choice is not None:
+                pathmz = choice
+            else:
+                pathmz = None
+
+        else:
+
+            try:
+
+                cmd = [ "/usr/bin/python", os.path.join(config.gamedir, "tkaskdir.py"), renpy.fsencode(default_pathm) ]
+
+                p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+                choice = p.stdout.read()
+                code = p.wait()
+
+            except:
+                import traceback
+                traceback.print_exc()
+
+                code = 0
+                choice = ""
+                pathmz = None
+
+                interface.error(_("Ren'Py was unable to run python with tkinter to choose the directory. Please install the python-tk or tkinter package."), label=None)
+
+            if code:
+                interface.error(_("Ren'Py was unable to run python with tkinter to choose the directory. Please install the python-tk or tkinter package."), label=None)
+
+            elif choice:
+                pathmz = choice.decode("utf-8")
+
+        is_defaultmz = False
+
+        if pathmz is None:
+            pathmz = default_pathm
+            is_defaultmz = True
+
+        pathmz = renpy.fsdecode(pathmz)
+
+        if (not os.path.isdir(pathmz)) or (not directory_is_writable(pathmz)):
+            interface.error(_("The selected mod directory is not writable."))
+            pathmz = default_pathm
+            is_defaultmz = True
+
+        if is_defaultmz and (not directory_is_writable(pathmz)):
+            pathmz = os.path.expanduser("~")
+
+        return pathmz, is_defaultmz

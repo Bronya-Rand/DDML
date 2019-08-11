@@ -117,12 +117,29 @@ screen front_page:
                     hbox:
                         xfill True
 
-                        textbutton _("+ Change Mod Directory"):
+                        textbutton _("+ Change Mod Folder"):
                             left_margin (HALF_INDENT) 
-                            action Jump("choose_projects_directory")
+                            action Jump("move_mod_folder")
 
+                    add HALF_SPACER
+                    add SEPARATOR
+                    add HALF_SPACER
+
+                    hbox:
+                        xfill True
                         textbutton _("+ Add a Mod"):
+                            left_margin (HALF_INDENT) 
                             action Jump("add_a_mod")
+
+                    add HALF_SPACER
+                    add SEPARATOR
+                    add HALF_SPACER
+                    hbox:
+                        xfill True
+                        textbutton _("+ Add DDLC Only"):
+                            left_margin (HALF_INDENT) 
+                            action Jump("add_base_game")
+
 
         # Project section - on right.
 
@@ -190,7 +207,7 @@ screen front_page_project:
                     has vbox
 
                     textbutton _("Browse Game Directory") action OpenDirectory("game")
-                    textbutton _("Delete Persistent") action Jump("rmpersistent")
+                    textbutton _("Delete Saves") action Jump("rmpersistent")
                     # textbutton _("save") action None style "l_list"
                 # textbutton "Relaunch" action Relaunch
             
@@ -200,8 +217,9 @@ screen front_page_project:
 
                 frame style "l_indent":
                     has vbox
-
-                    textbutton _("Browse Mod Directory") action OpenDirectory(persistent.projects_directory)
+                    if persistent.projects_directory:
+                        textbutton _("Browse Mod Directory") action OpenDirectory(persistent.projects_directory)
+                    textbutton _("Delete Mod") action Jump("delete_mod_folder")
 
 label main_menu:
     return
@@ -232,7 +250,7 @@ label lint:
 label rmpersistent:
 
     python hide:
-        interface.processing(_("Deleting persistent data..."))
+        interface.processing(_("Deleting save data..."))
         project.current.launch([ 'rmpersistent' ], wait=True)
 
     jump front_page
