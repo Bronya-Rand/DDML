@@ -720,7 +720,6 @@ label delete_mod_folder:
     jump front_page
 
 label add_a_mod:
-
     # Checks if user set Mod Install Folder
     if persistent.projects_directory is None:
         call choose_projects_directory
@@ -774,13 +773,13 @@ label add_a_mod:
 
         if persistent.osx == True or persistent.safari == False:
             # El Capitan or Lower or Chrome/Firefox (Safari Safe Mode Off)
-            interface.interaction(_("Making a Mod Folder"), _("Extracting DDLC, Please Wait..."),)
+            interface.interaction(_("Making a DDLC Folder"), _("Extracting DDLC, Please Wait..."),)
             import zipfile
             try:
                 with zipfile.ZipFile(persistent.zip_directory + '/ddlc-mac.zip', "r") as z:
                     z.extractall(persistent.projects_directory + "/temp")
 
-                    ddlc = persistent.projects_directory + '/temp' + '/DDLC.app'
+                    ddlc = persistent.projects_directory + '/temp'
             except:
                 interface.error(_("Cannot find 'ddlc-mac.zip' in [persistent.zip_directory!q]."), _("Make sure you have DDLC downloaded from 'https://ddlc.moe'."),)
 
@@ -788,7 +787,7 @@ label add_a_mod:
             shutil.move(ddlc, project_dir)
 
         else:
-            interface.interaction(_("Making a Mod Folder"), _("Copying DDLC, Please Wait..."),)
+            interface.interaction(_("Making a DDLC Folder"), _("Copying DDLC, Please Wait..."),)
             import shutil
             try:
                 shutil.copytree(persistent.zip_directory + "/ddlc-mac", project_dir)
@@ -805,18 +804,19 @@ label add_a_mod:
         if not modzip_name:
             interface.error(_("The mod zip name may not be empty."))
 
-        interface.interaction(_("Extracting"), _("Extracting Mod ZIP, Please Wait..."),)
         if persistent.osx == True or persistent.safari == False:
+            interface.interaction(_("Extracting Mod"), _("Extracting Mod ZIP, Please Wait..."),)
             try:
                 with zipfile.ZipFile(persistent.mzip_directory + '/' + modzip_name + ".zip", "r") as z:
                     z.extractall(persistent.projects_directory + "/temp")
             except:
                 interface.error(_("Cannot find ZIP in [persistent.mzip_directory!q]."), _("Check the name of your Mod ZIP File and try again."))
         else:
+            interface.interaction(_("Copying Mod"), _("Copying Mod, Please Wait..."),)
             try:
                 shutil.copytree(persistent.mzip_directory + '/' + modzip_name, persistent.projects_directory + '/temp')
             except:
-                interface.error(_("Cannot find Folder in [persistent.mzip_directory!q]."), _("Check the name of your Mod ZIP File and try again."))
+                interface.error(_("Cannot find Folder in [persistent.mzip_directory!q]."), _("Check the name of your Mod Folder extracted by MacOS and try again."))
         
         mzt = persistent.projects_directory + "/temp"
         import glob
@@ -859,20 +859,31 @@ label add_a_mod:
                     shutil.move(src_file, dst_file)
 
         # Prevents copy of any other RPA or other mod files 
-        #shutil.rmtree(persistent.projects_directory + '/temp')
+        shutil.rmtree(persistent.projects_directory + '/temp')
 
         project.manager.scan()
 
     return
 
 label add_base_game:
-
     # Checks if user set Mod Install Folder
     if persistent.projects_directory is None:
         call choose_projects_directory
     # Ren'Py Failsafe
     if persistent.projects_directory is None:
         $ interface.error(_("The Mod directory could not be set. Giving up."))
+    # Browser Set?
+    if persistent.safari is None:
+        call browser
+    # Ren'Py Failsafe
+    if persistent.safari is None:
+        $ interface.error(_("The browser could not be set. Giving up."))   
+    # OS Set?
+    if persistent.osx is None or persistent.macosx is None:
+        call macosx
+    # Ren'Py Failsafe
+    if persistent.osx is None or persistent.macosx is None:
+        $ interface.error(_("The Operating System could not be set. Giving up."))
     # Checks if user set DDLC ZIP Location (All OS)
     if persistent.zip_directory is None:
         call choose_zip_directory
@@ -881,6 +892,7 @@ label add_base_game:
         $ interface.error(_("The DDLC ZIP directory could not be set. Giving up."))
 
     python hide:
+        import os
         # Asks User the name of the folder they want their mod folder to be
         modinstall_foldername = interface.input(
             _("DDLC Folder Name"),
@@ -900,22 +912,28 @@ label add_base_game:
         if os.path.exists(project_dir):
             interface.error(_("[project_dir!q] already exists. Please choose a different name."), project_dir=project_dir)
 
-        interface.interaction(_("Making a DDLC Folder"), _("Extracting DDLC, Please Wait..."),)
-        # Extract DDLC
-        import zipfile
-        try:
-            with zipfile.ZipFile(persistent.zip_directory + '/ddlc-mac.zip', "r") as z:
-                z.extractall(persistent.projects_directory + "/temp")
+        if persistent.osx == True or persistent.safari == False:
+            # El Capitan or Lower or Chrome/Firefox (Safari Safe Mode Off)
+            interface.interaction(_("Making a DDLC Folder"), _("Extracting DDLC, Please Wait..."),)
+            import zipfile
+            try:
+                with zipfile.ZipFile(persistent.zip_directory + '/ddlc-mac.zip', "r") as z:
+                    z.extractall(persistent.projects_directory + "/temp")
 
-                ddlc = persistent.projects_directory + '/temp' + '/DDLC.app'
-        except:
-            interface.error(_("Cannot find 'ddlc-mac.zip' in [persistent.zip_directory!q]."), _("Make sure you have DDLC downloaded from 'https://ddlc.moe'."),)
-        
-        import shutil
-        shutil.move(ddlc, project_dir)
+                    ddlc = persistent.projects_directory + '/temp'
+            except:
+                interface.error(_("Cannot find 'ddlc-mac.zip' in [persistent.zip_directory!q]."), _("Make sure you have DDLC downloaded from 'https://ddlc.moe'."),)
 
-        # Prevents copy of any other RPA or other mod files
-        shutil.rmtree(persistent.projects_directory + '/temp')
+            import shutil
+            shutil.move(ddlc, project_dir)
+
+        else:
+            interface.interaction(_("Making a DDLC Folder"), _("Copying DDLC, Please Wait..."),)
+            import shutil
+            try:
+                shutil.copytree(persistent.zip_directory + "/ddlc-mac", project_dir)
+            except:
+                interface.error(_("Cannot find DDLC.app."). _("Please make sure your OS and ZIP Directory are set correctly."),)
 
         project.manager.scan()
 
