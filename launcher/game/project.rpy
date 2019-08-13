@@ -1,4 +1,4 @@
-# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+﻿# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -947,6 +947,52 @@ label safari_download:
 label regular_download:
     $ persistent.safari = False
     return
+
+label scripts_rpa:
+    python hide:
+        script_choice = interface.choice(
+                _("Some mods may require scripts.rpa to be removed in order to run. Are you sure you want to continue?"),
+                [ ( 'delete_scripts', _("Yes") ), ( 'front_page', _("No")) ],
+                "front_page",
+                cancel=Jump("front_page"),
+                )
+    
+        renpy.jump(script_choice)
+    
+label delete_scripts:
+    python hide:
+        interface.interaction(_("Deleting scripts.rpa"), _("Please wait..."),)
+    
+        import os
+        try: os.remove(persistent.projects_directory + "/" + project.current.name + "/DDLC.app/Contents/Resources/autorun/game/scripts.rpa")
+        except: interface.error(_("scripts.rpa already deleted or is missing."), _("Check the game directory and try again."))
+    
+        interface.info("scripts.rpa has been deleted.")
+    
+    jump front_page
+    
+label images_rpa:
+    python hide:
+        image_choice = interface.choice(
+                _("Some mods may require images.rpa to be removed in order to run. Are you sure you want to continue?"),
+                [ ( 'delete_images', _("Yes") ), ( 'front_page', _("No")) ],
+                "front_page",
+                cancel=Jump("front_page"),
+                )
+    
+        renpy.jump(image_choice)
+    
+label delete_images:
+    python hide:
+        interface.interaction(_("Deleting images.rpa"), _("Please wait..."),)
+    
+        import os
+        try: os.remove(persistent.projects_directory + "/" + project.current.name + "/DDLC.app/Contents/Resources/autorun/game/images.rpa")
+        except: interface.error(_("images.rpa already deleted or is missing."), _("Check the game directory and try again."))
+    
+        interface.info("images.rpa has been deleted.")
+    
+    jump front_page
 
 init python:
 
