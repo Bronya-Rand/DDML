@@ -973,7 +973,7 @@ label delete_images:
 
         import os
         try: os.remove(persistent.projects_directory + "/" + project.current.name + "/game/images.rpa")
-        except: interface.error(_("images.rpa already deleted or is missing." _("Check the game directory and try again."))
+        except: interface.error(_("images.rpa already deleted or is missing.") _("Check the game directory and try again."))
         
         interface.info("images.rpa has been deleted.")
 
