@@ -1,4 +1,4 @@
-﻿# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -731,13 +731,7 @@ label add_a_mod:
         call browser
     # Ren'Py Failsafe
     if persistent.safari is None:
-        $ interface.error(_("The browser could not be set. Giving up."))   
-    # OS Set?
-    if persistent.osx is None or persistent.macosx is None:
-        call macosx
-    # Ren'Py Failsafe
-    if persistent.osx is None or persistent.macosx is None:
-        $ interface.error(_("The Operating System could not be set. Giving up."))    
+        $ interface.error(_("The browser could not be set. Giving up."))      
     # Checks if user set DDLC ZIP Location (Disabled Steam)
     if persistent.zip_directory is None:
         call choose_zip_directory
@@ -771,8 +765,8 @@ label add_a_mod:
         if os.path.exists(project_dir):
             interface.error(_("[project_dir!q] already exists. Please choose a different project name."), project_dir=project_dir)
 
-        if persistent.osx == True or persistent.safari == False:
-            # El Capitan or Lower or Chrome/Firefox (Safari Safe Mode Off)
+        if persistent.safari == False:
+            #Chrome/Firefox (Safari Safe Mode Off)
             interface.interaction(_("Making a DDLC Folder"), _("Extracting DDLC, Please Wait..."),)
             import zipfile
             try:
@@ -804,7 +798,7 @@ label add_a_mod:
         if not modzip_name:
             interface.error(_("The mod zip name may not be empty."))
 
-        if persistent.osx == True or persistent.safari == False:
+        if persistent.safari == False:
             interface.interaction(_("Extracting Mod"), _("Extracting Mod ZIP, Please Wait..."),)
             try:
                 with zipfile.ZipFile(persistent.mzip_directory + '/' + modzip_name + ".zip", "r") as z:
@@ -878,12 +872,6 @@ label add_base_game:
     # Ren'Py Failsafe
     if persistent.safari is None:
         $ interface.error(_("The browser could not be set. Giving up."))   
-    # OS Set?
-    if persistent.osx is None or persistent.macosx is None:
-        call macosx
-    # Ren'Py Failsafe
-    if persistent.osx is None or persistent.macosx is None:
-        $ interface.error(_("The Operating System could not be set. Giving up."))
     # Checks if user set DDLC ZIP Location (All OS)
     if persistent.zip_directory is None:
         call choose_zip_directory
@@ -912,8 +900,8 @@ label add_base_game:
         if os.path.exists(project_dir):
             interface.error(_("[project_dir!q] already exists. Please choose a different name."), project_dir=project_dir)
 
-        if persistent.osx == True or persistent.safari == False:
-            # El Capitan or Lower or Chrome/Firefox (Safari Safe Mode Off)
+        if persistent.safari == False:
+            #Chrome/Firefox (Safari Safe Mode Off)
             interface.interaction(_("Making a DDLC Folder"), _("Extracting DDLC, Please Wait..."),)
             import zipfile
             try:
@@ -939,28 +927,13 @@ label add_base_game:
 
     return
 
-label macosx:
-
-    python:
-
-        os_kind = interface.choice(
-            _("Which Version of MacOS are you using?"),
-            [ ( 'os_x', _("OS X Mavericks to El Capitan") ), ( 'mac_os', _("MacOS Sierra or Higher")) ],
-            "mac_os",
-            cancel=Jump("front_page"),
-            )
-
-        renpy.jump(os_kind)
-
-    return
-
 label browser:
 
     python:
 
         browser_kind = interface.choice(
-            _("How did you download DDLC or your Mods from? Safari or Chrome/Firefox/Opera?"),
-            [ ( 'safari_download', _("Safari/Safari Safe Files On") ), ( 'regular_download', _("Chrome/Firefox/Opera/Safari Safe Files Off")) ],
+            _("Which browser are you using? DDLC and some mods may be affected if your browser auto-extracts ZIP files."),
+            [ ( 'safari_download', _("Safari/Safari Safe Files On") ), ( 'regular_download', _("Chrome, Firefox, Opera/Safari Safe Files Off")) ],
             "safari_download",
             cancel=Jump("front_page"),
             )
@@ -973,16 +946,6 @@ label safari_download:
 
 label regular_download:
     $ persistent.safari = False
-    return
-
-label os_x:
-    $ persistent.osx = True
-    $ persistent.macosx = False
-    return
-
-label mac_os:
-    $ persistent.macosx = True
-    $ persistent.osx = False
     return
 
 init python:

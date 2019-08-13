@@ -171,34 +171,8 @@ screen preferences:
                                 text _("None Selected")
 
                     add SPACER
-                    add SEPARATOR2
-
-                    frame:
-                        style "l_indent"
-                        yminimum 75
-                        has vbox
-
-                        text _("OS Release")
-                        add HALF_SPACER
-
-                        frame style "l_indent":
-                            if persistent.osx == False:
-                                if persistent.macosx == None:
-                                    text _("None Selected")
-                                else:
-                                    text _("MacOS Sierra or Higher")
-                            else:
-                                if persistent.osx == None:
-                                    text _("None Selected")
-                                else:
-                                    text _("OS X Maverics to El Capitan")
-
-                    add SPACER
                     add SEPARATOR2        
                     textbutton _("Change Browser") action Jump("browser")
-                    add SPACER
-                    add SEPARATOR2
-                    textbutton _("Change OS") action Jump("macosx")
 
     textbutton _("Return") action Jump("front_page") style "l_left_button"
 
