@@ -1,10 +1,10 @@
 # The New DDML 5.0 Version/Historical Repository
 
-Here contains all files for DDML 5.0 which is being worked on ATM. This should fix some bugs, add new features from 4.2.0L. This does not violate any IP Guidelines or Ren'Py as listed in **README.md** and **LICENSE**.
+Here contains all files for DDML's Mac Version.
 
 **DISCLAIMER**
 
-Doki Doki Mod Launcher, is a Ren'Py 6.99.12.4 SDK Modification which is not affiliated or supported in anyway to RenpyTom. It is not supported by the official Ren'Py Build, or any Ren'Py channels. RenpyTom does not support game modding in general or provide support for game or this Ren'Py Modification, and all liability will be held to the creator of this modification.
+Doki Doki Mod Launcher, is a Ren'Py 7.2.3 SDK Modification which is not affiliated or supported in anyway to RenpyTom. It is not supported by the official Ren'Py Build, or any Ren'Py channels. RenpyTom does not support game modding in general or provide support for game or this Ren'Py Modification, and all liability will be held to the creator of this modification.
     
 This is not a official mod launcher that is supported by Team Salvato for Doki Doki Literature Club. This is not considered a modification of DDLC, only a tool used to install mods.
 
