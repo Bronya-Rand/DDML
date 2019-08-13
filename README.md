@@ -1,6 +1,6 @@
 # Welcome to the Doki Doki Mod Launcher Repository!
 
-Here contains all files for the current release of DDML.
+Here contains all files for the current release of DDML for Linux.
 
 **DISCLAIMER**
 
