@@ -930,6 +930,55 @@ label add_base_game:
 
     return
 
+label scripts_rpa:
+
+    python hide:
+        script_choice = interface.choice(
+                _("Some mods may require scripts.rpa to be removed in order to run. Are you sure you want to continue?"),
+                [ ( 'delete_scripts', _("Yes") ), ( 'front_page', _("No")) ],
+                "front_page",
+                cancel=Jump("front_page"),
+                )
+
+        renpy.jump(script_choice)
+
+label delete_scripts:
+
+    python hide:
+        interface.interaction(_("Deleting scripts.rpa"), _("Please wait..."),)
+
+        import os
+        try: os.remove(persistent.projects_directory + "/" + project.current.name + "/game/scripts.rpa")
+        except: interface.error(_("images.rpa already deleted or is missing."), _("Check the game directory and try again."))
+        
+        interface.info("scripts.rpa has been deleted.")
+
+    jump front_page
+
+label images_rpa:
+    python hide:
+        image_choice = interface.choice(
+                _("Some mods may require images.rpa to be removed in order to run. Are you sure you want to continue?"),
+                [ ( 'delete_images', _("Yes") ), ( 'front_page', _("No")) ],
+                "front_page",
+                cancel=Jump("front_page"),
+                )
+
+        renpy.jump(image_choice)
+
+label delete_images:
+
+    python hide:
+        interface.interaction(_("Deleting images.rpa"), _("Please wait..."),)
+
+        import os
+        try: os.remove(persistent.projects_directory + "/" + project.current.name + "/game/images.rpa")
+        except: interface.error(_("images.rpa already deleted or is missing." _("Check the game directory and try again."))
+        
+        interface.info("images.rpa has been deleted.")
+
+    jump front_page
+
 init python:
 
     def set_projects_directory_command():

@@ -219,6 +219,8 @@ screen front_page_project:
                     has vbox
                     if persistent.projects_directory:
                         textbutton _("Browse Mod Directory") action OpenDirectory(persistent.projects_directory)
+                        textbutton _("Delete 'scripts.rpa'") action Jump("scripts_rpa")
+                        textbutton _("Delete 'images.rpa'") action Jump("images_rpa")
                     textbutton _("Delete Mod") action Jump("delete_mod_folder")
 
 label main_menu:

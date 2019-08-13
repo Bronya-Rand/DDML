@@ -5,3 +5,4 @@ traceback.txt
 *.rpyc
 persistent
 *.save
+launcher/game/saves
