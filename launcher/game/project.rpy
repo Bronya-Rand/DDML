@@ -739,6 +739,10 @@ label add_a_mod:
         $ interface.error(_("The Mod ZIP directory could not be set. Giving up."))
 
     python hide:
+        
+        import zipfile
+        import shutil
+        import glob
 
         # Asks User the name of the folder they want their mod folder to be
         modinstall_foldername = interface.input(
@@ -763,15 +767,12 @@ label add_a_mod:
 
         if persistent.steam_release == True:
             # Copy DDLC (Win) (Steam Release) (Assuming Steam Copy is Unmodded)
-            import zipfile
-            import shutil
 
             try: shutil.copytree(persistent.zip_directory + "/Doki Doki Literature Club", project_dir)
             except:
                 interface.error(_("Cannot Locate Your Doki Doki Literature Club Folder"), _("Make sure it is set to your 'Steam\steamapps\common' folder."),)
         else:
             # Extract DDLC (Win/Linux) (Moe/ZIP Release)
-            import zipfile
 
             try: 
                 with zipfile.ZipFile(persistent.zip_directory + '/ddlc-win.zip', "r") as z:
@@ -781,9 +782,11 @@ label add_a_mod:
 
             except: interface.error(_("Cannot Locate 'ddlc-win.zip' in [persistent.zip_directory!q]."), _("Make sure you have DDLC downloaded from 'https://ddlc.moe' and check if it exists."),)
 
-            import shutil
-
             shutil.move(ddlc, project_dir)
+
+        if glob.glob(mzt + '/*.rpa'):
+            interface.interaction(_("Copying"), _("Copying Mod Files from Mod ZIP Directory, Please Wait..."),)
+
 
         # Asks User name of ZIP (Ren'Py already states only ASCII)
         modzip_name = interface.input(
@@ -794,6 +797,7 @@ label add_a_mod:
 
         modzip_name = modzip_name.strip()
         if not modzip_name:
+            shutil.rmtree(persistent.projects_directory + '/' + project_dir)
             interface.error(_("The mod zip name may not be empty."))
 
         # Extract Mod
@@ -806,8 +810,8 @@ label add_a_mod:
                 mzt = persistent.projects_directory + "/temp"
 
         except: 
+            shutil.rmtree(persistent.projects_directory + '/' + project_dir)
             interface.error(_("Cannot locate ZIP in [persistent.mzip_directory!q]."), _("Check the name of your Mod ZIP File and try again."))
-        import glob
 
         mzte = [x[0] for x in os.walk(mzt)]
 
@@ -978,6 +982,81 @@ label delete_images:
         interface.info("images.rpa has been deleted.")
 
     jump front_page
+
+label install_addon:
+
+    python hide:
+        
+        modzip_name = interface.input(
+            _("Mod Add-On ZIP Name"),
+            _("Please enter the name of your Mod Add-On ZIP File. It is recommended to rename the ZIP for easy installation."),
+            filename=True,
+            cancel=Jump("front_page"))
+
+        modzip_name = modzip_name.strip()
+        if not modzip_name:
+            shutil.rmtree(persistent.projects_directory + '/' + project_dir)
+            interface.error(_("The mod add-on zip name may not be empty."))
+
+        # Extract Mod
+        interface.interaction(_("Extracting"), _("Extracting Mod Add-On ZIP, Please Wait..."),)
+
+        try:
+            with zipfile.ZipFile(persistent.mzip_directory + '/' + modzip_name + ".zip", "r") as z:
+                z.extractall(persistent.projects_directory + "/temp")
+
+                mzt = persistent.projects_directory + "/temp"
+
+        except: 
+            shutil.rmtree(persistent.projects_directory + '/' + project_dir)
+            interface.error(_("Cannot locate ZIP in [persistent.mzip_directory!q]."), _("Check the name of your Mod Add-On ZIP File and try again."))
+        import glob
+
+        mzte = [x[0] for x in os.walk(mzt)]
+
+        try:
+            mzte[1]
+            if (str(mzte[1]) == mzt + "\\cache" or str(mzte[1]) == mzt + "\\gui" or str(mzte[1]) == mzt + "\\mod_assets" or str(mzte[1]) == mzt + "\\images" or str(mzte[1]) == mzt + "\\fonts" or str(mzte[1]) == mzt + "\\audio" or str(mzte[1]) == mzt + "\\python-packages" or str(mzte[1]) == mzt + "\\saves" or str(mzte[1]) == mzt + "\\submods"):
+                mztex = False
+            else:
+                mztex = True
+        except IndexError:
+            mztex = False
+
+        if mztex == False:
+            #Normal Scanning
+            
+            if glob.glob(mzt + '/game'):
+                shutil.move(mzt + '/game', project_dir)
+            else:
+                import os
+                for file in os.listdir(mzt):
+                    print file
+                    src_file = os.path.join(mzt, file)
+                    dst_file = os.path.join(project_dir + '/game', file)
+                    shutil.move(src_file, dst_file)
+        else:
+            #Extended Scanning (If Contents during extract are inside another folder (Yuri-1.0/script-ch1.rpyc))
+            if glob.glob(str(mzte[1]) + '/game'):
+                for file in os.listdir(str(mzte[1]) + '/game'):
+                    print file
+                    src_file = os.path.join(str(mzte[1]) + '/game', file)
+                    dst_file = os.path.join(project_dir + '/game', file)
+                    shutil.move(src_file, dst_file)
+            else:
+                import os
+                for file in os.listdir(str(mzte[1])):
+                    print file
+                    src_file = os.path.join(str(mzte[1]), file)
+                    dst_file = os.path.join(project_dir + '/game', file)
+                    shutil.move(src_file, dst_file)
+
+        # Prevents copy of any other RPA or other mod files
+        shutil.rmtree(persistent.projects_directory + '/temp')
+
+        interface.info(_("Mod Add-on for " + project.current.name + " has been installed.")
+
+    return
 
 init python:
 
