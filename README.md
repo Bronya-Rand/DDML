@@ -1,7 +1,8 @@
 # Welcome to the Doki Doki Mod Launcher Repository!
-Here contains all files for DDML's current build. This tool adheres to the Team Salvato IP Guidelines and RenpyTom Guidelines for  Ren'Py SDK modding as listed in **README.md** and **LICENSE**.
+Here contains all files for DDML's next build. This tool adheres to the Team Salvato IP Guidelines and RenpyTom Guidelines for  Ren'Py SDK modding as listed in **README.md** and **LICENSE**.
 
 **DISCLAIMER**
+
 Doki Doki Mod Launcher, is a Ren'Py 6.99.12.4/7.2.3 SDK Modification which is not affiliated or supported in anyway to RenpyTom. It is not supported by the official Ren'Py Build, or any Ren'Py channels. RenpyTom does not support game modding in general and will not provide support for this Ren'Py Modification or help with modding DDLC.
     
 Doki Doki Mod Launcher is a unofficial DDLC mod launcher that is unaffiliated with Team Salvato for Doki Doki Literature Club. Dan Salvato or anyone in Team Salvato does not endorse DDML. This is a tool used to install mods.
