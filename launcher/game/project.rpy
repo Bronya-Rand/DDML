@@ -45,10 +45,7 @@ init python in project:
         persistent.blurb = 0
 
     LAUNCH_BLURBS = [
-        _("After making changes to the script, press shift+R to reload your game."),
-        _("Press shift+O (the letter) to access the console."),
-        _("Press shift+D to access the developer menu."),
-        _("Have you backed up your projects recently?"),
+        _("Launching the Mod. Please Wait."),
     ]
 
     class Project(object):
@@ -718,22 +715,18 @@ label add_a_mod:
     # Checks if user set Mod Install Folder
     if persistent.projects_directory is None:
         call choose_projects_directory
-
     # Ren'Py Failsafe
     if persistent.projects_directory is None:
         $ interface.error(_("The Mod directory could not be set. Giving up."))
     # Checks if user set DDLC ZIP Location (All OS)
     if persistent.zip_directory is None:
         call ddlc_location
-
     # Ren'Py Failsafe 2
     if persistent.zip_directory is None:
         $ interface.error(_("The DDLC ZIP directory could not be set. Giving up."))
-
     # Checks if User set Mod ZIP Directory
     if persistent.mzip_directory is None:
         call choose_modzip_directory
-
     # Ren'Py Failsafe 3
     if persistent.mzip_directory is None:
         $ interface.error(_("The Mod ZIP directory could not be set. Giving up."))
@@ -743,7 +736,6 @@ label add_a_mod:
         import zipfile
         import shutil
         import glob
-
         # Asks User the name of the folder they want their mod folder to be
         modinstall_foldername = interface.input(
             _("Mod Folder Name"),
@@ -759,21 +751,17 @@ label add_a_mod:
 
         if project.manager.get(modinstall_foldername) is not None:
             interface.error(_("[modinstall_foldername!q] already exists. Please choose a different project name."), modinstall_foldername=modinstall_foldername)
-
         if os.path.exists(project_dir):
             interface.error(_("[project_dir!q] already exists. Please choose a different project name."), project_dir=project_dir)
 
         interface.interaction(_("Making a Mod Folder"), _("Extracting DDLC, Please Wait..."),)
-
         if persistent.steam_release == True:
             # Copy DDLC (Win) (Steam Release) (Assuming Steam Copy is Unmodded)
-
             try: shutil.copytree(persistent.zip_directory + "/Doki Doki Literature Club", project_dir)
             except:
                 interface.error(_("Cannot Locate Your Doki Doki Literature Club Folder"), _("Make sure it is set to your 'Steam\steamapps\common' folder."),)
         else:
             # Extract DDLC (Win/Linux) (Moe/ZIP Release)
-
             try: 
                 with zipfile.ZipFile(persistent.zip_directory + '/ddlc-win.zip', "r") as z:
                     z.extractall(persistent.projects_directory + "/temp")
@@ -783,7 +771,6 @@ label add_a_mod:
             except: interface.error(_("Cannot Locate 'ddlc-win.zip' in [persistent.zip_directory!q]."), _("Make sure you have DDLC downloaded from 'https://ddlc.moe' and check if it exists."),)
 
             shutil.move(ddlc, project_dir)
-
         # RPA Download Install Check
         if glob.glob(persistent.mzip_directory + '/*.rpa'):
             interface.interaction(_("Copying"), _("Copying Mod Files from Mod ZIP Directory, Please Wait..."),)
@@ -795,7 +782,6 @@ label add_a_mod:
 
             # Auto-Refresh
             project.manager.scan()
-
             renpy.jump("front_page")
 
         # Asks User name of ZIP (Ren'Py already states only ASCII)
@@ -812,19 +798,16 @@ label add_a_mod:
 
         # Extract Mod
         interface.interaction(_("Extracting"), _("Extracting Mod ZIP, Please Wait..."),)
-
         try:
             with zipfile.ZipFile(persistent.mzip_directory + '/' + modzip_name + ".zip", "r") as z:
                 z.extractall(persistent.projects_directory + "/temp")
 
                 mzt = persistent.projects_directory + "/temp"
-
-        except: 
+        except:
             shutil.rmtree(persistent.projects_directory + '/' + project_dir)
             interface.error(_("Cannot locate ZIP in [persistent.mzip_directory!q]."), _("Check the name of your Mod ZIP File and try again."))
 
         mzte = [x[0] for x in os.walk(mzt)]
-
         try:
             mzte[1]
             if (str(mzte[1]) == mzt + "\\cache" or str(mzte[1]) == mzt + "\\gui" or str(mzte[1]) == mzt + "\\mod_assets" or str(mzte[1]) == mzt + "\\images" or str(mzte[1]) == mzt + "\\fonts" or str(mzte[1]) == mzt + "\\audio" or str(mzte[1]) == mzt + "\\python-packages" or str(mzte[1]) == mzt + "\\saves" or str(mzte[1]) == mzt + "\\submods"):
@@ -836,7 +819,6 @@ label add_a_mod:
 
         if mztex == False:
             #Normal Scanning
-            
             if glob.glob(mzt + '/game'):
                 shutil.move(mzt + '/game', project_dir)
             else:
@@ -864,10 +846,8 @@ label add_a_mod:
 
         # Prevents copy of any other RPA or other mod files
         shutil.rmtree(persistent.projects_directory + '/temp')
-
         # Auto-Refresh
         project.manager.scan()
-
     return
 
 label add_base_game:
