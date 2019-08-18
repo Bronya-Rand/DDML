@@ -784,9 +784,19 @@ label add_a_mod:
 
             shutil.move(ddlc, project_dir)
 
-        if glob.glob(mzt + '/*.rpa'):
+        # RPA Download Install Check
+        if glob.glob(persistent.mzip_directory + '/*.rpa'):
             interface.interaction(_("Copying"), _("Copying Mod Files from Mod ZIP Directory, Please Wait..."),)
 
+            for file in os.listdir(persistent.mzip_directory):
+                if file.endswith('.rpa'):
+                    src = os.path.join(persistent.mzip_directory, file)
+                    shutil.move(src, project_dir + '/game')    
+
+            # Auto-Refresh
+            project.manager.scan()
+
+            renpy.jump("front_page")
 
         # Asks User name of ZIP (Ren'Py already states only ASCII)
         modzip_name = interface.input(
@@ -1054,7 +1064,7 @@ label install_addon:
         # Prevents copy of any other RPA or other mod files
         shutil.rmtree(persistent.projects_directory + '/temp')
 
-        interface.info(_("Mod Add-on for " + project.current.name + " has been installed.")
+        interface.info("Mod Add-on for " + project.current.name + " has been installed.")
 
     return
 
