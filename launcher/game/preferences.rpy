@@ -1,4 +1,5 @@
 ﻿# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+# Copyright 2018-2019 GanstaKingofSA <azarieldc@gmail.com>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -47,7 +48,7 @@ init python:
 
         return rv
 
-
+# DDML Setting Page
 screen preferences:
 
     $ translations = scan_translations()
@@ -176,6 +177,7 @@ screen preferences:
 
     textbutton _("Return") action Jump("front_page") style "l_left_button"
 
+# Asks the User if they are making a new folder or moving folders
 label projects_directory_preference:
 
     python:
@@ -191,6 +193,7 @@ label projects_directory_preference:
             
     jump preferences
 
+# Calls Respective Directory Choosers
 label projects_zip_preference:
     call choose_zip_directory
     jump preferences
