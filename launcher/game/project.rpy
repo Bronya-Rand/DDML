@@ -1,5 +1,4 @@
 ﻿# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
-# Copyright 2018-2019 GanstaKingofSA <azarieldc@gmail.com>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -20,7 +19,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-# Code that manages mod installation, removals, and more.
+# Code that manages projects.
 
 init python:
     if renpy.windows:
@@ -36,7 +35,7 @@ init python in project:
     import store.interface as interface
 
     import sys
-    import os.
+    import os.path
     import json
     import subprocess
     import re
@@ -54,28 +53,28 @@ init python in project:
 
     class Project(object):
 
-        def __init__(self, , name=None):
+        def __init__(self, path, name=None):
 
             if name is None:
-                name = os..basename()
+                name = os.path.basename(path)
 
-            while .endswith("/"):
-                 = [:-1]
+            while path.endswith("/"):
+                path = path[:-1]
 
-            if not os..exists():
-                raise Exception("{} does not exist.".format())
+            if not os.path.exists(path):
+                raise Exception("{} does not exist.".format(path))
 
             self.name = name
 
-            # The  to the project.
-            self. = 
+            # The path to the project.
+            self.path = path
 
-            # The  to the game directory.
-            gamedir = os..join(, "game")
-            if os..isdir(gamedir):
+            # The path to the game directory.
+            gamedir = os.path.join(path, "game")
+            if os.path.isdir(gamedir):
                 self.gamedir = gamedir
             else:
-                self.gamedir = 
+                self.gamedir = path
 
             # Load the data.
             self.load_data()
@@ -92,11 +91,11 @@ init python in project:
 
         def get_dump_filename(self):
             self.make_tmp()
-            return os..join(self.tmp, "navigation.json")
+            return os.path.join(self.tmp, "navigation.json")
 
         def load_data(self):
             try:
-                f = open(os..join(self., "project.json"), "rb")
+                f = open(os.path.join(self.path, "project.json"), "rb")
                 self.data = json.load(f)
                 f.close()
             except:
@@ -111,7 +110,7 @@ init python in project:
             """
 
             try:
-                with open(os..join(self., "project.json"), "wb") as f:
+                with open(os.path.join(self.path, "project.json"), "wb") as f:
                     json.dump(self.data, f)
             except:
                 self.load_data()
@@ -144,17 +143,17 @@ init python in project:
             yet.
             """
 
-            if self.tmp and os..isdir(self.tmp):
+            if self.tmp and os.path.isdir(self.tmp):
                 return
 
-            tmp = os..join(config.renpy_base, "tmp", self.name)
+            tmp = os.path.join(config.renpy_base, "tmp", self.name)
 
             try:
                 os.makedirs(tmp)
             except:
                 pass
 
-            if os..isdir(tmp):
+            if os.path.isdir(tmp):
                 self.tmp = tmp
                 return
 
@@ -166,7 +165,7 @@ init python in project:
             """
 
             self.make_tmp()
-            return os..join(self.tmp, filename)
+            return os.path.join(self.tmp, filename)
 
         def launch(self, args=[], wait=False, env={}):
             """
@@ -186,7 +185,7 @@ init python in project:
             self.make_tmp()
 
             # Find the python executable to run.
-            executable_ = os..dirname(renpy.fsdecode(sys.executable))
+            executable_path = os.path.dirname(renpy.fsdecode(sys.executable))
 
             if renpy.renpy.windows:
                 extension = ".exe"
@@ -201,8 +200,8 @@ init python in project:
             executables.append(sys.executable)
 
             for i in executables:
-                executable = os..join(executable_, i)
-                if os..exists(executable):
+                executable = os.path.join(executable_path, i)
+                if os.path.exists(executable):
                     break
             else:
                 raise Exception("Python interpreter not found: %r", executables)
@@ -210,7 +209,7 @@ init python in project:
             # Put together the basic command line.
             cmd = [ executable, "-EO", sys.argv[0] ]
 
-            cmd.append(self.)
+            cmd.append(self.path)
             cmd.extend(args)
 
             # Add flags to dump game info.
@@ -251,7 +250,7 @@ init python in project:
 
             dump_filename = self.get_dump_filename()
 
-            if force or not os..exists(dump_filename):
+            if force or not os.path.exists(dump_filename):
 
                 if gui:
                     interface.processing(_("Ren'Py is scanning the project..."))
@@ -261,11 +260,11 @@ init python in project:
                 else:
                     self.launch(["quit"], wait=True)
 
-            if not os..exists(dump_filename):
+            if not os.path.exists(dump_filename):
                 self.dump["error"] = True
                 return
 
-            file_mtime = os..getmtime(dump_filename)
+            file_mtime = os.path.getmtime(dump_filename)
             if file_mtime == self.dump_mtime:
                 return
 
@@ -324,12 +323,12 @@ init python in project:
             Unelides the filename relative to the project base.
             """
 
-            fn1 = os..join(self., fn)
-            if os..exists(fn1):
+            fn1 = os.path.join(self.path, fn)
+            if os.path.exists(fn1):
                 return fn1
 
-            fn2 = os..join(config.renpy_base, fn)
-            if os..exists(fn2):
+            fn2 = os.path.join(config.renpy_base, fn)
+            if os.path.exists(fn2):
                 return fn2
 
             return fn
@@ -342,7 +341,7 @@ init python in project:
             """
 
             rv = [ ]
-            rv.extend(i for i, isdir in util.walk(self.)
+            rv.extend(i for i, isdir in util.walk(self.path)
                 if (not isdir) and (i.endswith(".rpy") or i.endswith(".rpym")) and (not i.startswith("tmp/")) )
 
             return rv
@@ -352,7 +351,7 @@ init python in project:
             Returns true if the file exists in the game.
             """
 
-            return os..exists(os..join(self., fn))
+            return os.path.exists(os.path.join(self.path, fn))
 
 
     class ProjectManager(object):
@@ -385,7 +384,7 @@ init python in project:
             Scans for projects.
             """
 
-            if (persistent.projects_directory is not None) and not os..isdir(persistent.projects_directory):
+            if (persistent.projects_directory is not None) and not os.path.isdir(persistent.projects_directory):
                 persistent.projects_directory = None
 
             self.projects_directory = persistent.projects_directory
@@ -421,12 +420,12 @@ init python in project:
                 return dn
 
             for dn in os.listdir(d):
-                if not dn.with(".app
+                if not dn.endswith(".app"):
                     continue
 
                 dn = os.path.join(d, dn, "Contents", "Resources", "autorun")
 
-                if hame(dn):
+                if has_game(dn):
                     return dn
 
             return None
@@ -448,7 +447,7 @@ init python in project:
                 ppath = os.path.join(d, pdir)
 
                 # A project must be a directory.
-                if os.pisdir(ppath):
+                if not os.path.isdir(ppath):
                     continue
 
                 try:
@@ -462,17 +461,17 @@ init python in project:
                 if ppath in self.scanned:
                     continue
 
-                self.ned.add(ppath)
+                self.scanned.add(ppath)
 
                 # We have a project directory, so create a Project.
                 p = Project(ppath, pdir)
 
                 project_type = p.data.get("type", "normal")
 
-                if pct_type == "hidden":
+                if project_type == "hidden":
                     pass
                 elif project_type == "template":
-                    self.templatesend(p)
+                    self.templates.append(p)
                 else:
                     self.projects.append(p)
 
@@ -608,7 +607,7 @@ init 10 python:
             persistent.projects_directory = None
 
 ###############################################################################
-# Code to choose the mod folder.
+# Code to choose the projects directory.
 
 label choose_projects_directory:
 
@@ -627,7 +626,6 @@ label choose_projects_directory:
 
     return
 
-# Moves Mod Folder and Contents to a new Folder
 label move_mod_folder:
 
     python hide:
@@ -649,7 +647,7 @@ label move_mod_folder:
         #Moving Files!
         for file in os.listdir(oldmod_dir):
             print file
-        src_file = os.path.join(oldmod_dir, file)
+            src_file = os.path.join(oldmod_dir, file)
             dst_file = os.path.join(persistent.projects_directory, file)
             shutil.move(src_file, dst_file)
 
@@ -657,7 +655,7 @@ label move_mod_folder:
 
     return
 
-# Chooses the Folder where your Downloaded Mod ZIPs are
+
 label choose_modzip_directory:
 
     python hide:
@@ -667,29 +665,27 @@ label choose_modzip_directory:
         pathmz, is_defaultmz = choose_directory(persistent.mzip_directory)
 
         if is_defaultmz:
-            interface.info(_("DDML has set the Mod directory to:"), "[pathmz!q]", pathmz=pathmz)
+            interface.info(_("DDML has set the Mod directory to:"), "[pathmz!q]", path=path)
 
         persistent.mzip_directory = pathmz
 
     return
 
-# Chooses the Folder where you downloaded ddlc-mac.zip
 label choose_zip_directory:
 
     python hide:
 
-        interface.interaction(_("DDLC ZIP Download Directory"), _("Please choose the directory in which ddlc-mac.zip is located."), _("This will make DDML find the ZIP in this folder."),)
+        interface.interaction(_("DDLC ZIP Download Directory"), _("Please choose the directory in which your DDLC ZIP is located."), _("This will make DDML find the ZIP in this folder."),)
 
-        pathz, is_defaultz = choose_ctory(persistent.zip_directory)
+        pathz, is_defaultz = choose_directory(persistent.zip_directory)
 
         if is_defaultz:
-            interface.info(_("DDML has set the Mod directory to:"), "[pathz!q]", pathz=pathz)
+            interface.info(_("DDML has set the Mod directory to:"), "[pathz!q]", path=path)
 
         persistent.zip_directory = pathz
 
     return
 
-# Removes a Mod from the Mod Folder
 label delete_mod_folder:
 
     python hide:
@@ -723,7 +719,6 @@ label delete_mod_folder:
 
     jump front_page
 
-# Adds a Mod
 label add_a_mod:
     # Checks if user set Mod Install Folder
     if persistent.projects_directory is None:
@@ -756,7 +751,7 @@ label add_a_mod:
             _("Mod Folder Name"),
             _("Please enter the name of your project:"),
             filename=True,
-            cancel=Jump("t_page"))
+            cancel=Jump("front_page"))
 
         modinstall_foldername = modinstall_foldername.strip()
         if not modinstall_foldername:
@@ -842,8 +837,8 @@ label add_a_mod:
                     dst_file = os.path.join(project_dir + '/DDLC.app/Contents/Resources/autorun/game', file)
                     shutil.move(src_file, dst_file)
         else:
-            #Extended Scanning (Iftents during extract are inside another folder (Yuri-1.0/script-ch1.rpyc))
-            if glob.glob(str(mzte[+ '/game'):
+            #Extended Scanning (If Contents during extract are inside another folder (Yuri-1.0/script-ch1.rpyc))
+            if glob.glob(str(mzte[1]) + '/game'):
                 for file in os.listdir(str(mzte[1]) + '/game'):
                     print file
                     src_file = os.path.join(str(mzte[1]) + '/game', file)
@@ -864,7 +859,6 @@ label add_a_mod:
 
     return
 
-# Adds Only DDLC
 label add_base_game:
     # Checks if user set Mod Install Folder
     if persistent.projects_directory is None:
@@ -892,7 +886,7 @@ label add_base_game:
             _("DDLC Folder Name"),
             _("Please enter the name of your DDLC folder:"),
             filename=True,
-            cancel=Jump("t_page"))
+            cancel=Jump("front_page"))
 
         modinstall_foldername = modinstall_foldername.strip()
         if not modinstall_foldername:
@@ -933,7 +927,6 @@ label add_base_game:
 
     return
 
-# Browser Check for MacOS (Safari or Third Party Browser)
 label browser:
 
     python:
@@ -947,17 +940,14 @@ label browser:
 
         renpy.jump(browser_kind)
 
-# Sets Browser to Safari
 label safari_download:
     $ persistent.safari = True
     return
 
-# Sets Browser to Third Party
 label regular_download:
     $ persistent.safari = False
     return
 
-# Deletes scripts.rpa for some mods
 label scripts_rpa:
     python hide:
         script_choice = interface.choice(
@@ -981,7 +971,6 @@ label delete_scripts:
     
     jump front_page
     
-# Deletes images.rpa for some mods    
 label images_rpa:
     python hide:
         image_choice = interface.choice(
