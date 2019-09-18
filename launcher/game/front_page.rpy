@@ -1,4 +1,5 @@
 ﻿# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+# Copyright 2018-2019 GanstaKingofSA <azarieldc@gmail.com>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -62,6 +63,7 @@ init python:
     def Relaunch():
         renpy.quit(relaunch=True)
 
+## DDML Front Page
 screen front_page:
     frame:
         alt ""
@@ -180,7 +182,7 @@ screen front_page_project_list:
 
             null height 12
 
-# This is used for the right side of the screen, which is where the project-specific
+# This is used for the right side of the screen, which is where the mod-specific
 # buttons are.
 screen front_page_project:
 

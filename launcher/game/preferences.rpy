@@ -1,4 +1,5 @@
 ﻿# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+# Copyright 2018-2019 GanstaKingofSA <azarieldc@gmail.com>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -47,7 +48,7 @@ init python:
 
         return rv
 
-
+## DDML Settings Page
 screen preferences:
 
     $ translations = scan_translations()
@@ -158,7 +159,7 @@ screen preferences:
                         yminimum 75
                         has vbox
 
-                        text _("Is DDLC Directory Steam Release?")
+                        text _("Steam Copy?")
                         add HALF_SPACER
 
                         frame style "l_indent":
@@ -175,7 +176,7 @@ screen preferences:
                         yminimum 75
                         has vbox
 
-                        text _("Is DDLC Directory DDLC ZIP/DDLC.moe Release?")
+                        text _("DDLC.moe/Itch.io Copy?")
                         add HALF_SPACER
 
                         frame style "l_indent":
@@ -189,6 +190,8 @@ screen preferences:
 
     textbutton _("Return") action Jump("front_page") style "l_left_button"
 
+# Asks User if they are wanting to make a new mod folder
+# or move mods to another folder
 label projects_directory_preference:
 
     python:
@@ -205,6 +208,7 @@ label projects_directory_preference:
             
     jump preferences
 
+# Setting Configuration Calls
 label projects_zip_preference:
     call ddlc_location
     jump preferences

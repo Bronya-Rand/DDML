@@ -1,4 +1,5 @@
 ﻿# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+# Copyright 2018-2019 GanstaKingofSA <azarieldc@gmail.com>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -36,6 +37,7 @@ init python:
         except:
             return False
 
+    # Mod Folder Directory Path
     def choose_directory(path):
         """
         Pops up a directory chooser.
@@ -110,80 +112,7 @@ init python:
 
         return path, is_default
 
-    def choose_directory(pathm):
-        """
-        Pops up a directory chooser.
-
-        `pathm`
-            The directory that is selected by default. If None, config.renpy_base
-            is selected.
-
-        Returns a (pathm, is_defaultm) tuple, where pathm is the chosen directory,
-        and is_defaultm is true if and only if it was chosen by default mechanism
-        rather than user choice.
-        """
-
-        if pathm:
-            default_pathm = pathm
-        else:
-            try:
-                default_pathm = os.path.dirname(os.path.abspath(config.renpy_base))
-            except:
-                default_pathm = os.path.abspath(config.renpy_base)
-
-        if EasyDialogs:
-
-            choice = EasyDialogs.AskFolder(defaultLocation=default_pathm, wanted=unicode)
-
-            if choice is not None:
-                pathm = choice
-            else:
-                pathm = None
-
-        else:
-
-            try:
-
-                cmd = [ "/usr/bin/python", os.path.join(config.gamedir, "tkaskdir.py"), renpy.fsencode(default_pathm) ]
-
-                p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-                choice = p.stdout.read()
-                code = p.wait()
-
-            except:
-                import traceback
-                traceback.print_exc()
-
-                code = 0
-                choice = ""
-                pathm = None
-
-                interface.error(_("Ren'Py was unable to run python with tkinter to choose the directory. Please install the python-tk or tkinter package."), label=None)
-
-            if code:
-                interface.error(_("Ren'Py was unable to run python with tkinter to choose the directory. Please install the python-tk or tkinter package."), label=None)
-
-            elif choice:
-                pathm = choice.decode("utf-8")
-
-        is_defaultm = False
-
-        if pathm is None:
-            pathm = default_pathm
-            is_defaultm = True
-
-        pathm = renpy.fsdecode(pathm)
-
-        if (not os.path.isdir(pathm)) or (not directory_is_writable(pathm)):
-            interface.error(_("The selected mod directory is not writable."))
-            pathm = default_pathm
-            is_defaultm = True
-
-        if is_defaultm and (not directory_is_writable(pathm)):
-            pathm = os.path.expanduser("~")
-
-        return pathm, is_defaultm
-
+    # Mod ZIP Choose Directory Path
     def choose_directory(pathmz):
         """
         Pops up a directory chooser.
