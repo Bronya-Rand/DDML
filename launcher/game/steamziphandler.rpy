@@ -31,7 +31,7 @@ init python:
         new = False
         legacy = False
         # Check for a translation of the words "New GUI Interface".
-        if (language is None) or (__("Steam Release") != "Steam Release"):
+        if (language is None) or (__("Steam") != "Steam"):
             new = True
         try:
             if (language is None) or os.path.exists(os.path.join(config.renpy_base, "templates", language)):
@@ -49,11 +49,6 @@ init python:
 
 # Asks whether they downloaded DDLC from Steam or DDLC.moe/Itch.io
 label ddlc_location:
-
-    if persistent.projects_directory is None:
-        call choose_projects_directory
-    if persistent.projects_directory is None:
-        $ interface.error(_("The projects directory could not be set. Giving up."))
 
     python:
 
