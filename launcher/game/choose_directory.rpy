@@ -1,4 +1,5 @@
 ﻿# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+# Copyright 2018-2019 GanstaKingofSA <azarieldc@gmail.com>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -110,21 +111,20 @@ init python:
 
         return path, is_default
 
-    def choose_directory(pathm):
+    # DDLC ZIP/ Mod Chooser
+    def choose_directory(pathz):
         """
         Pops up a directory chooser.
-
-        `pathm`
+        `pathz`
             The directory that is selected by default. If None, config.renpy_base
             is selected.
-
-        Returns a (pathm, is_defaultm) tuple, where pathm is the chosen directory,
+        Returns a (pathz, is_defaultm) tuple, where pathz is the chosen directory,
         and is_defaultm is true if and only if it was chosen by default mechanism
         rather than user choice.
         """
 
-        if pathm:
-            default_pathm = pathm
+        if pathz:
+            default_pathm = pathz
         else:
             try:
                 default_pathm = os.path.dirname(os.path.abspath(config.renpy_base))
@@ -136,9 +136,9 @@ init python:
             choice = EasyDialogs.AskFolder(defaultLocation=default_pathm, wanted=unicode)
 
             if choice is not None:
-                pathm = choice
+                pathz = choice
             else:
-                pathm = None
+                pathz = None
 
         else:
 
@@ -156,7 +156,7 @@ init python:
 
                 code = 0
                 choice = ""
-                pathm = None
+                pathz = None
 
                 interface.error(_("Ren'Py was unable to run python with tkinter to choose the directory. Please install the python-tk or tkinter package."), label=None)
 
@@ -164,25 +164,25 @@ init python:
                 interface.error(_("Ren'Py was unable to run python with tkinter to choose the directory. Please install the python-tk or tkinter package."), label=None)
 
             elif choice:
-                pathm = choice.decode("utf-8")
+                pathz = choice.decode("utf-8")
 
         is_defaultm = False
 
-        if pathm is None:
-            pathm = default_pathm
+        if pathz is None:
+            pathz = default_pathm
             is_defaultm = True
 
-        pathm = renpy.fsdecode(pathm)
+        pathz = renpy.fsdecode(pathz)
 
-        if (not os.path.isdir(pathm)) or (not directory_is_writable(pathm)):
+        if (not os.path.isdir(pathz)) or (not directory_is_writable(pathz)):
             interface.error(_("The selected mod directory is not writable."))
-            pathm = default_pathm
+            pathz = default_pathm
             is_defaultm = True
 
-        if is_defaultm and (not directory_is_writable(pathm)):
-            pathm = os.path.expanduser("~")
+        if is_defaultm and (not directory_is_writable(pathz)):
+            pathz = os.path.expanduser("~")
 
-        return pathm, is_defaultm
+        return pathz, is_defaultm
 
     def choose_directory(pathmz):
         """

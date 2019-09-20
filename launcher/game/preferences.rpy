@@ -1,4 +1,5 @@
 ﻿# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+# Copyright 2018-2019 GanstaKingofSA <azarieldc@gmail.com>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files

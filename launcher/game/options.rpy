@@ -1,4 +1,5 @@
 ﻿# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+# Copyright 2018-2019 GanstaKingofSA <azarieldc@gmail.com>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -49,7 +50,7 @@ init -1 python hide:
     # These control the name and version of the game, that are reported
     # with tracebacks and other debugging logs.
     config.name = "DDML"
-    config.version = "5.1.0-Windows-Release"
+    config.version = "5.1.2-Linux-Release"
 
     #####################
     # Themes

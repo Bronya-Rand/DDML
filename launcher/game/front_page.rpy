@@ -1,4 +1,5 @@
 ﻿# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+# Copyright 2018-2019 GanstaKingofSA <azarieldc@gmail.com>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -221,6 +222,7 @@ screen front_page_project:
                         textbutton _("Browse Mod Directory") action OpenDirectory(persistent.projects_directory)
                         textbutton _("Delete 'scripts.rpa'") action Jump("scripts_rpa")
                         textbutton _("Delete 'images.rpa'") action Jump("images_rpa")
+                        textbutton _("Install Add-On") action Jump("install_addon")
                     textbutton _("Delete Mod") action Jump("delete_mod_folder")
 
 label main_menu:
