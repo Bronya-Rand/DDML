@@ -642,7 +642,7 @@ label move_mod_folder:
 
         oldmod_dir = persistent.projects_directory
 
-        interface.interaction(_("New Mod Directory"), _("Please choose the new mod folder using the directory chooser.\n{b}The directory chooser may have opened behind this window.{/b}"), _("DDML will create new mods in this folder, and will place old and new mods into this folder."),)
+        interface.interaction(_("New Mod Directory"), _("Please choose the new mod folder using the directory chooser.\n{b}The directory chooser may have opened behind this window.{/b}"), _("DDML will create new mods in this folder, and place old and new mods into this folder."),)
 
         pathnew, is_default = choose_directory(persistent.projects_directory)
 
@@ -667,7 +667,7 @@ label choose_modzip_directory:
 
     python hide:
 
-        interface.interaction(_("Mod ZIP Download Directory"), _("Please choose the folder in which you download your Mod ZIPs."), _("This will make DDML find the Mod ZIP in this folder."),)
+        interface.interaction(_("Mod ZIP Download Directory"), _("Please choose the folder your Mod ZIPs are downloaded to."), _("This will make DDML find the Mod ZIP in this folder."),)
 
         pathmz, is_defaultmz = choose_directory(persistent.mzip_directory)
 
