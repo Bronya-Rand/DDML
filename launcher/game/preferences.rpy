@@ -47,7 +47,7 @@ init python:
 
         return rv
 
-
+# Settings
 screen preferences:
 
     $ translations = scan_translations()
@@ -164,9 +164,9 @@ screen preferences:
                         frame style "l_indent":
                             if persistent.safari != None:
                                 if persistent.safari == True:
-                                    text _("Safari/Safari Safe Files On")
+                                    text _("Safari/Safe Files On")
                                 else:
-                                    text _("Chrome/Firefox/Safari Safe Files Off")
+                                    text _("Other/Safe Files Off")
                             else:
                                 text _("None Selected")
 

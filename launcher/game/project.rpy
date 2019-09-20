@@ -1,4 +1,5 @@
 ﻿# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+# Copyright 2018-2019 GanstaKingofSA <azarieldc@gmail.com>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -45,10 +46,7 @@ init python in project:
         persistent.blurb = 0
 
     LAUNCH_BLURBS = [
-        _("After making changes to the script, press shift+R to reload your game."),
-        _("Press shift+O (the letter) to access the console."),
-        _("Press shift+D to access the developer menu."),
-        _("Have you backed up your projects recently?"),
+        _("Launching the Mod. Please Wait..."),
     ]
 
     class Project(object):
@@ -607,13 +605,13 @@ init 10 python:
             persistent.projects_directory = None
 
 ###############################################################################
-# Code to choose the projects directory.
+# Code to choose the mod directory.
 
 label choose_projects_directory:
 
     python hide:
 
-        interface.interaction(_("Mod Directory"), _("Please choose the Mod directory using the directory chooser.\n{b}The directory chooser may have opened behind this window.{/b}"), _("This launcher will scan for mods in this directory, will create new mods and DDLC Installs, and will place mods and DDLC into this directory."),)
+        interface.interaction(_("Mod Directory"), _("Please choose the folder where you want to install your mods.\n{b}The directory chooser may have opened behind this window.{/b}"), _("DDML will scan for mods in this folder, and create new mods and DDLC Installs into this folder."),)
 
         path, is_default = choose_directory(persistent.projects_directory)
 
@@ -625,7 +623,7 @@ label choose_projects_directory:
         project.manager.scan()
 
     return
-
+# Code to move the mod folder
 label move_mod_folder:
 
     python hide:
@@ -635,7 +633,7 @@ label move_mod_folder:
 
         oldmod_dir = persistent.projects_directory
 
-        interface.interaction(_("Mod Directory"), _("Please choose the new mod directory using the directory chooser.\n{b}The directory chooser may have opened behind this window.{/b}"), _("This launcher will create new mods in this directory, and will place old and new mods into this directory."),)
+        interface.interaction(_("New Mod Directory"), _("Please choose the new mod folder using the directory chooser.\n{b}The directory chooser may have opened behind this window.{/b}"), _("DDML will create new mods in this folder, and place old and new mods into this folder."),)
 
         pathnew, is_default = choose_directory(persistent.projects_directory)
 
@@ -644,7 +642,7 @@ label move_mod_folder:
 
         persistent.projects_directory = pathnew
 
-        #Moving Files!
+        #Moves mods from old folder to new folder
         for file in os.listdir(oldmod_dir):
             print file
             src_file = os.path.join(oldmod_dir, file)
@@ -654,13 +652,12 @@ label move_mod_folder:
         project.manager.scan()
 
     return
-
-
+# Asks user the folder where they download Mod ZIPs
 label choose_modzip_directory:
 
     python hide:
 
-        interface.interaction(_("Mod ZIP Download Directory"), _("Please choose the directory in which your Mod ZIP is located."), _("This will make DDML find the Mod ZIP in this folder."),)
+        interface.interaction(_("Mod ZIP Download Directory"), _("Please choose the folder your Mod ZIPs are downloaded to."), _("This will make DDML find the Mod ZIP in this folder."),)
 
         pathmz, is_defaultmz = choose_directory(persistent.mzip_directory)
 
@@ -670,12 +667,12 @@ label choose_modzip_directory:
         persistent.mzip_directory = pathmz
 
     return
-
+# DDLC Folder Directory
 label choose_zip_directory:
 
     python hide:
 
-        interface.interaction(_("DDLC ZIP Download Directory"), _("Please choose the directory in which your DDLC ZIP is located."), _("This will make DDML find the ZIP in this folder."),)
+        interface.interaction(_("DDLC.moe Download Directory"), _("Please choose the folder where 'ddlc-mac.zip' or 'ddlc-mac' is."), _("This will make DDML find the ZIP in this folder."),)
 
         pathz, is_defaultz = choose_directory(persistent.zip_directory)
 
@@ -685,7 +682,7 @@ label choose_zip_directory:
         persistent.zip_directory = pathz
 
     return
-
+# Deletes mods from the mod folder
 label delete_mod_folder:
 
     python hide:
@@ -718,7 +715,7 @@ label delete_mod_folder:
         project.manager.scan()
 
     jump front_page
-
+# Add a Mod
 label add_a_mod:
     # Checks if user set Mod Install Folder
     if persistent.projects_directory is None:
@@ -749,7 +746,7 @@ label add_a_mod:
         import os
         modinstall_foldername = interface.input(
             _("Mod Folder Name"),
-            _("Please enter the name of your project:"),
+            _("Please enter the name of the folder:"),
             filename=True,
             cancel=Jump("front_page"))
 
@@ -788,9 +785,22 @@ label add_a_mod:
             except:
                 interface.error(_("Cannot find DDLC.app."). _("Please make sure your OS and ZIP Directory are set correctly."),)
 
+        # RPA Download Install Check (for mods that aren't in ZIPs or downloaded as seperate .rpas)
+        if glob.glob(persistent.mzip_directory + '/*.rpa'):
+            interface.interaction(_("Copying"), _("Copying Mod Files from Mod ZIP Directory, Please Wait..."),)
+
+            for file in os.listdir(persistent.mzip_directory):
+                if file.endswith('.rpa'):
+                    src = os.path.join(persistent.mzip_directory, file)
+                    shutil.move(src, project_dir + '/DDLC.app/Contents/Resources/autorun/game')    
+
+            # Auto-Refresh
+            project.manager.scan()
+            renpy.jump("front_page")
+            
         modzip_name = interface.input(
             _("Mod ZIP Name"),
-            _("Please enter the name of your ZIP. It is recommended to rename the ZIP for easy installation."),
+            _("Please enter the name of the ZIP file. It is recommended to rename the ZIP for easy installation."),
             filename=True,
             cancel=Jump("front_page"))
 
@@ -858,7 +868,7 @@ label add_a_mod:
         project.manager.scan()
 
     return
-
+# Add DDLC Only
 label add_base_game:
     # Checks if user set Mod Install Folder
     if persistent.projects_directory is None:
@@ -926,7 +936,7 @@ label add_base_game:
         project.manager.scan()
 
     return
-
+# Browser Prompt
 label browser:
 
     python:
@@ -939,15 +949,15 @@ label browser:
             )
 
         renpy.jump(browser_kind)
-
+# Set Safari or Auto-Extract Browser to True
 label safari_download:
     $ persistent.safari = True
     return
-
+# Set Safaro to False for Third Party or Auto-Extract Off
 label regular_download:
     $ persistent.safari = False
     return
-
+# Deletes scripts.rpa
 label scripts_rpa:
     python hide:
         script_choice = interface.choice(
@@ -970,7 +980,7 @@ label delete_scripts:
         interface.info("scripts.rpa has been deleted.")
     
     jump front_page
-    
+# Deletes images.rpa    
 label images_rpa:
     python hide:
         image_choice = interface.choice(
@@ -993,6 +1003,86 @@ label delete_images:
         interface.info("images.rpa has been deleted.")
     
     jump front_page
+# Add-On Install for some mods
+label install_addon:
+
+    python hide:
+        # Asks ZIP name of add-on
+        modzip_name = interface.input(
+            _("Mod Add-On ZIP Name"),
+            _("Please enter the name of your Mod Add-On ZIP File. It is recommended to rename the ZIP for easy installation."),
+            filename=True,
+            cancel=Jump("front_page"))
+
+        modzip_name = modzip_name.strip()
+        if not modzip_name:
+            interface.error(_("The mod add-on zip name may not be empty."))
+
+        # Extract Mod
+        interface.interaction(_("Extracting"), _("Extracting Mod Add-On ZIP, Please Wait..."),)
+
+        try:
+            with zipfile.ZipFile(persistent.mzip_directory + '/' + modzip_name + ".zip", "r") as z:
+                z.extractall(persistent.projects_directory + "/temp")
+                mzt = persistent.projects_directory + "/temp"
+        except: 
+            shutil.rmtree(persistent.projects_directory + '/' + project_dir)
+            interface.error(_("Cannot locate ZIP in [persistent.mzip_directory!q]."), _("Check the name of your Mod Add-On ZIP File and try again."))
+        
+        # Search for if there is a folder in /temp that isn't mod related (Yuri-1.0)
+        import glob
+        mzte = [x[0] for x in os.walk(mzt)]
+        try:
+            # outputs folder in array
+            mzte[1]
+            # if folder is DDLC/Mod Related
+            if (str(mzte[1]) == mzt + "/cache" or str(mzte[1]) == mzt + "/gui" or str(mzte[1]) == mzt + "/mod_assets" or str(mzte[1]) == mzt + "/images" or str(mzte[1]) == mzt + "/fonts" or str(mzte[1]) == mzt + "/audio" or str(mzte[1]) == mzt + "/python-packages" or str(mzte[1]) == mzt + "/saves" or str(mzte[1]) == mzt + "/submods"):
+                # return false for advanced scan
+                mztex = False
+            else:
+                # return true for advanced scan
+                mztex = True
+        # if there is no folders in there
+        except IndexError:
+            # return false for advanced scan
+            mztex = False
+
+        if mztex == False:
+            # if folder inside is /game to move to mod folder
+            if glob.glob(mzt + '/game'):
+                shutil.move(mzt + '/game', project_dir + '/DDLC.app/Contents/Resources/autorun')
+            else:
+                # move mod files to the /game folder or mod folder
+                import os
+                for file in os.listdir(mzt):
+                    print file
+                    src_file = os.path.join(mzt, file)
+                    dst_file = os.path.join(project_dir + '/DDLC.app/Contents/Resources/autorun/game', file)
+                    shutil.move(src_file, dst_file)
+        else:
+            #Extended Scanning (If Contents during extract are inside another folder (Yuri-1.0/script-ch1.rpyc))
+            # if folder inside is /game to move to mod folder
+            if glob.glob(str(mzte[1]) + '/game'):
+                for file in os.listdir(str(mzte[1]) + '/game'):
+                    print file
+                    src_file = os.path.join(str(mzte[1]) + '/game', file)
+                    dst_file = os.path.join(project_dir + '/DDLC.app/Contents/Resources/autorun/game', file)
+                    shutil.move(src_file, dst_file)
+            else:
+                # move mod files to the /game folder or mod folder
+                import os
+                for file in os.listdir(str(mzte[1])):
+                    print file
+                    src_file = os.path.join(str(mzte[1]), file)
+                    dst_file = os.path.join(project_dir + '/DDLC.app/Contents/Resources/autorun/game', file)
+                    shutil.move(src_file, dst_file)
+
+        # Prevents copy of any other RPA or other mod files
+        shutil.rmtree(persistent.projects_directory + '/temp')
+
+        interface.info("Mod Add-on for " + project.current.name + " has been installed.")
+
+    return
 
 init python:
 
