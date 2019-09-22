@@ -188,6 +188,17 @@ screen preferences:
                             else:
                                 text _("No")
 
+                    frame:
+                        style "l_indent"
+                        yminimum 75
+                        has vbox
+
+                        text _("Customization:")
+                        add HALF_SPACER
+
+                        textbutton _("Change Layout") action ImgDir("launcher/game/images")
+
+
     textbutton _("Return") action Jump("front_page") style "l_left_button"
 
 # Asks User if they are wanting to make a new mod folder

@@ -59,6 +59,37 @@ init python:
             except:
                 pass
 
+    class ImgDir(Action):
+        """
+        Opens `images` in a file browser.
+        """
+
+        alt = _("Open [text] directory.")
+
+        def __init__(self, directory, absolute=False):
+            if absolute:
+                self.directory = directory
+            else:
+                self.directory = os.path.join(os.getcwd(), directory)
+
+        def get_sensitive(self):
+            return os.path.exists(self.directory)
+
+        def __call__(self):
+
+            try:
+                directory = renpy.fsencode(self.directory)
+
+                if renpy.windows:
+                    os.startfile(directory)
+                elif renpy.macintosh:
+                    subprocess.Popen([ "open", directory ])
+                else:
+                    subprocess.Popen([ "xdg-open", directory ])
+
+            except:
+                pass
+
     # Used for testing.
     def Relaunch():
         renpy.quit(relaunch=True)
