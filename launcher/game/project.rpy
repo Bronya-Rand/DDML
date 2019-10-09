@@ -734,11 +734,97 @@ label add_a_mod:
         $ interface.error(_("The Mod ZIP directory could not be set. Giving up."))
 
     python hide:
-        
         import zipfile
         import shutil
         import glob
         import os
+
+        def rpy_move():
+            import os
+            for file in os.listdir(mzt):
+                print file
+                src_file = os.path.join(mzt, file)
+                dst_file = os.path.join(project_dir, file)
+                shutil.move(src_file, dst_file)
+
+        def ext_move(path):
+            import os
+            for file in os.listdir(str(mzte[1]) + path):
+                print file
+                src_file = os.path.join(str(mzte[1]) + path, file)
+                dst_file = os.path.join(project_dir, file)
+                shutil.move(src_file, dst_file)
+
+        def rpy_ext():
+            import os
+            for file in os.listdir(str(mzte[1])):
+                print file
+                src_file = os.path.join(str(mzte[1]), file)
+                dst_file = os.path.join(project_dir , file)
+                shutil.move(src_file, dst_file)
+
+        def reg_move():
+            import shutil
+            shutil.move(mzt + path, project_dir)
+
+        def zip_extract():
+            import zipfile
+            import shutil
+            #try: 
+            with zipfile.ZipFile(persistent.zip_directory + '/ddlc-win.zip', "r") as z:
+                z.extractall(persistent.projects_directory + "/temp")
+                ddlc = persistent.projects_directory + '/temp' + '/DDLC-1.1.1-pc'
+                shutil.move(ddlc, persistent.project_dir)
+            #except: 
+                #interface.error(_("Cannot Locate 'ddlc-win.zip' in [persistent.zip_directory!q]."), _("Make sure you have DDLC downloaded from 'https://ddlc.moe' and check if it exists."),)
+        
+        def steam_copy():
+            import shutil
+            shutil.copytree(persistent.zip_directory + "/Doki Doki Literature Club", persistent.project_dir)
+            #except:
+                #interface.error(_("Cannot Locate Your Doki Doki Literature Club Folder"), _("Make sure it is set to your 'Steam\steamapps\common' folder."),)
+        
+        def rpa_copy():
+            import glob
+            import os
+            if glob.glob(persistent.mzip_directory + '/*.rpa'):
+                interface.interaction(_("Copying"), _("Copying Mod Files from Mod ZIP Directory, Please Wait..."),)
+                for file in os.listdir(persistent.mzip_directory):
+                    if file.endswith('.rpa'):
+                        src = os.path.join(persistent.mzip_directory, file)
+                        shutil.move(src, project_dir + '/game')    
+                # Auto-Refresh
+                project.manager.scan()
+                renpy.jump("front_page")
+        
+        def modzip_extract(name):
+            import zipfile
+            import shutil
+            try:
+                with zipfile.ZipFile(persistent.mzip_directory + '/' + name + ".zip", "r") as z:
+                    z.extractall(persistent.projects_directory + "/temp")
+                    mzt = persistent.projects_directory + "/temp"
+            except:
+                shutil.rmtree(persistent.projects_directory + '/' + project_dir)
+                interface.error(_("Cannot locate ZIP in [persistent.mzip_directory!q]."), _("Check the name of your Mod ZIP file and try again."))
+        
+        def ext_check(mzt):
+            mzte = [x[0] for x in os.walk(mzt)]
+            try:
+                # outputs folder in array
+                mzte[1]
+                # if folder is DDLC/Mod Related
+                if (str(mzte[1]) == mzt + "\\cache" or str(mzte[1]) == mzt + "\\gui" or str(mzte[1]) == mzt + "\\mod_assets" or str(mzte[1]) == mzt + "\\images" or str(mzte[1]) == mzt + "\\fonts" or str(mzte[1]) == mzt + "\\audio" or str(mzte[1]) == mzt + "\\python-packages" or str(mzte[1]) == mzt + "\\saves" or str(mzte[1]) == mzt + "\\submods"):
+                    # return false for advanced scan
+                    mztex = False
+                else:
+                    # returns true for advanced scan
+                    mztex = True
+            # if there is no folders in there
+            except IndexError:
+                # return false for advanced scan
+                mztex = False
+        
         # Asks User the name of the folder they want their mod folder to be
         modinstall_foldername = interface.input(
             _("Mod Folder Name"),
@@ -750,48 +836,27 @@ label add_a_mod:
         if not modinstall_foldername:
             interface.error(_("The mod name may not be empty."))
 
-        project_dir = os.path.join(persistent.projects_directory, modinstall_foldername)
+        persistent.project_dir = os.path.join(persistent.projects_directory, modinstall_foldername)
 
         if project.manager.get(modinstall_foldername) is not None:
             interface.error(_("[modinstall_foldername!q] already exists. Please choose a different project name."), modinstall_foldername=modinstall_foldername)
-        if os.path.exists(project_dir):
-            interface.error(_("[project_dir!q] already exists. Please choose a different project name."), project_dir=project_dir)
+        if os.path.exists(persistent.project_dir):
+            interface.error(_("[persistent.project_dir!q] already exists. Please choose a different project name."), project_dir=project_dir)
 
         interface.interaction(_("Making a Mod Folder"), _("Extracting DDLC, Please Wait..."),)
         # Asks if the copy is Steam
         if persistent.steam_release == True:
             # Copy DDLC (Steam Release) (Assuming Steam Copy is Unmodded)
-            try: shutil.copytree(persistent.zip_directory + "/Doki Doki Literature Club", project_dir)
-            except:
-                interface.error(_("Cannot Locate Your Doki Doki Literature Club Folder"), _("Make sure it is set to your 'Steam\steamapps\common' folder."),)
+            steam_copy()
         else:
             # Extract DDLC (Moe Release)
-            try: 
-                with zipfile.ZipFile(persistent.zip_directory + '/ddlc-win.zip', "r") as z:
-                    z.extractall(persistent.projects_directory + "/temp")
-
-                    ddlc = persistent.projects_directory + '/temp' + '/DDLC-1.1.1-pc'
-
-            except: interface.error(_("Cannot Locate 'ddlc-win.zip' in [persistent.zip_directory!q]."), _("Make sure you have DDLC downloaded from 'https://ddlc.moe' and check if it exists."),)
-
-            shutil.move(ddlc, project_dir)
+            zip_extract()
         # RPA Download Install Check (for mods that aren't in ZIPs or downloaded as seperate .rpas)
-        if glob.glob(persistent.mzip_directory + '/*.rpa'):
-            interface.interaction(_("Copying"), _("Copying Mod Files from Mod ZIP Directory, Please Wait..."),)
-
-            for file in os.listdir(persistent.mzip_directory):
-                if file.endswith('.rpa'):
-                    src = os.path.join(persistent.mzip_directory, file)
-                    shutil.move(src, project_dir + '/game')    
-
-            # Auto-Refresh
-            project.manager.scan()
-            renpy.jump("front_page")
-
+        rpa_copy()
         # Asks User name of ZIP
         modzip_name = interface.input(
             _("Mod ZIP Name"),
-            _("Please enter the name of your Mod ZIP File. It is recommended to rename the ZIP for easy installation."),
+            _("Please enter the name of your Mod ZIP File. Do not include '.zip' in the name."),
             filename=True,
             cancel=Jump("front_page"))
 
@@ -802,52 +867,21 @@ label add_a_mod:
 
         # Extract Mod
         interface.interaction(_("Extracting"), _("Extracting Mod ZIP, Please Wait..."),)
-        try:
-            with zipfile.ZipFile(persistent.mzip_directory + '/' + modzip_name + ".zip", "r") as z:
-                z.extractall(persistent.projects_directory + "/temp")
-
-                mzt = persistent.projects_directory + "/temp"
-        except:
-            shutil.rmtree(persistent.projects_directory + '/' + project_dir)
-            interface.error(_("Cannot locate ZIP in [persistent.mzip_directory!q]."), _("Check the name of your Mod ZIP file and try again."))
-
+        modzip_extract(modzip_name)
         # Search for if there is a folder in /temp that isn't mod related (Yuri-1.0)
-        mzte = [x[0] for x in os.walk(mzt)]
-        try:
-            # outputs folder in array
-            mzte[1]
-            # if folder is DDLC/Mod Related
-            if (str(mzte[1]) == mzt + "\\cache" or str(mzte[1]) == mzt + "\\gui" or str(mzte[1]) == mzt + "\\mod_assets" or str(mzte[1]) == mzt + "\\images" or str(mzte[1]) == mzt + "\\fonts" or str(mzte[1]) == mzt + "\\audio" or str(mzte[1]) == mzt + "\\python-packages" or str(mzte[1]) == mzt + "\\saves" or str(mzte[1]) == mzt + "\\submods"):
-                # return false for advanced scan
-                mztex = False
-            else:
-                # returns true for advanced scan
-                mztex = True
-        # if there is no folders in there
-        except IndexError:
-            # return false for advanced scan
-            mztex = False
-
+        ext_check(mzt)
         if mztex == False:
             # if folder inside is /game to move to mod folder
             if glob.glob(mzt + '/characters'):
-                shutil.move(mzt + '/characters', project_dir)
+                reg_move('/characters')
             if glob.glob(mzt + '/lib'):
-                shutil.move(mzt + '/lib', project_dir)
-                for file in os.listdir(mzt):
-                    print file
-                    src_file = os.path.join(mzt, file)
-                    dst_file = os.path.join(project_dir, file)
-                    shutil.move(src_file, dst_file)
+                reg_move('/lib')
+                rpy_move()
             if glob.glob(mzt + '/renpy'):
-                shutil.move(mzt + '/renpy', project_dir)
-                for file in os.listdir(mzt):
-                    print file
-                    src_file = os.path.join(mzt, file)
-                    dst_file = os.path.join(project_dir, file)
-                    shutil.move(src_file, dst_file)
+                reg_move('/renpy')
+                rpy_move()
             if glob.glob(mzt + '/game'):
-                shutil.move(mzt + '/game', project_dir)
+                reg_move('/game')
             else:
                 # move mod files to the /game folder or mod folder
                 for file in os.listdir(mzt):
@@ -859,39 +893,15 @@ label add_a_mod:
             #Extended Scanning (If Contents during extract are inside another folder (Yuri-1.0/script-ch1.rpyc))
             # if folder inside is /game to move to mod folder
             if glob.glob(str(mzte[1]) + '/characters'):
-                for file in os.listdir(str(mzte[1]) + '/characters'):
-                    print file
-                    src_file = os.path.join(str(mzte[1]) + '/characters', file)
-                    dst_file = os.path.join(project_dir + '/characters', file)
-                    shutil.move(src_file, dst_file)
+                ext_move('/characters')
             if glob.glob(str(mzte[1]) + '/lib'):
-                for file in os.listdir(str(mzte[1]) + '/lib'):
-                    print file
-                    src_file = os.path.join(str(mzte[1]) + '/lib', file)
-                    dst_file = os.path.join(project_dir + '/lib', file)
-                    shutil.move(src_file, dst_file)
-                for file in os.listdir(str(mzte[1])):
-                    print file
-                    src_file = os.path.join(str(mzte[1]), file)
-                    dst_file = os.path.join(project_dir , file)
-                    shutil.move(src_file, dst_file)
+                ext_move('/lib')
+                rpy_ext()
             if glob.glob(str(mzte[1]) + '/renpy'):
-                for file in os.listdir(str(mzte[1]) + '/renpy'):
-                    print file
-                    src_file = os.path.join(str(mzte[1]) + '/renpy', file)
-                    dst_file = os.path.join(project_dir + '/renpy', file)
-                    shutil.move(src_file, dst_file)
-                for file in os.listdir(str(mzte[1])):
-                    print file
-                    src_file = os.path.join(str(mzte[1]), file)
-                    dst_file = os.path.join(project_dir , file)
-                    shutil.move(src_file, dst_file)
+                ext_move('/renpy')
+                rpy_ext()
             if glob.glob(str(mzte[1]) + '/game'):
-                for file in os.listdir(str(mzte[1]) + '/game'):
-                    print file
-                    src_file = os.path.join(str(mzte[1]) + '/game', file)
-                    dst_file = os.path.join(project_dir + '/game', file)
-                    shutil.move(src_file, dst_file)
+                ext_move('/game')
             else:
                 # move mod files to the /game folder or mod folder
                 import os
@@ -945,26 +955,9 @@ label add_base_game:
         
         # Asks if the copy is Steam
         if persistent.steam_release == True:
-            # Copy DDLC (Steam Release)
-            import shutil
-            try:
-                shutil.copytree(persistent.zip_directory + "/Doki Doki Literature Club", project_dir)
-            except:
-                interface.error(_("Cannot Locate Your Doki Doki Literature Club Folder"), _("Make sure it is set to your 'Steam\steamapps\common' folder."),)
+            steam_copy()
         else:
-            # Extract DDLC
-            import zipfile
-            try:
-                with zipfile.ZipFile(persistent.zip_directory + '/ddlc-win.zip', "r") as z:
-                    z.extractall(persistent.projects_directory + "/temp")
-                    ddlc = persistent.projects_directory + '/temp' + '/DDLC-1.1.1-pc'
-            except:
-                interface.error(_("Cannot Locate 'ddlc-win.zip' in [persistent.zip_directory!q]."), _("Make sure you have DDLC downloaded from 'https://ddlc.moe' and check if it exists."),)
-
-            import shutil
-            shutil.move(ddlc, project_dir)
-            # Prevents copy of any other RPA or other mod files
-            shutil.rmtree(persistent.projects_directory + '/temp')
+            zip_extract()
 
         project.manager.scan()
 
