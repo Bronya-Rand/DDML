@@ -738,6 +738,7 @@ label add_a_mod:
         import zipfile
         import shutil
         import glob
+        import os
         # Asks User the name of the folder they want their mod folder to be
         modinstall_foldername = interface.input(
             _("Mod Folder Name"),
@@ -829,11 +830,26 @@ label add_a_mod:
 
         if mztex == False:
             # if folder inside is /game to move to mod folder
+            if glob.glob(mzt + '/characters'):
+                shutil.move(mzt + '/characters', project_dir)
+            if glob.glob(mzt + '/lib'):
+                shutil.move(mzt + '/lib', project_dir)
+                for file in os.listdir(mzt):
+                    print file
+                    src_file = os.path.join(mzt, file)
+                    dst_file = os.path.join(project_dir, file)
+                    shutil.move(src_file, dst_file)
+            if glob.glob(mzt + '/renpy'):
+                shutil.move(mzt + '/renpy', project_dir)
+                for file in os.listdir(mzt):
+                    print file
+                    src_file = os.path.join(mzt, file)
+                    dst_file = os.path.join(project_dir, file)
+                    shutil.move(src_file, dst_file)
             if glob.glob(mzt + '/game'):
                 shutil.move(mzt + '/game', project_dir)
             else:
                 # move mod files to the /game folder or mod folder
-                import os
                 for file in os.listdir(mzt):
                     print file
                     src_file = os.path.join(mzt, file)
@@ -842,6 +858,34 @@ label add_a_mod:
         else:
             #Extended Scanning (If Contents during extract are inside another folder (Yuri-1.0/script-ch1.rpyc))
             # if folder inside is /game to move to mod folder
+            if glob.glob(str(mzte[1]) + '/characters'):
+                for file in os.listdir(str(mzte[1]) + '/characters'):
+                    print file
+                    src_file = os.path.join(str(mzte[1]) + '/characters', file)
+                    dst_file = os.path.join(project_dir + '/characters', file)
+                    shutil.move(src_file, dst_file)
+            if glob.glob(str(mzte[1]) + '/lib'):
+                for file in os.listdir(str(mzte[1]) + '/lib'):
+                    print file
+                    src_file = os.path.join(str(mzte[1]) + '/lib', file)
+                    dst_file = os.path.join(project_dir + '/lib', file)
+                    shutil.move(src_file, dst_file)
+                for file in os.listdir(str(mzte[1])):
+                    print file
+                    src_file = os.path.join(str(mzte[1]), file)
+                    dst_file = os.path.join(project_dir , file)
+                    shutil.move(src_file, dst_file)
+            if glob.glob(str(mzte[1]) + '/renpy'):
+                for file in os.listdir(str(mzte[1]) + '/renpy'):
+                    print file
+                    src_file = os.path.join(str(mzte[1]) + '/renpy', file)
+                    dst_file = os.path.join(project_dir + '/renpy', file)
+                    shutil.move(src_file, dst_file)
+                for file in os.listdir(str(mzte[1])):
+                    print file
+                    src_file = os.path.join(str(mzte[1]), file)
+                    dst_file = os.path.join(project_dir , file)
+                    shutil.move(src_file, dst_file)
             if glob.glob(str(mzte[1]) + '/game'):
                 for file in os.listdir(str(mzte[1]) + '/game'):
                     print file
