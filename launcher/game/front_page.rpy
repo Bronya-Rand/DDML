@@ -240,6 +240,7 @@ screen front_page_project:
                     has vbox
 
                     textbutton _("Browse Game Directory") action OpenDirectory("game")
+                    textbutton _("Browse Save Directory") action OpenDirectory(os.getenv('APPDATA') + '/RenPy')
                     textbutton _("Delete Saves") action Jump("rmpersistent")
                     # textbutton _("save") action None style "l_list"
                 # textbutton "Relaunch" action Relaunch

@@ -29,6 +29,103 @@ init python:
         EasyDialogs = None
 
     import os
+    def rpy_move(ext):
+        import os
+        import shutil
+        for file in os.listdir(ext):
+            print file
+            src_file = os.path.join(ext, file)
+            dst_file = os.path.join(persistent.project_dir, file)
+            shutil.move(src_file, dst_file)
+    def ext_move(ext,path):
+        import os
+        import shutil
+        if os.path.exists(persistent.project_dir + '/game/python-packages'):
+            if os.path.exists(ext + path + '/python-packages'):
+                shutil.rmtree(persistent.project_dir + '/game/python-packages')
+            else:
+                pass
+        for file in os.listdir(ext + path):
+            print file
+            src_file = os.path.join(ext + path, file)
+            dst_file = os.path.join(persistent.project_dir + path, file)
+            shutil.move(src_file, dst_file)
+    def rpy_ext(ext):
+        import os
+        for file in os.listdir(ext):
+            base = [".exe", ".sh", ".py", ".txt", ".md", ".html"]
+            if file.endswith(tuple(base)):
+                src = os.path.join(ext, file)
+                shutil.move(src, persistent.project_dir)
+    def lib_move(ext):
+        import os
+        import shutil
+        shutil.rmtree(persistent.project_dir + '/lib')
+        for file in os.listdir(ext + '/lib'):
+            print file
+            src_file = os.path.join(ext + '/lib', file)
+            dst_file = os.path.join(persistent.project_dir + '/lib', file)
+            shutil.move(src_file, dst_file)
+    def rpy_move(ext):
+        import os
+        import shutil
+        for file in os.listdir(persistent.project_dir + '/renpy'):
+            file_path = os.path.join(persistent.project_dir + '/renpy', file)
+            if os.path.isfile(file_path):
+                os.unlink(file_path)
+            elif os.path.isdir(file_path): 
+                shutil.rmtree(file_path)
+        for file in os.listdir(ext + '/renpy'):
+            print file
+            src_file = os.path.join(ext + '/renpy', file)
+            dst_file = os.path.join(persistent.project_dir + '/renpy', file)
+            shutil.move(src_file, dst_file)
+    def reg_move(mzt, ext):
+        import os
+        import shutil
+        if os.path.exists(persistent.project_dir + '/game/python-packages'):
+            if os.path.exists(mzt + '/python-packages'):
+                shutil.rmtree(persistent.project_dir + '/game/python-packages')
+        shutil.move(mzt + ext, persistent.project_dir)
+    def zip_extract():
+        import zipfile
+        import shutil
+        try: 
+            with zipfile.ZipFile(persistent.zip_directory + '/ddlc-win.zip', "r") as z:
+                z.extractall(persistent.projects_directory + "/temp")
+                ddlc = persistent.projects_directory + '/temp' + '/DDLC-1.1.1-pc'
+                shutil.move(ddlc, persistent.project_dir)
+        except: 
+            interface.error(_("Cannot Locate 'ddlc-win.zip' in [persistent.zip_directory!q]."), _("Make sure you have DDLC downloaded from 'https://ddlc.moe' and check if it exists."),)
+    def steam_copy():
+        import shutil
+        try:
+            shutil.copytree(persistent.zip_directory + "/Doki Doki Literature Club", persistent.project_dir)
+        except:
+            interface.error(_("Cannot Locate Your Doki Doki Literature Club Folder"), _("Make sure it is set to your 'Steam\steamapps\common' folder."),)
+    def rpa_copy():
+        import glob
+        import os
+        if glob.glob(persistent.mzip_directory + '/*.rpa'):
+            interface.interaction(_("Copying"), _("Copying Mod Files from Mod ZIP Directory, Please Wait..."),)
+            for file in os.listdir(persistent.mzip_directory):
+                if file.endswith('.rpa'):
+                    src = os.path.join(persistent.mzip_directory, file)
+                    shutil.move(src, persistent.projects_directory + '/temp')    
+                    shutil.copy(src,persistent.project_dir + '/game')
+                    shutil.rmtree(persistent.projects_directory + '/temp')
+            # Auto-Refresh
+            project.manager.scan()
+            renpy.jump("front_page")
+    def modzip_extract(name):
+        import zipfile
+        import shutil
+        try:
+            with zipfile.ZipFile(persistent.mzip_directory + '/' + name + ".zip", "r") as z:
+                z.extractall(persistent.projects_directory + "/temp")
+        except:
+            shutil.rmtree(persistent.projects_directory + '/' + persistent.project_dir)
+            interface.error(_("Cannot locate ZIP in [persistent.mzip_directory!q]."), _("Check the name of your Mod ZIP file and try again."))
 
 init python in project:
     from store import persistent, config, Action, renpy
@@ -736,103 +833,6 @@ label add_a_mod:
     python hide:
         import glob
         import os
-        def rpy_move(ext):
-            import os
-            import shutil
-            for file in os.listdir(ext):
-                print file
-                src_file = os.path.join(ext, file)
-                dst_file = os.path.join(persistent.project_dir, file)
-                shutil.move(src_file, dst_file)
-        def ext_move(ext,path):
-            import os
-            import shutil
-            if os.path.exists(persistent.project_dir + '/game/python-packages'):
-                if os.path.exists(ext + path + '/python-packages'):
-                    shutil.rmtree(persistent.project_dir + '/game/python-packages')
-                else:
-                    pass
-            for file in os.listdir(ext + path):
-                print file
-                src_file = os.path.join(ext + path, file)
-                dst_file = os.path.join(persistent.project_dir + path, file)
-                shutil.move(src_file, dst_file)
-        def rpy_ext(ext):
-            import os
-            for file in os.listdir(ext):
-                base = [".exe", ".sh", ".py", ".txt", ".md", ".html"]
-                if file.endswith(tuple(base)):
-                    src = os.path.join(ext, file)
-                    shutil.move(src, persistent.project_dir)
-        def lib_move(ext):
-            import os
-            import shutil
-            shutil.rmtree(persistent.project_dir + '/lib')
-            for file in os.listdir(ext + '/lib'):
-                print file
-                src_file = os.path.join(ext + '/lib', file)
-                dst_file = os.path.join(persistent.project_dir + '/lib', file)
-                shutil.move(src_file, dst_file)
-        def rpy_move(ext):
-            import os
-            import shutil
-            for file in os.listdir(persistent.project_dir + '/renpy'):
-                file_path = os.path.join(persistent.project_dir + '/renpy', file)
-                if os.path.isfile(file_path):
-                    os.unlink(file_path)
-                elif os.path.isdir(file_path): 
-                    shutil.rmtree(file_path)
-            for file in os.listdir(ext + '/renpy'):
-                print file
-                src_file = os.path.join(ext + '/renpy', file)
-                dst_file = os.path.join(persistent.project_dir + '/renpy', file)
-                shutil.move(src_file, dst_file)
-        def reg_move(mzt, ext):
-            import os
-            import shutil
-            if os.path.exists(persistent.project_dir + '/game/python-packages'):
-                if os.path.exists(mzt + '/python-packages'):
-                    shutil.rmtree(persistent.project_dir + '/game/python-packages')
-            shutil.move(mzt + ext, persistent.project_dir)
-        def zip_extract():
-            import zipfile
-            import shutil
-            try: 
-                with zipfile.ZipFile(persistent.zip_directory + '/ddlc-win.zip', "r") as z:
-                    z.extractall(persistent.projects_directory + "/temp")
-                    ddlc = persistent.projects_directory + '/temp' + '/DDLC-1.1.1-pc'
-                    shutil.move(ddlc, persistent.project_dir)
-            except: 
-                interface.error(_("Cannot Locate 'ddlc-win.zip' in [persistent.zip_directory!q]."), _("Make sure you have DDLC downloaded from 'https://ddlc.moe' and check if it exists."),)
-        def steam_copy():
-            import shutil
-            try:
-                shutil.copytree(persistent.zip_directory + "/Doki Doki Literature Club", persistent.project_dir)
-            except:
-                interface.error(_("Cannot Locate Your Doki Doki Literature Club Folder"), _("Make sure it is set to your 'Steam\steamapps\common' folder."),)
-        def rpa_copy():
-            import glob
-            import os
-            if glob.glob(persistent.mzip_directory + '/*.rpa'):
-                interface.interaction(_("Copying"), _("Copying Mod Files from Mod ZIP Directory, Please Wait..."),)
-                for file in os.listdir(persistent.mzip_directory):
-                    if file.endswith('.rpa'):
-                        src = os.path.join(persistent.mzip_directory, file)
-                        shutil.move(src, persistent.projects_directory + '/temp')    
-                        shutil.copy(src,persistent.project_dir + '/game')
-                        shutil.rmtree(persistent.projects_directory + '/temp')
-                # Auto-Refresh
-                project.manager.scan()
-                renpy.jump("front_page")
-        def modzip_extract(name):
-            import zipfile
-            import shutil
-            try:
-                with zipfile.ZipFile(persistent.mzip_directory + '/' + name + ".zip", "r") as z:
-                    z.extractall(persistent.projects_directory + "/temp")
-            except:
-                shutil.rmtree(persistent.projects_directory + '/' + persistent.project_dir)
-                interface.error(_("Cannot locate ZIP in [persistent.mzip_directory!q]."), _("Check the name of your Mod ZIP file and try again."))
         # Asks User the name of the folder they want their mod folder to be
         modinstall_foldername = interface.input(
             _("Mod Folder Name"),
@@ -965,22 +965,6 @@ label add_base_game:
         $ interface.error(_("The DDLC ZIP directory could not be set. Giving up."))
 
     python hide:
-        def zip_extract():
-            import zipfile
-            import shutil
-            try: 
-                with zipfile.ZipFile(persistent.zip_directory + '/ddlc-win.zip', "r") as z:
-                    z.extractall(persistent.projects_directory + "/temp")
-                    ddlc = persistent.projects_directory + '/temp' + '/DDLC-1.1.1-pc'
-                    shutil.move(ddlc, persistent.project_dir)
-            except: 
-                interface.error(_("Cannot Locate 'ddlc-win.zip' in [persistent.zip_directory!q]."), _("Make sure you have DDLC downloaded from 'https://ddlc.moe' and check if it exists."),)
-        def steam_copy():
-            import shutil
-            try:
-                shutil.copytree(persistent.zip_directory + "/Doki Doki Literature Club", persistent.project_dir)
-            except:
-                interface.error(_("Cannot Locate Your Doki Doki Literature Club Folder"), _("Make sure it is set to your 'Steam\steamapps\common' folder."),)
         # Asks User the name of the folder they want their mod folder to be
         modinstall_foldername = interface.input(
             _("DDLC Folder Name"),
@@ -1067,73 +1051,6 @@ label delete_images:
 label install_addon:
 
     python hide:
-        def rpy_move(ext):
-            import os
-            import shutil
-            for file in os.listdir(ext):
-                print file
-                src_file = os.path.join(ext, file)
-                dst_file = os.path.join(persistent.project_dir, file)
-                shutil.move(src_file, dst_file)
-        def ext_move(ext,path):
-            import os
-            import shutil
-            if os.path.exists(persistent.project_dir + '/game/python-packages'):
-                if os.path.exists(ext + path + '/python-packages'):
-                    shutil.rmtree(persistent.project_dir + '/game/python-packages')
-                else:
-                    pass
-            for file in os.listdir(ext + path):
-                print file
-                src_file = os.path.join(ext + path, file)
-                dst_file = os.path.join(persistent.project_dir + path, file)
-                shutil.move(src_file, dst_file)
-        def rpy_ext(ext):
-            import os
-            for file in os.listdir(ext):
-                base = [".exe", ".sh", ".py", ".txt", ".md", ".html"]
-                if file.endswith(tuple(base)):
-                    src = os.path.join(ext, file)
-                    shutil.move(src, persistent.project_dir)
-        def lib_move(ext):
-            import os
-            import shutil
-            shutil.rmtree(persistent.project_dir + '/lib')
-            for file in os.listdir(ext + '/lib'):
-                print file
-                src_file = os.path.join(ext + '/lib', file)
-                dst_file = os.path.join(persistent.project_dir + '/lib', file)
-                shutil.move(src_file, dst_file)
-        def rpy_move(ext):
-            import os
-            import shutil
-            for file in os.listdir(persistent.project_dir + '/renpy'):
-                file_path = os.path.join(persistent.project_dir + '/renpy', file)
-                if os.path.isfile(file_path):
-                    os.unlink(file_path)
-                elif os.path.isdir(file_path): 
-                    shutil.rmtree(file_path)
-            for file in os.listdir(ext + '/renpy'):
-                print file
-                src_file = os.path.join(ext + '/renpy', file)
-                dst_file = os.path.join(persistent.project_dir + '/renpy', file)
-                shutil.move(src_file, dst_file)
-        def reg_move(mzt, ext):
-            import os
-            import shutil
-            if os.path.exists(persistent.project_dir + '/game/python-packages'):
-                if os.path.exists(mzt + '/python-packages'):
-                    shutil.rmtree(persistent.project_dir + '/game/python-packages')
-            shutil.move(mzt + ext, persistent.project_dir)
-        def modzip_extract(name):
-            import zipfile
-            import shutil
-            try:
-                with zipfile.ZipFile(persistent.mzip_directory + '/' + name + ".zip", "r") as z:
-                    z.extractall(persistent.projects_directory + "/temp")
-            except:
-                shutil.rmtree(persistent.projects_directory + '/' + persistent.project_dir)
-                interface.error(_("Cannot locate ZIP in [persistent.mzip_directory!q]."), _("Check the name of your Mod ZIP file and try again."))
         import glob
         # Asks ZIP name of add-on
         modzip_name = interface.input(
