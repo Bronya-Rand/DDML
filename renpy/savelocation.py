@@ -1,4 +1,4 @@
-# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+# Copyright 2004-2019 Tom Rothamel <pytom@bishoujo.us>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -24,6 +24,8 @@
 #
 # The current save location is stored in the location variable in loadsave.py.
 
+from __future__ import print_function
+
 import os
 import zipfile
 import json
@@ -35,6 +37,11 @@ from renpy.loadsave import clear_slot, safe_rename
 import shutil
 
 disk_lock = threading.RLock()
+
+# A suffix used to disambguate temporary files being written by multiple
+# processes.
+import time
+tmp = "." + str(int(time.time())) + ".tmp"
 
 
 class FileLocation(object):
@@ -82,6 +89,15 @@ class FileLocation(object):
         """
 
         return os.path.join(self.directory, renpy.exports.fsencode(slotname + renpy.savegame_suffix))
+
+    def sync(self):
+        """
+        Called to indicate that the HOME filesystem was changed.
+        """
+
+        if renpy.emscripten:
+            import emscripten  # @UnresolvedImport
+            emscripten.syncfs()
 
     def scan(self):
         """
@@ -141,6 +157,7 @@ class FileLocation(object):
         with disk_lock:
             record.write_file(filename)
 
+        self.sync()
         self.scan()
 
     def list(self):
@@ -259,6 +276,7 @@ class FileLocation(object):
             if os.path.exists(filename):
                 os.unlink(filename)
 
+            self.sync()
             self.scan()
 
     def rename(self, old, new):
@@ -279,6 +297,7 @@ class FileLocation(object):
 
             os.rename(old, new)
 
+            self.sync()
             self.scan()
 
     def copy(self, old, new):
@@ -295,6 +314,7 @@ class FileLocation(object):
 
             shutil.copyfile(old, new)
 
+            self.sync()
             self.scan()
 
     def load_persistent(self):
@@ -321,7 +341,7 @@ class FileLocation(object):
                 return
 
             fn = self.persistent
-            fn_tmp = fn + ".tmp"
+            fn_tmp = fn + tmp
             fn_new = fn + ".new"
 
             with open(fn_tmp, "wb") as f:
@@ -330,6 +350,8 @@ class FileLocation(object):
             safe_rename(fn_tmp, fn_new)
             safe_rename(fn_new, fn)
 
+            self.sync()
+
     def unlink_persistent(self):
 
         if not self.active:
@@ -337,6 +359,8 @@ class FileLocation(object):
 
         try:
             os.unlink(self.persistent)
+
+            self.sync()
         except:
             pass
 
@@ -345,6 +369,9 @@ class FileLocation(object):
             return False
 
         return self.directory == other.directory
+
+    def __ne__(self, other):
+        return not (self == other)
 
 
 class MultiLocation(object):
@@ -479,6 +506,10 @@ class MultiLocation(object):
             return False
 
         return self.locations == other.locations
+
+    def __ne__(self, other):
+        return not (self == other)
+
 
 
 # The thread that scans locations every few seconds.

@@ -1,4 +1,4 @@
-# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+﻿# Copyright 2004-2019 Tom Rothamel <pytom@bishoujo.us>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -19,28 +19,30 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+init -1900 python:
+    config.audio_directory = 'audio'
 
-# The blacklist of OpenGL cards. Fields are:
-# - A substring of the Renderer.
-# - A substring of the Version.
-# - True to allow shader rendering.
-# - True to allow fixed-function rendering.
+    def _scan_audio_directory():
 
-# If both of the last two entries are false, GL refuses to
-# start.
+        import os
 
-BLACKLIST = [
+        if not config.audio_directory:
+            return
 
-    # Crashes for Mugenjohncel.
-    ("S3 Graphics DeltaChrome", "1.4 20.00", False, False),
+        prefix = config.audio_directory.rstrip('/') + '/'
 
-    # A bug in Mesa 7.9 and 7.10 (before 7.10.3) causes the system to
-    # fail to initialize the GLSL compiler.
-    # https://bugs.freedesktop.org/show_bug.cgi?id=35603
-    ("Mesa", "Mesa 7.9", False, True),
-    ("Mesa", "Mesa 7.10.3", True, True),
-    ("Mesa", "Mesa 7.10", False, True),
+        for fn in renpy.list_files():
+            if not fn.startswith(prefix):
+                continue
 
-    # Default to allowing everything.
-    ("", "", True, True),
-    ]
+            basename = os.path.basename(fn)
+            base, ext = os.path.splitext(basename)
+
+            if not ext.lower() in [ ".wav", ".mp2", ".mp3", ".ogg", ".opus" ]:
+                continue
+
+            base = base.lower()
+            audio.__dict__.setdefault(base, fn)
+
+init python:
+    _scan_audio_directory()

@@ -1,4 +1,4 @@
-# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+# Copyright 2004-2019 Tom Rothamel <pytom@bishoujo.us>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -129,6 +129,7 @@ def get_profile(name):
 
 # Cache ########################################################################
 
+
 # A map from screen name to a list of ScreenCache objects. We ensure the cache
 # does not exceed config.screen_cache_size for each screen.
 predict_cache = collections.defaultdict(list)
@@ -155,6 +156,7 @@ class ScreenCache(object):
 
         if len(pc) > renpy.config.screen_cache_size:
             pc.pop(0)
+
 
 cache_put = ScreenCache
 
@@ -195,6 +197,8 @@ class Screen(renpy.object.Object):
     This class stores information about the screen.
     """
 
+    sensitive = "True"
+
     def __init__(self,
                  name,
                  function,
@@ -205,7 +209,8 @@ class Screen(renpy.object.Object):
                  variant=None,
                  parameters=False,
                  location=None,
-                 layer="screens"):
+                 layer="screens",
+                 sensitive="True"):
 
         # The name of this screen.
         if isinstance(name, basestring):
@@ -254,6 +259,9 @@ class Screen(renpy.object.Object):
         # The layer the screen will be shown on.
         self.layer = layer
 
+        # Is this screen sensitive? An expression.
+        self.sensitive = sensitive
+
         global prepared
         global analyzed
 
@@ -283,10 +291,24 @@ class ScreenDisplayable(renpy.display.layout.Container):
     class is responsible for managing the display of a screen.
     """
 
-    nosave = [ 'screen', 'child', 'children', 'transforms', 'widgets', 'old_widgets', 'hidden_widgets', 'old_transforms', 'cache', 'profile', 'phase', 'use_cache' ]
+    nosave = [
+        'screen',
+        'child',
+        'children',
+        'transforms',
+        'widgets',
+        'old_widgets',
+        'hidden_widgets',
+        'old_transforms',
+        'cache',
+        'miss_cache',
+        'profile',
+        'phase',
+        'use_cache' ]
 
     restarting = False
     hiding = False
+    transient = False
 
     def after_setstate(self):
         self.screen = get_screen_variant(self.screen_name[0])
@@ -300,10 +322,11 @@ class ScreenDisplayable(renpy.display.layout.Container):
         self.cache = { }
         self.phase = UPDATE
         self.use_cache = { }
+        self.miss_cache = { }
 
         self.profile = profile.get(self.screen_name, None)
 
-    def __init__(self, screen, tag, layer, widget_properties={}, scope={}, **properties):
+    def __init__(self, screen, tag, layer, widget_properties={}, scope={}, transient=False, **properties):
 
         super(ScreenDisplayable, self).__init__(**properties)
 
@@ -360,6 +383,11 @@ class ScreenDisplayable(renpy.display.layout.Container):
         else:
             self.use_cache = { }
 
+        # A version of the cache that's used when we have a screen that is
+        # being displayed with the same tag with a cached copy of the screen
+        # we want to display.
+        self.miss_cache = { }
+
         # What widgets and transforms were the last time this screen was
         # updated. Used to communicate with the ui module, and only
         # valid during an update - not used at other times.
@@ -382,6 +410,9 @@ class ScreenDisplayable(renpy.display.layout.Container):
         self.restarting = False
         self.hiding = False
 
+        # Is this a transient screen?
+        self.transient = transient
+
         # Modal and zorder.
         self.modal = renpy.python.py_eval(self.screen.modal, locals=self.scope)
         self.zorder = renpy.python.py_eval(self.screen.zorder, locals=self.scope)
@@ -395,12 +426,12 @@ class ScreenDisplayable(renpy.display.layout.Container):
     def visit(self):
         return [ self.child ]
 
-    def visit_all(self, callback):
+    def visit_all(self, callback, seen=None):
         callback(self)
 
         try:
             push_current_screen(self)
-            self.child.visit_all(callback)
+            self.child.visit_all(callback, seen=None)
         finally:
             pop_current_screen()
 
@@ -433,11 +464,24 @@ class ScreenDisplayable(renpy.display.layout.Container):
 
         return rv
 
+    def _handles_event(self, event):
+        if self.child is None:
+
+            if self.transient:
+                return False
+
+            self.update()
+
+        return self.child._handles_event(event)
+
     def _hide(self, st, at, kind):
 
         if self.phase == HIDE:
             hid = self
         else:
+
+            if (self.child is not None) and (not self.child._handles_event(kind)):
+                return None
 
             updated_screens.discard(self)
             self.update()
@@ -446,6 +490,9 @@ class ScreenDisplayable(renpy.display.layout.Container):
                 return None
 
             if self.child is None:
+                return None
+
+            if not self.child._handles_event(kind):
                 return None
 
             if self.screen.ast is not None:
@@ -466,7 +513,7 @@ class ScreenDisplayable(renpy.display.layout.Container):
             return None
 
         renpy.ui.detached()
-        hid.child = renpy.ui.fixed(focus="_screen_" + "_".join(self.screen_name))
+        hid.child = renpy.ui.default_fixed(focus="_screen_" + "_".join(self.screen_name))
         hid.children = [ hid.child ]
         renpy.ui.close()
 
@@ -568,7 +615,7 @@ class ScreenDisplayable(renpy.display.layout.Container):
         try:
 
             renpy.ui.detached()
-            self.child = renpy.ui.fixed(focus="_screen_" + "_".join(self.screen_name))
+            self.child = renpy.ui.default_fixed(focus="_screen_" + "_".join(self.screen_name))
             self.children = [ self.child ]
 
             self.scope["_scope"] = self.scope
@@ -580,6 +627,8 @@ class ScreenDisplayable(renpy.display.layout.Container):
             renpy.ui.close()
 
         finally:
+            del self.scope["_scope"]
+
             renpy.ui.screen = old_ui_screen
             pop_current_screen()
 
@@ -587,6 +636,9 @@ class ScreenDisplayable(renpy.display.layout.Container):
         self.old_widgets = None
         self.old_transforms = None
         self.old_transfers = True
+
+        if self.miss_cache:
+            self.miss_cache.clear()
 
         # Deal with the case where the screen version changes.
         if (self.cache.get(NAME, None) is not old_cache) and (self.current_transform_event is None) and (self.phase == UPDATE):
@@ -608,15 +660,15 @@ class ScreenDisplayable(renpy.display.layout.Container):
             if self.profile.debug:
                 profile_log.write("\n")
 
-        if self.phase == SHOW:
-            self.phase = UPDATE
-
         return self.widgets
 
     def render(self, w, h, st, at):
 
         if not self.child:
             self.update()
+
+        if self.phase == SHOW:
+            self.phase = UPDATE
 
         try:
             push_current_screen(self)
@@ -629,7 +681,12 @@ class ScreenDisplayable(renpy.display.layout.Container):
 
         hiding = (self.phase == OLD) or (self.phase == HIDE)
 
-        rv.blit(child, (0, 0), focus=not hiding, main=not hiding)
+        if self.screen is None:
+            sensitive = False
+        else:
+            sensitive = renpy.python.py_eval(self.screen.sensitive, locals=self.scope)
+
+        rv.blit(child, (0, 0), focus=sensitive and not hiding, main=not hiding)
         rv.modal = self.modal and not hiding
 
         return rv
@@ -644,6 +701,12 @@ class ScreenDisplayable(renpy.display.layout.Container):
 
         if (self.phase == OLD) or (self.phase == HIDE):
             return
+
+        if not self.screen:
+            return None
+
+        if not renpy.python.py_eval(self.screen.sensitive, locals=self.scope):
+            ev = renpy.display.interface.time_event
 
         try:
             push_current_screen(self)
@@ -661,6 +724,7 @@ class ScreenDisplayable(renpy.display.layout.Container):
     def get_phase_name(self):
         return phase_name[self.phase]
 
+
 # The name of the screen that is currently being displayed, or
 # None if no screen is being currently displayed.
 _current_screen = None
@@ -676,7 +740,9 @@ def push_current_screen(screen):
 
 
 def pop_current_screen():
+    global _current_screen
     _current_screen = current_screen_stack.pop()
+
 
 # A map from (screen_name, variant) tuples to screen.
 screens = { }
@@ -723,6 +789,7 @@ def get_all_screen_variants(name):
 
     return rv
 
+
 # Have all screens been analyzed?
 analyzed = False
 
@@ -733,12 +800,16 @@ prepared = False
 sorted_screens = [ ]
 screens_at_sort = { }
 
+# The list of screens that participate in a use cycle.
+use_cycle = [ ]
+
 
 def sort_screens():
     """
     Produces a list of SL2 screens in topologically sorted order.
     """
 
+    global use_cycle
     global sorted_screens
     global screens_at_sort
 
@@ -751,6 +822,8 @@ def sort_screens():
     # For each screen, the set of screens that use it.
     reverse = collections.defaultdict(set)
 
+    names = { i[0] for i in screens }
+
     for k, v in screens.items():
 
         name = k[0]
@@ -762,6 +835,10 @@ def sort_screens():
             continue
 
         def callback(uses):
+
+            if uses not in names:
+                return
+
             depends[name].add(uses)
             reverse[uses].add(name)
 
@@ -784,8 +861,9 @@ def sort_screens():
 
         del reverse[name]
 
-    # A use-cycle is possible, but we live with it - we need to return something
-    # from this in order to be able to show error messages.
+    # Store the use cycle for later reporting.
+    use_cycle = reverse.keys()
+    use_cycle.sort()
 
     sorted_screens = rv
     screens_at_sort = dict(screens)
@@ -837,17 +915,28 @@ def prepare_screens():
 
     predict_cache.clear()
 
-    if not analyzed:
-        analyze_screens()
+    old_predicting = renpy.display.predict.predicting
+    renpy.display.predict.predicting = True
 
-    for s in sorted_variants():
-        if s.ast is None:
-            continue
+    try:
 
-        s.ast.unprepare_screen()
-        s.ast.prepare_screen()
+        if not analyzed:
+            analyze_screens()
 
-    prepared = True
+        for s in sorted_variants():
+            if s.ast is None:
+                continue
+
+            s.ast.unprepare_screen()
+            s.ast.prepare_screen()
+
+        prepared = True
+
+    finally:
+        renpy.display.predict.predicting = old_predicting
+
+    if renpy.config.developer and use_cycle:
+        raise Exception("The following screens use each other in a loop: " + ", ".join(use_cycle) +". This is not allowed.")
 
 
 def define_screen(*args, **kwargs):
@@ -920,8 +1009,7 @@ def get_screen(name, layer=None):
     This can also take a list of names, in which case the first screen
     that is showing is returned.
 
-    This function can be used to check if a screen is showing, using code
-    like::
+    This function can be used to check if a screen is showing::
 
         if renpy.get_screen("say"):
             text "The say screen is showing."
@@ -944,7 +1032,9 @@ def get_screen(name, layer=None):
         if sd is not None:
             return sd
 
-        sd = sl.get_displayable_by_name(layer, name)
+    for tag in name:
+
+        sd = sl.get_displayable_by_name(layer, (tag, ))
         if sd is not None:
             return sd
 
@@ -977,13 +1067,17 @@ def show_screen(_screen_name, *_args, **kwargs):
     Shows the named screen. This takes the following keyword arguments:
 
     `_screen_name`
-        The name of the  screen to show.
+        The name of the screen to show.
     `_layer`
         The layer to show the screen on.
+    `_zorder`
+        The zorder to show the screen on. If not specified, defaults to
+        the zorder associated with the screen. It that's not specified,
+        it is 0 by default.
     `_tag`
         The tag to show the screen with. If not specified, defaults to
         the tag associated with the screen. It that's not specified,
-        defaults to the name of the screen.,
+        defaults to the name of the screen.
     `_widget_properties`
         A map from the id of a widget to a property name -> property
         value map. When a widget with that id is shown by the screen,
@@ -992,14 +1086,15 @@ def show_screen(_screen_name, *_args, **kwargs):
         If true, the screen will be automatically hidden at the end of
         the current interaction.
 
-    Keyword arguments not beginning with underscore (_) are used to
-    initialize the screen's scope.
+    Non-keyword arguments, and keyword arguments that do not begin with
+    an underscore, are passed to the screen.
     """
 
     _layer = kwargs.pop("_layer", None)
     _tag = kwargs.pop("_tag", None)
     _widget_properties = kwargs.pop("_widget_properties", {})
     _transient = kwargs.pop("_transient", False)
+    _zorder = kwargs.pop("_zorder", None)
 
     name = _screen_name
 
@@ -1025,12 +1120,16 @@ def show_screen(_screen_name, *_args, **kwargs):
     else:
         scope.update(kwargs)
 
-    d = ScreenDisplayable(screen, _tag, _layer, _widget_properties, scope)
+    d = ScreenDisplayable(screen, _tag, _layer, _widget_properties, scope, transient=_transient)
 
-    old_d = get_screen(name, _layer)
+    if _zorder is None:
+        _zorder = d.zorder
+
+    old_d = get_screen(_tag, _layer)
 
     if old_d and old_d.cache:
         d.cache = old_d.cache
+        d.miss_cache = cache_get(screen, _args, kwargs)
         d.phase = UPDATE
     else:
         d.cache = cache_get(screen, _args, kwargs)
@@ -1038,7 +1137,7 @@ def show_screen(_screen_name, *_args, **kwargs):
 
     sls = renpy.display.core.scene_lists()
 
-    sls.add(_layer, d, _tag, zorder=d.zorder, transient=_transient, keep_st=True, name=name)
+    sls.add(_layer, d, _tag, zorder=_zorder, transient=_transient, keep_st=True, name=name)
 
 
 def predict_screen(_screen_name, *_args, **kwargs):
@@ -1108,6 +1207,9 @@ def predict_screen(_screen_name, *_args, **kwargs):
             print("While predicting screen", _screen_name)
             traceback.print_exc()
 
+    finally:
+        del scope["_scope"]
+
     renpy.ui.reset()
 
 
@@ -1158,7 +1260,10 @@ def use_screen(_screen_name, *_args, **kwargs):
     scope["_scope"] = scope
     scope["_name"] = (_name, name)
 
-    screen.function(**scope)
+    try:
+        screen.function(**scope)
+    finally:
+        del scope["_scope"]
 
     _current_screen.old_transfers = old_transfers
 
@@ -1203,12 +1308,11 @@ def get_widget_properties(id, screen=None, layer=None):  # @ReservedAssignment
 
     Returns the properties for the widget with `id` in the `screen`
     on `layer`. If `screen` is None, returns the properties for the
-    current screen.
-
-    This can be used inside screen code.
+    current screen. This can be used from Python or property code inside
+    a screen.
 
     Note that this returns a dictionary containing the widget properties,
-    and so to get an individual property
+    and so to get an individual property, the dictionary must be accessed.
     """
 
     if screen is None:
@@ -1271,3 +1375,20 @@ def show_overlay_screens(suppress_overlay):
         for i in renpy.config.overlay_screens:
             if get_screen(i) is not None:
                 hide_screen(i)
+
+
+def per_frame():
+    """
+    Called from interact once per frame to invalidate screens we want to
+    update once per frame.
+    """
+
+    for i in renpy.config.per_frame_screens:
+        s = get_screen(i)
+
+        if s is None:
+            continue
+
+        updated_screens.discard(s)
+        renpy.display.render.invalidate(s)
+        s.update()

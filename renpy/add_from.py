@@ -1,4 +1,4 @@
-# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+# Copyright 2004-2019 Tom Rothamel <pytom@bishoujo.us>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -19,6 +19,8 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+from __future__ import print_function
+
 import collections
 import renpy
 import os
@@ -32,9 +34,6 @@ def report_missing(target, filename, position):
     """
     Reports that the call statement ending at `position` in `filename`
     is missing a from clause.
-
-    `target`
-        The string
     """
 
     missing[filename].append((position, target))
@@ -48,6 +47,8 @@ def generate_label(target):
     """
     Generate a reasonable and unique new label for a call to `target`.
     """
+
+    target = target.replace(".", "_")
 
     n = 0
 
@@ -115,5 +116,6 @@ def add_from():
             process_file(fn)
 
     return False
+
 
 renpy.arguments.register_command("add_from", add_from)

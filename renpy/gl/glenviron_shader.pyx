@@ -1,5 +1,5 @@
 #cython: profile=False
-# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+# Copyright 2004-2019 Tom Rothamel <pytom@bishoujo.us>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -20,6 +20,8 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+from __future__ import print_function
+
 DEF ANGLE = False
 
 from gl cimport *
@@ -29,11 +31,17 @@ cdef int round(double d):
     return <int> (d + .5)
 
 
-VERTEX_SHADER1 = """\
+GLES_PORTABILITY = """\
 #ifdef GL_ES
-precision highp float;
+  #ifdef GL_FRAGMENT_PRECISION_HIGH
+    precision highp float;
+  # else
+    precision mediump float;
+  # endif
 #endif
+"""
 
+VERTEX_SHADER1 = GLES_PORTABILITY + """\
 uniform mat4 Projection;
 
 attribute vec4 Vertex;
@@ -51,11 +59,7 @@ void main() {
 }
 """
 
-VERTEX_SHADER2 = """\
-#ifdef GL_ES
-precision highp float;
-#endif
-
+VERTEX_SHADER2 = GLES_PORTABILITY + """\
 uniform mat4 Projection;
 
 attribute vec4 Vertex;
@@ -76,11 +80,7 @@ void main() {
 }
 """
 
-VERTEX_SHADER3 = """\
-#ifdef GL_ES
-precision highp float;
-#endif
-
+VERTEX_SHADER3 = GLES_PORTABILITY + """\
 uniform mat4 Projection;
 
 attribute vec4 Vertex;
@@ -107,11 +107,7 @@ void main() {
 
 
 
-BLIT_SHADER = """
-#ifdef GL_ES
-precision highp float;
-#endif
-
+BLIT_SHADER = GLES_PORTABILITY + """\
 uniform vec4 Color;
 uniform sampler2D tex0;
 
@@ -128,11 +124,7 @@ void main()
 }
 """
 
-BLIT_CLIP_SHADER = """
-#ifdef GL_ES
-precision highp float;
-#endif
-
+BLIT_CLIP_SHADER = GLES_PORTABILITY + """\
 uniform vec4 Color;
 uniform sampler2D tex0;
 
@@ -153,11 +145,7 @@ void main()
 }
 """
 
-BLEND_SHADER = """
-#ifdef GL_ES
-precision highp float;
-#endif
-
+BLEND_SHADER = GLES_PORTABILITY + """\
 uniform vec4 Color;
 uniform sampler2D tex0;
 uniform sampler2D tex1;
@@ -180,11 +168,7 @@ void main()
 """
 
 
-BLEND_CLIP_SHADER = """
-#ifdef GL_ES
-precision highp float;
-#endif
-
+BLEND_CLIP_SHADER = GLES_PORTABILITY + """\
 uniform vec4 Color;
 uniform sampler2D tex0;
 uniform sampler2D tex1;
@@ -210,11 +194,7 @@ void main()
 }
 """
 
-IMAGEBLEND_SHADER = """
-#ifdef GL_ES
-precision highp float;
-#endif
-
+IMAGEBLEND_SHADER = GLES_PORTABILITY + """\
 uniform vec4 Color;
 uniform sampler2D tex0;
 uniform sampler2D tex1;
@@ -242,11 +222,7 @@ void main()
 }
 """
 
-IMAGEBLEND_CLIP_SHADER = """
-#ifdef GL_ES
-precision highp float;
-#endif
-
+IMAGEBLEND_CLIP_SHADER = GLES_PORTABILITY + """\
 uniform vec4 Color;
 uniform sampler2D tex0;
 uniform sampler2D tex1;
@@ -486,8 +462,8 @@ cdef class ShaderEnviron(Environ):
         glUniformMatrix4fvARB(program.Projection, 1, GL_FALSE, self.projection)
 
         if self.clipping:
-            glUniform2fARB(program.clip0, self.clip_x0, self.clip_y0)
-            glUniform2fARB(program.clip1, self.clip_x1, self.clip_y1)
+            glUniform2fARB(program.clip0, self.clip_x0 - .01, self.clip_y0 - .01)
+            glUniform2fARB(program.clip1, self.clip_x1 + .01, self.clip_y1 + .01)
 
     cdef void blit(self):
 
@@ -564,7 +540,7 @@ cdef class ShaderEnviron(Environ):
         else:
             glDisableVertexAttribArrayARB(tex)
 
-    cdef void set_color(self, float r, float g, float b, float a):
+    cdef void set_color(self, double r, double g, double b, double a):
         glUniform4fARB(self.program.Color, r, g, b, a)
 
     cdef void ortho(self, double left, double right, double bottom, double top, double near, double far):

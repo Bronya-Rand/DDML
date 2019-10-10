@@ -1,5 +1,5 @@
 #@PydevCodeAnalysisIgnore
-# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+# Copyright 2004-2019 Tom Rothamel <pytom@bishoujo.us>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -20,6 +20,8 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+from __future__ import print_function
+
 from sdl2 cimport *
 from pygame_sdl2 cimport *
 import_pygame_sdl2()
@@ -28,6 +30,8 @@ from freetype cimport *
 from ttgsubtable cimport *
 from textsupport cimport Glyph, SPLIT_INSTEAD
 import traceback
+
+import renpy.config
 
 cdef extern from "ftsupport.h":
     char *freetype_error_to_string(int error)
@@ -61,6 +65,24 @@ def init():
     error = FT_Init_FreeType(&library)
     if error:
         raise FreetypeError(error)
+
+cdef bint is_zerowidth(unsigned int char):
+    if char == 0x200b: # Zero-width space.
+        return True
+
+    if char == 0x200c: # Zero-width non-joiner.
+        return True
+
+    if char == 0x200d: # Zero-width joiner.
+        return True
+
+    if char == 0x2060: # Word joiner.
+        return True
+
+    if char == 0xfeff: # Zero width non-breaking space.
+        return True
+
+    return False
 
 cdef unsigned long io_func(FT_Stream stream, unsigned long offset, unsigned char *buffer, unsigned long count):
     """
@@ -127,10 +149,15 @@ cdef class FTFace:
         # The offset in that file.
         unsigned long offset
 
-    def __init__(self, f, index):
+        public object fn
+
+    def __init__(self, f, index, fn):
 
         cdef int error
         cdef unsigned long size
+
+        # The filename.
+        self.fn = fn
 
         # The file that the font is opened from.
         self.f = f
@@ -229,6 +256,8 @@ cdef class FTFont:
         if bold:
             antialias = True
 
+        size = size * renpy.config.ftfont_scale.get(face.fn, 1.0) * renpy.game.preferences.font_size
+
         self.face_object = face
         self.face = self.face_object.face
 
@@ -267,6 +296,7 @@ cdef class FTFont:
         cdef int error
         cdef FT_Face face
         cdef FT_Fixed scale
+        cdef float ascent_scale
 
         face = self.face
 
@@ -283,8 +313,10 @@ cdef class FTFont:
 
             scale = face.size.metrics.y_scale
 
-            self.ascent = FT_CEIL(face.size.metrics.ascender)
-            self.descent = FT_FLOOR(face.size.metrics.descender)
+            vextent_scale = renpy.config.ftfont_vertical_extent_scale.get(self.face_object.fn, 1.0)
+
+            self.ascent = FT_CEIL(int(face.size.metrics.ascender * vextent_scale))
+            self.descent = FT_FLOOR(int(face.size.metrics.descender * vextent_scale))
 
             if self.descent > 0:
                 self.descent = -self.descent
@@ -300,7 +332,7 @@ cdef class FTFont:
             # if self.height > self.lineskip:
             #     self.lineskip = self.height
 
-            self.lineskip = self.height
+            self.lineskip = <int> self.height * renpy.game.preferences.font_line_spacing
 
             if self.vertical:
                 self.underline_offset = FT_FLOOR(FT_MulFix(face.ascender + face.descender - face.underline_position, scale))
@@ -310,6 +342,8 @@ cdef class FTFont:
 
             if self.underline_height < 1:
                 self.underline_height = 1
+
+            self.underline_height += self.expand
 
         return
 
@@ -483,13 +517,13 @@ cdef class FTFont:
 
             cache = self.get_glyph(index)
 
-            gl = Glyph()
+            gl = Glyph.__new__(Glyph)
 
             gl.character = c
             gl.ascent = self.ascent
             gl.width = cache.width
-
             gl.line_spacing = self.lineskip
+            gl.draw = True
 
             if i < len_s - 1:
                 next_c = s[i + 1]
@@ -510,6 +544,11 @@ cdef class FTFont:
 
             else:
                 gl.advance = cache.advance
+
+            if is_zerowidth(gl.character):
+                gl.width = 0
+                gl.advance = 0
+                gl.draw = False
 
             rv.append(gl)
 
@@ -537,6 +576,8 @@ cdef class FTFont:
         x, y, w, h = bounds
 
         face = self.face
+
+        self.setup()
 
         for glyph in glyphs:
 
@@ -585,7 +626,7 @@ cdef class FTFont:
         cdef int error
         cdef int bmx, bmy, px, py, pxstart
         cdef int ly, lh, rows, width
-        cdef int underline_x
+        cdef int underline_x, underline_end, expand
         cdef int x, y
 
         cdef unsigned char *pixels
@@ -608,35 +649,39 @@ cdef class FTFont:
         face = self.face
         g = face.glyph
 
+        expand = self.expand
+
         for glyph in glyphs:
 
             if glyph.split == SPLIT_INSTEAD:
-                continue
-
-            if glyph.character == 0x200b:
                 continue
 
             x = <int> (glyph.x + xo)
             y = <int> (glyph.y + yo)
 
             underline_x = x - glyph.delta_x_offset
+            underline_end = x + <int> glyph.advance + expand
 
             index = FT_Get_Char_Index(face, <Py_UNICODE> glyph.character)
             cache = self.get_glyph(index)
 
-            with nogil:
+            # with nogil used to be here, but it slowed things down.
 
-                bmx = <int> (x + .5) + cache.bitmap_left
-                bmy = y - cache.bitmap_top
+            bmx = <int> (x + .5) + cache.bitmap_left
+            bmy = y - cache.bitmap_top
 
-                if bmx < 0:
-                    pxstart = -bmx
-                    bmx = 0
-                else:
-                    pxstart = 0
+            if bmx < 0:
+                pxstart = -bmx
+                bmx = 0
+            else:
+                pxstart = 0
 
-                rows = min(cache.bitmap.rows, surf.h - bmy)
-                width = min(cache.bitmap.width, surf.w - bmx)
+            rows = min(cache.bitmap.rows, surf.h - bmy)
+            width = min(cache.bitmap.width, surf.w - bmx)
+
+            underline_end = min(underline_end, surf.w - 1)
+
+            if glyph.draw:
 
                 for py from 0 <= py < rows:
 
@@ -669,35 +714,34 @@ cdef class FTFont:
 
                     bmy += 1
 
+            # Underlining.
+            if underline:
 
-                # Underlining.
-                if underline:
+                ly = y - self.underline_offset - 1
+                lh = self.underline_height * underline
 
-                    ly = y - self.underline_offset - 1
-                    lh = self.underline_height * underline
+                for py from ly <= py < min(ly + lh, surf.h):
+                    for px from underline_x <= px < underline_end:
+                        line = pixels + py * pitch + px * 4
 
-                    for py from ly <= py < min(ly + lh, surf.h):
-                        for px from underline_x <= px < (x + <int> glyph.advance):
-                            line = pixels + py * pitch + px * 4
+                        line[0] = Sr
+                        line[1] = Sg
+                        line[2] = Sb
+                        line[3] = Sa
 
-                            line[0] = Sr
-                            line[1] = Sg
-                            line[2] = Sb
-                            line[3] = Sa
+            # Strikethrough.
+            if strikethrough:
+                ly = y - self.ascent + self.height / 2
+                lh = self.height / 10
+                if lh < 1:
+                    lh = 1
 
-                # Strikethrough.
-                if strikethrough:
-                    ly = y - self.ascent + self.height / 2
-                    lh = self.height / 10
-                    if lh < 1:
-                        lh = 1
+                for py from ly <= py < (ly + lh):
+                    for px from underline_x <= px < underline_end:
+                        line = pixels + py * pitch + px * 4
 
-                    for py from ly <= py < (ly + lh):
-                        for px from underline_x <= px < (x + <int> glyph.advance):
-                            line = pixels + py * pitch + px * 4
-
-                            line[0] = Sr
-                            line[1] = Sg
-                            line[2] = Sb
-                            line[3] = Sa
+                        line[0] = Sr
+                        line[1] = Sg
+                        line[2] = Sb
+                        line[3] = Sa
 

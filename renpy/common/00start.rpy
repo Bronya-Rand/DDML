@@ -1,4 +1,4 @@
-﻿# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+﻿# Copyright 2004-2019 Tom Rothamel <pytom@bishoujo.us>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -56,6 +56,12 @@ init -1600 python hide:
     # Should we suppress overlay during the splashscreen?
     config.splashscreen_suppress_overlay = True
 
+    # Should we profile reloading?
+    config.profile_reload = False
+
+    # When should start_store happen?
+    config.early_start_store = False
+
 init -1600 python:
 
     def _init_language():
@@ -96,10 +102,20 @@ label _after_load:
         if config.after_load_transition:
             renpy.transition(config.after_load_transition, force=True)
 
+        if "_reload_time" in renpy.session:
+            start = renpy.session.pop("_reload_time")
+            import time
+
+            if config.profile_reload:
+                print("Reloading took:", time.time() - start, "seconds" )
+
         menu = renpy.session.pop("_reload_screen", None)
 
         if config.reload_menu and (menu is not None):
-            renpy.run(ShowMenu(menu))
+            renpy.run(ShowMenu(menu,
+                *renpy.session.pop("_reload_screen_args", tuple()),
+                **renpy.session.pop("_reload_screen_kwargs", { })
+                ))
 
     if renpy.has_label("after_load"):
         jump expression "after_load"
@@ -143,16 +159,10 @@ label _start_replay:
 
     call _start_store
 
-    python:
-        renpy.execute_default_statement(False)
-
-    if config.start_scene_black:
-        scene black
-    else:
-        scene
+    scene black
 
     $ _init_language()
-    $ renpy.block_rollback()
+    $ renpy.block_rollback(purge=True)
 
     jump expression _in_replay
 
@@ -173,10 +183,16 @@ label _splashscreen:
 # tell anyone.
 label _start:
 
-    call _start_store
+    if config.early_start_store:
+        call _start_store
 
     python:
         renpy.execute_default_statement(True)
+
+    if not config.early_start_store:
+        call _start_store
+
+    python:
 
         # Predict the main menu. When a load occurs, the loaded data will
         # overwrite the prediction requests.
@@ -185,7 +201,14 @@ label _start:
 
         renpy.block_rollback()
 
-    call _gl_test
+    scene black
+
+    if not _restart:
+        call _gl_test
+
+    python hide:
+        renpy.warp.warp()
+
     call _load_reload_game from _call__load_reload_game_1
 
     python hide:
@@ -195,8 +218,6 @@ label _start:
 
     if config.start_scene_black:
         scene black
-    else:
-        scene
 
     if not _restart:
         $ renpy.display.interface.with_none(overlay=False)
@@ -225,11 +246,7 @@ label _start:
 
     $ renpy.music.stop(channel="movie")
 
-    # Clean out any residual scene from the splashscreen.
-    if config.start_scene_black:
-        scene black
-    else:
-        scene
+    scene black
 
     python:
         # Stop predicting the main menu, now that we're ready to show it.
@@ -239,7 +256,7 @@ label _start:
         # Implement config.window
         _init_window()
 
-    # This has to be python, to deal with a case where _restart may
+    # This has to be Python, to deal with a case where _restart may
     # change across a shift-reload.
     python:
         if _restart is None:
@@ -252,7 +269,7 @@ label _start:
 
 label _invoke_main_menu:
 
-    # Again, this has to be python.
+    # Again, this has to be Python.
     python:
         if _restart:
             renpy.call_in_new_context(_restart[2])
@@ -270,9 +287,11 @@ label _invoke_main_menu:
 # initialize it.
 label _main_menu(_main_menu_screen="_main_menu_screen"):
 
-    $ _enter_menu()
-
     python:
+        renpy.block_rollback(purge=True)
+
+        _enter_menu()
+
         renpy.dynamic("_load_prompt")
         _load_prompt = False
 

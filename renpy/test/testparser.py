@@ -1,4 +1,4 @@
-# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+# Copyright 2004-2019 Tom Rothamel <pytom@bishoujo.us>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -18,6 +18,8 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+from __future__ import print_function
 
 import renpy.test.testast as testast
 import renpy
@@ -134,6 +136,10 @@ def parse_clause(l, loc):
     elif l.keyword("click"):
         return parse_click(l, loc, None)
 
+    elif l.keyword("scroll"):
+        pattern = l.require(l.string)
+        return testast.Scroll(loc, pattern)
+
     else:
         target = l.string()
         if target:
@@ -163,7 +169,7 @@ def parse_statement(l, loc):
         l.require(':')
         block = parse_block(l.subblock_lexer(False), loc)
 
-        return testast.If(condition, block)
+        return testast.If(loc, condition, block)
 
     # Single-line statements only below here.
 
@@ -182,17 +188,17 @@ def parse_statement(l, loc):
 
     elif l.keyword('jump'):
         target = l.require(l.name)
-        return testast.Jump(target)
+        return testast.Jump(loc, target)
 
     elif l.keyword('call'):
         target = l.require(l.name)
-        return testast.Call(target)
+        return testast.Call(loc, target)
 
     rv = parse_clause(l, loc)
 
     if l.keyword("until"):
         right = parse_clause(l, loc)
-        rv = testast.Until(rv, right)
+        rv = testast.Until(loc, rv, right)
 
     return rv
 

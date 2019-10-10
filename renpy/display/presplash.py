@@ -1,4 +1,4 @@
-# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+# Copyright 2004-2019 Tom Rothamel <pytom@bishoujo.us>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -22,6 +22,8 @@
 # Pre-splash code. The goal of this code is to try to get a pre-splash
 # screen up as soon as possible, to let the user know something is
 # going on.
+
+from __future__ import print_function
 
 import threading
 import pygame_sdl2
@@ -120,6 +122,12 @@ def end():
     global keep_running
     global event_thread
     global window
+
+    if renpy.emscripten:
+        # presplash handled on the JavaScript side, because emscripten
+        # currently does not support destroying/recreating GL contexts
+        import emscripten
+        emscripten.run_script(r"""presplashEnd();""")
 
     if window is None:
         return

@@ -1,4 +1,4 @@
-# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+# Copyright 2004-2019 Tom Rothamel <pytom@bishoujo.us>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -22,6 +22,8 @@
 # This module is intended to be used as a singleton object.
 # It's purpose is to store in one global all of the data that would
 # be to annoying to lug around otherwise.
+
+from __future__ import print_function
 
 import renpy.display
 
@@ -124,18 +126,12 @@ class RestartContext(Exception):
     in the restarted context.
     """
 
-    def __init__(self, label):
-        self.label = label
-
 
 class RestartTopContext(Exception):
     """
     Restarts the top context. If `label` is given, calls that label
     in the restarted context.
     """
-
-    def __init__(self, label):
-        self.label = label
 
 
 class FullRestartException(Exception):
@@ -195,15 +191,18 @@ class CallException(Exception):
     and control to be transferred to the named label.
     """
 
-    def __init__(self, label, args, kwargs):
+    from_current = False
+
+    def __init__(self, label, args, kwargs, from_current=False):
         Exception.__init__(self)
 
         self.label = label
         self.args = args
         self.kwargs = kwargs
+        self.from_current = from_current
 
     def __reduce__(self):
-        return (CallException, (self.label, self.args, self.kwargs))
+        return (CallException, (self.label, self.args, self.kwargs, self.from_current))
 
 
 class EndReplay(Exception):
@@ -218,6 +217,7 @@ class ParseErrorException(Exception):
     This is raised when a parse error occurs, after it has been
     reported to the user.
     """
+
 
 # A tuple of exceptions that should not be caught by the
 # exception reporting mechanism.
@@ -249,24 +249,25 @@ def invoke_in_new_context(callable, *args, **kwargs):  # @ReservedAssignment
     """
     :doc: label
 
-    This pushes the current context, and invokes the given python
-    function in a new context. When that function returns or raises an
-    exception, it removes the new context, and restores the current
-    context.
+    This function creates a new context, and invokes the given Python
+    callable (function) in that context. When the function returns
+    or raises an exception, control returns to the the original context.
+    It's generally used to call a Python function that needs to display
+    information to the player (like a confirmation prompt) from inside
+    an event handler.
+
+    A context maintains the state of the display (including what screens
+    and images are being shown) and the audio system. Both are restored
+    when the context returns.
 
     Additional arguments and keyword arguments are passed to the
     callable.
 
-    Please note that the context so created cannot execute renpy
-    code. So exceptions that change the flow of renpy code (like
-    the one created by renpy.jump) cause this context to terminate,
-    and are handled by the next higher context.
-
-    If you want to execute renpy code from the function, you can call
-    it with renpy.call_in_new_context.
-
-    Use this to begin a second interaction with the user while
-    inside an interaction.
+    A context created with this function cannot execute Ren'Py script.
+    Functions that would change the flow of Ren'Py script, like
+    :func:`renpy.jump`, are handled by the outer context. If you want
+    to call Ren'Py script rather than a Python function, use
+    :func:`renpy.call_in_new_context` instead.
     """
 
     context = renpy.execution.Context(False, contexts[-1], clear=True)
@@ -282,6 +283,7 @@ def invoke_in_new_context(callable, *args, **kwargs):  # @ReservedAssignment
     except renpy.game.JumpOutException as e:
 
         contexts[-2].force_checkpoint = True
+        contexts[-2].abnormal = True
         raise renpy.game.JumpException(e.args[0])
 
     finally:
@@ -299,10 +301,10 @@ def call_in_new_context(label, *args, **kwargs):
     """
     :doc: label
 
-    This code creates a new context, and starts executing code from
-    that label in the new context. Rollback is disabled in the
-    new context. (Actually, it will just bring you back to the
-    real context.)
+    This creates a new context, and then starts executing Ren'Py script
+    from the given label in that context. Rollback is disabled in the
+    new context, and saving/loading will occur in the top level
+    context.
 
     Use this to begin a second interaction with the user while
     inside an interaction.
@@ -331,6 +333,7 @@ def call_in_new_context(label, *args, **kwargs):
 
     except renpy.game.JumpOutException as e:
         contexts[-2].force_checkpoint = True
+        contexts[-2].abnormal = True
         raise renpy.game.JumpException(e.args[0])
 
     finally:
@@ -366,6 +369,9 @@ def call_replay(label, scope={}):
     if renpy.display.interface is not None:
         renpy.display.interface.enter_context()
 
+    # This has to be here, to ensure the scope stuff works.
+    renpy.exports.execute_default_statement()
+
     for k, v in renpy.config.replay_scope.iteritems():
         setattr(renpy.store, k, v)
 
@@ -397,6 +403,7 @@ def call_replay(label, scope={}):
 
     if renpy.config.after_replay_callback:
         renpy.config.after_replay_callback()
+
 
 # Type information.
 if False:
