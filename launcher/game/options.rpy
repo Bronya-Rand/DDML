@@ -51,8 +51,8 @@ init -1 python hide:
     # These control the name and version of the game, that are reported
     # with tracebacks and other debugging logs.
     config.name = "DDML"
-    config.version = "5.1.0-Windows-Release"
-
+    config.version = "6.2.3-Windows-Release"
+    
     #####################
     # Themes
 

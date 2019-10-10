@@ -238,9 +238,9 @@ screen front_page_project:
 
                 frame style "l_indent":
                     has vbox
-
-                    textbutton _("Browse Game Directory") action OpenDirectory("game")
-                    textbutton _("Browse Save Directory") action OpenDirectory(os.getenv('APPDATA') + '/RenPy')
+                    textbutton _("Install Update, Patch or Add-On") action Jump("addon_install")
+                    textbutton _("Delete 'scripts.rpa'") action Jump("scripts_rpa")
+                    textbutton _("Delete 'images.rpa'") action Jump("images_rpa")
                     textbutton _("Delete Saves") action Jump("rmpersistent")
                     # textbutton _("save") action None style "l_list"
                 # textbutton "Relaunch" action Relaunch
@@ -253,9 +253,8 @@ screen front_page_project:
                     has vbox
                     if persistent.projects_directory:
                         textbutton _("Browse Mod Directory") action OpenDirectory(persistent.projects_directory)
-                        textbutton _("Delete 'scripts.rpa'") action Jump("scripts_rpa")
-                        textbutton _("Delete 'images.rpa'") action Jump("images_rpa")
-                        textbutton _("Install Add-On") action Jump("addon_install")
+                        textbutton _("Browse Game Directory") action OpenDirectory("game")
+                        textbutton _("Browse Save Directory") action OpenDirectory(os.getenv('APPDATA') + '/RenPy')
                     textbutton _("Delete Mod") action Jump("delete_mod_folder")
 
 label main_menu:
