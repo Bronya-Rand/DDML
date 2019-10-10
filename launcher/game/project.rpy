@@ -748,7 +748,7 @@ label add_a_mod:
             import os
             import shutil
             if os.path.exists(persistent.project_dir + '/game/python-packages'):
-                if os.path.exists(ext + '/game/python-packages'):
+                if os.path.exists(ext + path + '/python-packages'):
                     shutil.rmtree(persistent.project_dir + '/game/python-packages')
                 else:
                     pass
@@ -905,6 +905,11 @@ label add_a_mod:
             if glob.glob(mzt + '/game'):
                 reg_move(mzt, '/game')
             else:
+                if os.path.exists(persistent.project_dir + '/game/python-packages'):
+                    if os.path.exists(str(mzte[1]) + '/game/python-packages'):
+                        shutil.rmtree(persistent.project_dir + '/game/python-packages')
+                    else:
+                        pass
                 # move mod files to the /game folder or mod folder
                 for file in os.listdir(mzt):
                     print file
@@ -927,7 +932,7 @@ label add_a_mod:
             else:
                 # move mod files to the /game folder or mod folder
                 if os.path.exists(persistent.project_dir + '/game/python-packages'):
-                    if os.path.exists(str(mzte[1]) + '/game/python-packages'):
+                    if os.path.exists(str(mzte[1]) + '/python-packages'):
                         shutil.rmtree(persistent.project_dir + '/game/python-packages')
                     else:
                         pass
