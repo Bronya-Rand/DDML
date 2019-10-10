@@ -26,6 +26,7 @@ init python:
 
     config.gl_enable = persistent.gl_enable
     renpyversion = renpy.version().split()[1]
+    persistent.b_ddml = None
 
     if persistent.show_edit_funcs is None:
         persistent.show_edit_funcs = True
@@ -198,6 +199,10 @@ screen preferences:
                         add HALF_SPACER
                         frame style "l_indent":
                             text _("[config.version]")
+                        textbutton _("Build Mode") style "l_checkbox" action ToggleField(persistent, "b_ddml")
+                        if persistent.b_ddml:
+                            textbutton _("Build Distributions") action [project.Select("launcher"), Jump("build_distributions")]
+
 
     textbutton _("Return") action Jump("front_page") style "l_left_button"
 

@@ -52,7 +52,7 @@ init -1 python hide:
     # with tracebacks and other debugging logs.
     config.name = "DDML"
     config.version = "6.2.3-Windows-Release"
-    
+
     #####################
     # Themes
 
@@ -372,16 +372,8 @@ init python:
     # Packages.
     build.packages = [ ]
 
-    build.package("sdk", "zip tar.bz2 dmg", "source binary")
-    build.package("source", "tar.bz2", "source source_only", update=False)
-
-    build.package("jedit", "zip", "jedit", dlc=True)
-    build.package("editra-linux", "tar.bz2", "editra-all editra-linux", dlc=True)
-    build.package("editra-mac", "zip", "editra-all editra-mac", dlc=True)
-    build.package("editra-windows", "zip", "editra-all editra-windows", dlc=True)
-    build.package("rapt", "zip", "rapt", dlc=True)
-    build.package("renios", "zip", "renios", dlc=True)
-
+    build.package("sdk", "zip", "source binary")
+    #build.package("source", "tar.bz2", "source source_only", update=False)
 
 # Enable the special launcher translation mode.
 define config.translate_launcher = True
