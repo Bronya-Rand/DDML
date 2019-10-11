@@ -1,4 +1,5 @@
 ﻿# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+# Copyright 2018-2019 GanstaKingofSA <azarieldc@gmail.com>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -24,6 +25,8 @@ init python:
         persistent.gl_enable = True
 
     config.gl_enable = persistent.gl_enable
+    renpyversion = renpy.version().split()[1]
+    persistent.b_ddml = None
 
     if persistent.show_edit_funcs is None:
         persistent.show_edit_funcs = True
@@ -47,7 +50,7 @@ init python:
 
         return rv
 
-
+# Settings
 screen preferences:
 
     $ translations = scan_translations()
@@ -82,7 +85,7 @@ screen preferences:
                         yminimum 75
                         has vbox
 
-                        text _("Mod Directory:")
+                        text _("Mod Folder Directory:")
 
                         add HALF_SPACER
 
@@ -107,7 +110,7 @@ screen preferences:
                         yminimum 75
                         has vbox
 
-                        text _("DDLC ZIP Directory:")
+                        text _("DDLC Copy Directory:")
 
                         add HALF_SPACER
 
@@ -158,41 +161,45 @@ screen preferences:
                         yminimum 75
                         has vbox
 
-                        text _("Is DDLC Directory Steam Release?")
+                        text _("OS auto-extracts '.zip' files?")
                         add HALF_SPACER
 
                         frame style "l_indent":
-                            if persistent.steam_release == True:
-                                text _("Yes")
+                            if persistent.safari != None:
+                                if persistent.safari == True:
+                                    text _("Yes")
+                                else:
+                                    text _("No")
                             else:
-                                text _("No")
+                                text _("None Selected")
+
+                    add SPACER     
+                    textbutton _("Change Browser") action Jump("browser")
 
                     add SPACER
-                    add SEPARATOR2
-
                     frame:
                         style "l_indent"
                         yminimum 75
                         has vbox
 
-                        text _("Is DDLC Directory DDLC ZIP/DDLC.moe Release?")
+                        add SPACER
+                        text _("Ren'Py SDK Version:")
                         add HALF_SPACER
-
                         frame style "l_indent":
-                            if persistent.steam_release == False:
-                                if persistent.steam_release == None:
-                                    text _("No")
-                                else:
-                                    text _("Yes")
-                            else:
-                                text _("No")
+                            text _("[renpyversion]")
+                        text _("DDML Version:")
+                        add HALF_SPACER
+                        frame style "l_indent":
+                            text _("[config.version]")
+                        textbutton _("Build Mode") style "l_checkbox" action ToggleField(persistent, "b_ddml")
+                        if persistent.b_ddml:
+                            textbutton _("Build Distributions") action [project.Select("launcher"), Jump("build_distributions")]
 
     textbutton _("Return") action Jump("front_page") style "l_left_button"
 
 label projects_directory_preference:
 
     python:
-        check_language_support()
 
         release_kind = interface.choice(
             _("Are you wanting to move your existing mod folder to a new folder or set a new one?"),
@@ -206,7 +213,7 @@ label projects_directory_preference:
     jump preferences
 
 label projects_zip_preference:
-    call ddlc_location
+    call choose_zip_directory
     jump preferences
 
 label projects_mzip_preference:

@@ -106,8 +106,8 @@ screen bottom_info:
                     spacing INDENT
                     xalign 1.0
                     
-                    textbutton _("preferences") style "l_link" action Jump("preferences")
-                    textbutton _("quit") style "l_link" action Quit(confirm=False)
+                    textbutton _("Settings") style "l_link" action Jump("preferences")
+                    textbutton _("Exit") style "l_link" action Quit(confirm=False)
 
 
 screen common:

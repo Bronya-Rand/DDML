@@ -1,4 +1,5 @@
-﻿# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+# Copyright 2018-2019 GanstaKingofSA <azarieldc@gmail.com>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -62,6 +63,7 @@ init python:
     def Relaunch():
         renpy.quit(relaunch=True)
 
+# DDML Front Page
 screen front_page:
     frame:
         alt ""
@@ -140,7 +142,6 @@ screen front_page:
                             left_margin (HALF_INDENT) 
                             action Jump("add_base_game")
 
-
         # Project section - on right.
 
         if project.current is not None:
@@ -206,7 +207,9 @@ screen front_page_project:
                 frame style "l_indent":
                     has vbox
 
-                    textbutton _("Browse Game Directory") action OpenDirectory("game")
+                    textbutton _("Install Update, Patch or Add-On") action Jump("addon_install")
+                    textbutton _("Delete 'scripts.rpa'") action Jump("scripts_rpa")
+                    textbutton _("Delete 'images.rpa'") action Jump("images_rpa")
                     textbutton _("Delete Saves") action Jump("rmpersistent")
                     # textbutton _("save") action None style "l_list"
                 # textbutton "Relaunch" action Relaunch
@@ -219,8 +222,7 @@ screen front_page_project:
                     has vbox
                     if persistent.projects_directory:
                         textbutton _("Browse Mod Directory") action OpenDirectory(persistent.projects_directory)
-                        textbutton _("Delete 'scripts.rpa'") action Jump("scripts_rpa")
-                        textbutton _("Delete 'images.rpa'") action Jump("images_rpa")
+                        textbutton _("Browse Game Directory") action OpenDirectory("game")
                     textbutton _("Delete Mod") action Jump("delete_mod_folder")
 
 label main_menu:
@@ -252,7 +254,7 @@ label lint:
 label rmpersistent:
 
     python hide:
-        interface.processing(_("Deleting save data..."))
+        interface.processing(_("Deleting persistent data..."))
         project.current.launch([ 'rmpersistent' ], wait=True)
 
     jump front_page
