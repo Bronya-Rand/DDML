@@ -1,1 +1,1 @@
-{"add_from": false, "renamed_all": true, "renamed_steam": true, "force_recompile": false, "build_update": false, "packages": ["linux", "mac", "win", "sdk", "pc", "raspi", "atom-linux", "atom-mac", "atom-windows"], "type": "hidden"}
+{"type": "hidden", "renamed_all": true, "renamed_steam": true, "force_recompile": false, "build_update": false, "packages": ["linux", "mac", "win", "sdk", "pc"], "add_from": false}
