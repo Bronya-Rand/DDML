@@ -780,7 +780,7 @@ label choose_modzip_directory:
 label delete_mod_folder:
 
     python hide:
-
+        import shutil
         mod_delete_response = interface.input(
             _("Deleting a Mod"),
             _("Are you sure you want to delete this mod? Type either Yes or No."),
@@ -822,7 +822,7 @@ label add_a_mod:
         call ddlc_location
     # Ren'Py Failsafe 2
     if persistent.zip_directory is None:
-        $ interface.error(_("The DDLC ZIP directory could not be set. Giving up."))
+        $ interface.error(_("The DDLC Copy directory could not be set. Giving up."))
     # Checks if User set Mod ZIP Directory
     if persistent.mzip_directory is None:
         call choose_modzip_directory
@@ -832,11 +832,12 @@ label add_a_mod:
 
     python hide:
         import glob
+        import shutil
         import os
         # Asks User the name of the folder they want their mod folder to be
         modinstall_foldername = interface.input(
             _("Mod Folder Name"),
-            _("Please enter the name of your project:"),
+            _("Please enter the name of the mod you are installing:"),
             filename=True,
             cancel=Jump("front_page"))
 
@@ -883,7 +884,7 @@ label add_a_mod:
             # outputs folder in array
             mzte[1]
             # if folder is DDLC/Mod Related
-            if (str(mzte[1]) == mzt + "\\cache" or str(mzte[1]) == mzt + "\\gui" or str(mzte[1]) == mzt + "\\mod_assets" or str(mzte[1]) == mzt + "\\images" or str(mzte[1]) == mzt + "\\fonts" or str(mzte[1]) == mzt + "\\audio" or str(mzte[1]) == mzt + "\\python-packages" or str(mzte[1]) == mzt + "\\saves" or str(mzte[1]) == mzt + "\\submods"):
+            if (str(mzte[1]) == mzt + "\\cache" or str(mzte[1]) == mzt + "\\gui" or str(mzte[1]) == mzt + "\\mod_assets" or str(mzte[1]) == mzt + "\\images" or str(mzte[1]) == mzt + "\\fonts" or str(mzte[1]) == mzt + "\\python-packages" or str(mzte[1]) == mzt + "\\saves" or str(mzte[1]) == mzt + "\\submods"):
                 # return false for advanced scan
                 mztex = False
             else:
@@ -965,6 +966,7 @@ label add_base_game:
         $ interface.error(_("The DDLC ZIP directory could not be set. Giving up."))
 
     python hide:
+        import shutil
         # Asks User the name of the folder they want their mod folder to be
         modinstall_foldername = interface.input(
             _("DDLC Folder Name"),
@@ -1049,9 +1051,27 @@ label delete_images:
 
 # Add-On Installation for some mods (BETA)
 label install_addon:
-
+    # Checks if user set Mod Install Folder
+    if persistent.projects_directory is None:
+        call choose_projects_directory
+    # Ren'Py Failsafe
+    if persistent.projects_directory is None:
+        $ interface.error(_("The Mod directory could not be set. Giving up."))
+    # Checks if user set DDLC ZIP Location (All OS)
+    if persistent.zip_directory is None:
+        call ddlc_location
+    # Ren'Py Failsafe 2
+    if persistent.zip_directory is None:
+        $ interface.error(_("The DDLC Copy directory could not be set. Giving up."))
+    # Checks if User set Mod ZIP Directory
+    if persistent.mzip_directory is None:
+        call choose_modzip_directory
+    # Ren'Py Failsafe 3
+    if persistent.mzip_directory is None:
+        $ interface.error(_("The Mod ZIP directory could not be set. Giving up."))
     python hide:
         import glob
+        import shutil
         # Asks ZIP name of add-on
         modzip_name = interface.input(
             _("Mod Add-On ZIP Name"),
@@ -1072,7 +1092,7 @@ label install_addon:
             # outputs folder in array
             mzte[1]
             # if folder is DDLC/Mod Related
-            if (str(mzte[1]) == mzt + "\\cache" or str(mzte[1]) == mzt + "\\gui" or str(mzte[1]) == mzt + "\\mod_assets" or str(mzte[1]) == mzt + "\\images" or str(mzte[1]) == mzt + "\\fonts" or str(mzte[1]) == mzt + "\\audio" or str(mzte[1]) == mzt + "\\python-packages" or str(mzte[1]) == mzt + "\\saves" or str(mzte[1]) == mzt + "\\submods"):
+            if (str(mzte[1]) == mzt + "\\cache" or str(mzte[1]) == mzt + "\\gui" or str(mzte[1]) == mzt + "\\mod_assets" or str(mzte[1]) == mzt + "\\images" or str(mzte[1]) == mzt + "\\fonts" or str(mzte[1]) == mzt + "\\python-packages" or str(mzte[1]) == mzt + "\\saves" or str(mzte[1]) == mzt + "\\submods"):
                 # return false for advanced scan
                 mztex = False
             else:
