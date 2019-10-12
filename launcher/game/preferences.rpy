@@ -25,6 +25,8 @@ init python:
         persistent.gl_enable = True
 
     config.gl_enable = persistent.gl_enable
+    renpyversion = renpy.version().split()[1]
+    persistent.b_ddml = None
 
     if persistent.show_edit_funcs is None:
         persistent.show_edit_funcs = True
@@ -48,7 +50,7 @@ init python:
 
         return rv
 
-
+## DDML Settings Page
 screen preferences:
 
     $ translations = scan_translations()
@@ -83,7 +85,7 @@ screen preferences:
                         yminimum 75
                         has vbox
 
-                        text _("Mod Directory:")
+                        text _("Mod Folder Directory:")
 
                         add HALF_SPACER
 
@@ -107,8 +109,7 @@ screen preferences:
                         style "l_indent"
                         yminimum 75
                         has vbox
-
-                        text _("DDLC ZIP Directory:")
+                        text _("DDLC Copy Directory:")
 
                         add HALF_SPACER
 
@@ -146,12 +147,60 @@ screen preferences:
                                     action Jump("projects_mzip_preference")
                                     alt _("Mod ZIP directory: [text]")
 
+                frame:
+                    style "l_indent"
+                    xmaximum ONETHIRD
+                    xfill True
+
+                    has vbox
+                    add SEPARATOR2
+
+                    frame:
+                        style "l_indent"
+                        yminimum 75
+                        has vbox
+
+                        text _("DDLC Copy:")
+                        add HALF_SPACER
+
+                        frame style "l_indent":
+                            if persistent.steam_release == True:
+                                text _("Steam Copy")
+                            else:
+                                if persistent.steam_release == None:
+                                    text _("No DDLC Copy Selected")
+                                else:
+                                    text _("DDLC.moe ZIP Copy")
+
+                    add SPACER
+                    #add SEPARATOR2
+
+                    frame:
+                        style "l_indent"
+                        yminimum 75
+                        has vbox
+
+                        add SPACER
+                        text _("Ren'Py SDK Version:")
+                        add HALF_SPACER
+                        frame style "l_indent":
+                            text _("[renpyversion]")
+                        text _("DDML Version:")
+                        add HALF_SPACER
+                        frame style "l_indent":
+                            text _("[config.version]")
+                        textbutton _("Build Mode") style "l_checkbox" action ToggleField(persistent, "b_ddml")
+                        if persistent.b_ddml:
+                            textbutton _("Build Distributions") action [project.Select("launcher"), Jump("build_distributions")]
+
+
     textbutton _("Return") action Jump("front_page") style "l_left_button"
 
+# Asks User if they are wanting to make a new mod folder
+# or move mods to another folder
 label projects_directory_preference:
 
     python:
-        check_language_support()
 
         release_kind = interface.choice(
             _("Are you wanting to move your existing mod folder to a new folder or set a new one?"),
@@ -164,8 +213,9 @@ label projects_directory_preference:
             
     jump preferences
 
+# Setting Configuration Calls
 label projects_zip_preference:
-    call choose_zip_directory
+    call ddlc_location
     jump preferences
 
 label projects_mzip_preference:
