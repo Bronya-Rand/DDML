@@ -44,6 +44,7 @@ init python:
             shutil.move(src_file, dst_file)
     def rpy_ext(ext):
         import os
+        import shutil
         for file in os.listdir(ext):
             base = [".exe", ".sh", ".py", ".txt", ".md", ".html", ".app"]
             if file.endswith(tuple(base)):
@@ -88,7 +89,7 @@ init python:
                 ddlc = persistent.projects_directory + '/temp'
                 shutil.move(ddlc, persistent.project_dir)
         except: 
-            interface.error(_("Cannot Locate 'ddlc-win.zip' in [persistent.zip_directory!q]."), _("Make sure you have DDLC downloaded from 'https://ddlc.moe' and check if it exists."),)
+            interface.error(_("Cannot Locate 'ddlc-mac.zip' in [persistent.zip_directory!q]."), _("Make sure you have DDLC downloaded from 'https://ddlc.moe' and check if it exists."),)
     def ddlc_copy():
         import shutil
         try:
@@ -98,6 +99,7 @@ init python:
     def rpa_copy():
         import glob
         import os
+        import shutil
         if glob.glob(persistent.mzip_directory + '/*.rpa'):
             interface.interaction(_("Copying"), _("Copying Mod Files from Mod ZIP Directory, Please Wait..."),)
             for file in os.listdir(persistent.mzip_directory):
@@ -106,7 +108,6 @@ init python:
                     shutil.copy(src, persistent.project_dir + '/DDLC.app/Contents/Resources/autorun/game')
             for file in os.listdir(persistent.mzip_directory):
                 if file.endswith('.rpa'):
-                    src = os.path.join(persistent.mzip_directory, file)
                     os.remove(src)
             # Auto-Refresh
             project.manager.scan()
@@ -118,13 +119,14 @@ init python:
             with zipfile.ZipFile(persistent.mzip_directory + '/' + name + ".zip", "r") as z:
                 z.extractall(persistent.projects_directory + "/temp")
         except:
-            shutil.rmtree(persistent.projects_directory + '/' + persistent.project_dir)
+            shutil.rmtree(persistent.project_dir)
             interface.error(_("Cannot locate ZIP in [persistent.mzip_directory!q]."), _("Check the name of your Mod ZIP file and try again."))
     def modzip_copy(name):
         import shutil
         try:
             shutil.copytree(persistent.mzip_directory + '/' + name, persistent.projects_directory + '/temp/' + name)
         except:
+            shutil.rmtree(persistent.project_dir)
             interface.error(_("Cannot find Folder in [persistent.mzip_directory!q]."), _("Check the name of your Mod Folder extracted by MacOS and try again."))
 
 init python in project:
@@ -1099,17 +1101,16 @@ label install_addon:
             interface.interaction(_("Copying Mod"), _("Copying Mod Update/Add-On, Please Wait..."),)
             modzip_copy(modzip_name)        
         # Search for if there is a folder in /temp that isn't mod related (Yuri-1.0)
+        mzt = persistent.projects_directory + "/temp"
         mzte = [x[0] for x in os.walk(mzt)]
         try:
             # outputs folder in array
             mzte[1]
             # if folder is DDLC/Mod Related
-            if (str(mzte[1]) == mzt + "/cache" or str(mzte[1]) == mzt + "/gui" or str(mzte[1]) == mzt + "/mod_assets" or str(mzte[1]) == mzt + "/images" or str(mzte[1]) == mzt + "/fonts" or str(mzte[1]) == mzt + "/audio" or str(mzte[1]) == mzt + "/python-packages" or str(mzte[1]) == mzt + "/saves" or str(mzte[1]) == mzt + "/submods"):
-                # return false for advanced scan
-                mztex = False
-            else:
-                # return true for advanced scan
+            if str(mzte[1]).endswith('-Mod') or str(mzte[1]).endswith('-pc') or str(mzte[1]).endswith('-mac'):
                 mztex = True
+            else:
+                mztex = False
         # if there is no folders in there
         except IndexError:
             # return false for advanced scan
