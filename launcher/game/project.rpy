@@ -29,14 +29,6 @@ init python:
         EasyDialogs = None
 
     import os
-    def rpy_move(ext):
-        import os
-        import shutil
-        for file in os.listdir(ext):
-            print file
-            src_file = os.path.join(ext, file)
-            dst_file = os.path.join(persistent.project_dir, file)
-            shutil.move(src_file, dst_file)
     def ext_move(ext,path):
         import os
         import shutil
@@ -48,7 +40,7 @@ init python:
         for file in os.listdir(ext + path):
             print file
             src_file = os.path.join(ext + path, file)
-            dst_file = os.path.join(persistent.project_dir + path, file)
+            dst_file = os.path.join(persistent.project_dir + '/DDLC.app/Contents/Resources/autorun/' + path, file)
             shutil.move(src_file, dst_file)
     def rpy_ext(ext):
         import os
@@ -86,7 +78,7 @@ init python:
         if os.path.exists(persistent.project_dir + '/DDLC.app/Contents/Resources/autorun/game/python-packages'):
             if os.path.exists(mzt + '/python-packages'):
                 shutil.rmtree(persistent.project_dir + '/DDLC.app/Contents/Resources/autorun/game/python-packages')
-        shutil.move(mzt + ext, persistent.project_dir)
+        shutil.move(mzt + ext, persistent.project_dir + '/DDLC.app/Contents/Resources/autorun')
     def zip_extract():
         import zipfile
         import shutil
@@ -100,7 +92,7 @@ init python:
     def ddlc_copy():
         import shutil
         try:
-            shutil.copytree(persistent.zip_directory + "/ddlc-mac", project_dir)
+            shutil.copytree(persistent.zip_directory + "/ddlc-mac", persistent.project_dir)
         except:
             interface.error(_("Cannot find DDLC.app."). _("Please make sure your OS and ZIP Directory are set correctly."),)
     def rpa_copy():
@@ -111,9 +103,11 @@ init python:
             for file in os.listdir(persistent.mzip_directory):
                 if file.endswith('.rpa'):
                     src = os.path.join(persistent.mzip_directory, file)
-                    shutil.move(src, persistent.projects_directory + '/temp')    
-                    shutil.copy(src,persistent.project_dir + '/DDLC.app/Contents/Resources/autorun/game')
-                    shutil.rmtree(persistent.projects_directory + '/temp')
+                    shutil.copy(src, persistent.project_dir + '/DDLC.app/Contents/Resources/autorun/game')
+            for file in os.listdir(persistent.mzip_directory):
+                if file.endswith('.rpa'):
+                    src = os.path.join(persistent.mzip_directory, file)
+                    os.remove(src)
             # Auto-Refresh
             project.manager.scan()
             renpy.jump("front_page")
@@ -129,7 +123,7 @@ init python:
     def modzip_copy(name):
         import shutil
         try:
-            shutil.copytree(persistent.mzip_directory + '/' + modzip_name, persistent.projects_directory + '/temp')
+            shutil.copytree(persistent.mzip_directory + '/' + name, persistent.projects_directory + '/temp/' + name)
         except:
             interface.error(_("Cannot find Folder in [persistent.mzip_directory!q]."), _("Check the name of your Mod Folder extracted by MacOS and try again."))
 
@@ -897,10 +891,10 @@ label add_a_mod:
 
         try:
             mzte[1]
-            if (str(mzte[1]) == mzt + "/cache" or str(mzte[1]) == mzt + "/gui" or str(mzte[1]) == mzt + "/mod_assets" or str(mzte[1]) == mzt + "/images" or str(mzte[1]) == mzt + "/fonts" or str(mzte[1]) == mzt + "/audio" or str(mzte[1]) == mzt + "/python-packages" or str(mzte[1]) == mzt + "/saves" or str(mzte[1]) == mzt + "/submods"):
-                mztex = False
-            else:
+            if str(mzte[1]).endswith('-Mod') or str(mzte[1]).endswith('-pc') or str(mzte[1]).endswith('-mac'):
                 mztex = True
+            else:
+                mztex = False
         except IndexError:
             mztex = False
 
@@ -919,7 +913,7 @@ label add_a_mod:
                 reg_move(mzt, '/game')
             else:
                 if os.path.exists(persistent.project_dir + '/DDLC.app/Contents/Resources/autorun/game/python-packages'):
-                    if os.path.exists(str(mzte[1]) + '/game/python-packages'):
+                    if os.path.exists(mzt + '/python-packages'):
                         shutil.rmtree(persistent.project_dir + '/DDLC.app/Contents/Resources/autorun/game/python-packages')
                     else:
                         pass
