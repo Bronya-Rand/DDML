@@ -1,5 +1,4 @@
-﻿# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
-# Copyright 2018-2019 GanstaKingofSA <azarieldc@gmail.com>
+﻿# Copyright 2004-2019 Tom Rothamel <pytom@bishoujo.us>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -27,7 +26,7 @@
 # might include windows path separators (\), but archive paths and names we
 # deal with/match against use the unix separator (/).
 
-# Internal Distribution for DDML (Windows ONLY)
+
 init python in distribute:
 
     from store import config, persistent
@@ -175,7 +174,7 @@ init python in distribute:
             Update hash with information about this entry.
             """
 
-            key = (self.name, self.path, self.directory, self.executable)
+            key = (self.name, self.directory, self.executable)
 
             hash.update(repr(key))
 
@@ -374,7 +373,7 @@ init python in distribute:
         This manages the process of building distributions.
         """
 
-        def __init__(self, project, destination=None, reporter=None, packages=None, build_update=True, open_directory=False, noarchive=False, packagedest=None, report_success=True):
+        def __init__(self, project, destination=None, reporter=None, packages=None, build_update=True, open_directory=False, noarchive=False, packagedest=None, report_success=True, scan=True):
             """
             Distributes `project`.
 
@@ -442,8 +441,9 @@ init python in distribute:
             # dictionaries.
             data = project.data
 
-            self.reporter.info(_("Scanning project files..."))
-            project.update_dump(force=True, gui=False, compile=project.data['force_recompile'])
+            if scan:
+                self.reporter.info(_("Scanning project files..."))
+                project.update_dump(force=True, gui=False, compile=project.data['force_recompile'])
 
             if project.dump.get("error", False):
                 raise Exception("Could not get build data from the project. Please ensure the project runs.")
@@ -524,6 +524,10 @@ init python in distribute:
             # Build the mac app and windows exes.
             self.add_mac_files()
             self.add_windows_files()
+            self.add_main_py()
+
+            # Add the main.py.
+            self.add_main_py()
 
             # Add generated/special files.
             if build['renpy']:
@@ -557,6 +561,8 @@ init python in distribute:
                         "update",
                         p["file_lists"],
                         dlc=p["dlc"])
+
+            wait_parallel_threads()
 
             if self.build_update:
                 self.finish_updates(build_packages)
@@ -605,12 +611,12 @@ init python in distribute:
                     if match(match_name, pattern):
                         break
                 else:
-                    print >> self.log, match_name.encode("utf-8"), "doesn't match anything."
+                    print(match_name.encode("utf-8"), "doesn't match anything.", file=self.log)
 
                     pattern = None
                     file_list = None
 
-                print >> self.log, match_name.encode("utf-8"), "matches", pattern, "(" + str(file_list) + ")."
+                print(match_name.encode("utf-8"), "matches", pattern, "(" + str(file_list) + ").", file=self.log)
 
                 if file_list is None:
                     return
@@ -804,6 +810,7 @@ init python in distribute:
 
             self.add_file_list_hash("rapt")
             self.add_file_list_hash("renios")
+            self.add_file_list_hash("web")
 
             tmp_fn = self.temp_filename("renpy.py")
 
@@ -863,28 +870,41 @@ init python in distribute:
                 windows = 'binary'
                 linux = 'binary'
                 mac = 'binary'
+                raspi = 'raspi'
             else:
                 windows = 'windows'
                 linux = 'linux'
                 mac = 'mac'
+                raspi = 'linux'
 
-            # self.add_file(
-            #     linux,
-            #     "lib/linux-i686/" + self.executable_name,
-            #     os.path.join(config.renpy_base, "lib/linux-i686/pythonw"),
-            #     True)
+            self.add_file(
+                linux,
+                "lib/linux-i686/" + self.executable_name,
+                os.path.join(config.renpy_base, "lib/linux-i686/pythonw"),
+                True)
 
-            # self.add_file(
-            #     linux,
-            #     "lib/linux-x86_64/" + self.executable_name,
-            #     os.path.join(config.renpy_base, "lib/linux-x86_64/pythonw"),
-            #     True)
+            self.add_file(
+                linux,
+                "lib/linux-x86_64/" + self.executable_name,
+                os.path.join(config.renpy_base, "lib/linux-x86_64/pythonw"),
+                True)
 
-            # self.add_file(
-            #     mac,
-            #     "lib/darwin-x86_64/" + self.executable_name,
-            #     os.path.join(config.renpy_base, "lib/darwin-x86_64/pythonw"),
-            #     True)
+            armfn = os.path.join(config.renpy_base, "lib/linux-armv7l/pythonw")
+
+            if os.path.exists(armfn):
+
+                self.add_file(
+                    raspi,
+                    "lib/linux-armv7l/" + self.executable_name,
+                    armfn,
+                    True)
+
+
+            self.add_file(
+                mac,
+                "lib/darwin-x86_64/" + self.executable_name,
+                os.path.join(config.renpy_base, "lib/darwin-x86_64/pythonw"),
+                True)
 
 #             self.add_file(
 #                 windows,
@@ -951,7 +971,7 @@ init python in distribute:
             old_exe_fn = os.path.join(config.renpy_base, "renpy.exe")
             old_main_fn = os.path.join(config.renpy_base, "lib/windows-i686/renpy.exe")
 
-            if os.path.exists(icon_fn):
+            if os.path.exists(icon_fn) and os.path.exists(old_exe_fn):
                 exe_fn = self.temp_filename("renpy.exe")
                 main_fn = self.temp_filename("main.exe")
 
@@ -965,8 +985,16 @@ init python in distribute:
                 exe_fn = old_exe_fn
                 main_fn = old_main_fn
 
-            self.add_file(windows, self.exe, exe_fn)
-            self.add_file(windows, "lib/windows-i686/" + self.exe, main_fn)
+            if os.path.exists(exe_fn):
+                self.add_file(windows, self.exe, exe_fn)
+                self.add_file(windows, "lib/windows-i686/" + self.exe, main_fn)
+
+        def add_main_py(self):
+            if self.build['renpy']:
+                return
+
+            self.add_file("web", "main.py", os.path.join(config.renpy_base, "renpy.py"))
+
 
         def mark_executable(self):
             """
@@ -1012,7 +1040,7 @@ init python in distribute:
 
             cmd = [ renpy.fsencode(i.format(**kwargs)) for i in command ]
 
-            # print "\"" + "\" \"".join(cmd) + "\""
+            # print("\"" + "\" \"".join(cmd) + "\"")
 
             try:
                 import sys, os
@@ -1207,7 +1235,7 @@ init python in distribute:
 
             self.update_versions[variant] = fl.hash(self)
 
-            update = { variant : { "version" : self.update_versions[variant], "files" : update_files, "directories" : update_directories, "xbit" : update_xbit } }
+            update = { variant : { "version" : self.update_versions[variant], "base_name" : self.base_name, "files" : update_files, "directories" : update_directories, "xbit" : update_xbit } }
 
             update_fn = os.path.join(self.destination, filename + ".update.json")
 
@@ -1237,56 +1265,18 @@ init python in distribute:
 
             file_hash, old_fl_hash = self.build_cache.get(full_filename, ("", ""))
 
-            if directory or old_fl_hash != fl_hash:
+            if (not directory) and old_fl_hash == fl_hash:
 
-                if format == "tar.bz2":
-                    pkg = TarPackage(path, "w:bz2")
-                elif format == "update":
-                    pkg = TarPackage(path, "w", notime=True)
-                elif format == "zip" or format == "app-zip":
-                    pkg = ZipPackage(path)
-                elif directory:
-                    pkg = DirectoryPackage(path)
+                if file_hash:
+                    self.build_cache[full_filename] = (file_hash, fl_hash)
 
-                for i, f in enumerate(fl):
-                    self.reporter.progress(_("Writing the [variant] [format] package."), i, len(fl), variant=variant, format=format)
+                return
 
-                    if f.directory:
-                        pkg.add_directory(f.name, f.path)
-                    else:
-                        pkg.add_file(f.name, f.path, f.executable)
-
-                self.reporter.progress_done()
-                pkg.close()
-
-                if format == "update":
-                    # Build the zsync file.
-
-                    self.reporter.info(_("Making the [variant] update zsync file."), variant=variant)
-
-                    cmd = [
-                        updater.zsync_path("zsyncmake"),
-                        "-z",
-                        # -u url to gzipped data - not a local filename!
-                        "-u", filename + ".update.gz",
-                        "-o", os.path.join(self.destination, filename + ".zsync"),
-                        os.path.abspath(path),
-                        ]
-
-                    subprocess.check_call([ renpy.fsencode(i) for i in cmd ])
-
-                    # Build the sums file. This is a file with an adler32 hash of each 64k block
-                    # of the zsync file. It's used to help us determine how much of the file is
-                    # downloaded.
-                    with open(path, "rb") as src:
-                        with open(renpy.fsencode(os.path.join(self.destination, filename + ".sums")), "wb") as sums:
-                            while True:
-                                data = src.read(65536)
-
-                                if not data:
-                                    break
-
-                                sums.write(struct.pack("<I", zlib.adler32(data) & 0xffffffff))
+            def done():
+                """
+                This is called when the build of the package is done, either
+                in this thread or a background thread.
+                """
 
                 if self.include_update and not self.build_update and not dlc:
                     if os.path.exists(update_fn):
@@ -1297,12 +1287,54 @@ init python in distribute:
                 else:
                     file_hash = ""
 
-            if dmg:
-                self.make_dmg(filename, path, dmg_path)
-                shutil.rmtree(path)
+                if file_hash:
+                    self.build_cache[full_filename] = (file_hash, fl_hash)
 
-            if file_hash:
-                self.build_cache[full_filename] = (file_hash, fl_hash)
+            if format == "tar.bz2":
+                pkg = TarPackage(path, "w:bz2")
+            elif format == "update":
+                pkg = UpdatePackage(path, filename, self.destination)
+            elif format == "zip" or format == "app-zip":
+                if self.build['renpy']:
+                    pkg = ExternalZipPackage(path)
+                else:
+                    pkg = ZipPackage(path)
+            elif dmg:
+
+                def make_dmg():
+                    self.make_dmg(filename, path, dmg_path)
+                    shutil.rmtree(path)
+
+                pkg = DMGPackage(path, make_dmg)
+            elif directory:
+                pkg = DirectoryPackage(path)
+
+            # If we want to build in parallel.
+            if self.build['renpy']:
+                pkg = ParallelPackage(pkg, done, variant + "." + format)
+                done = None
+
+            for i, f in enumerate(fl):
+                self.reporter.progress(_("Writing the [variant] [format] package."), i, len(fl), variant=variant, format=format)
+
+                if f.directory:
+                    pkg.add_directory(f.name, f.path)
+                else:
+                    pkg.add_file(f.name, f.path, f.executable)
+
+            self.reporter.progress_done()
+
+
+            if format == "update":
+                # Build the zsync file.
+
+                self.reporter.info(_("Making the [variant] update zsync file."), variant=variant)
+
+            pkg.close()
+
+            if done is not None:
+                done()
+
 
         def finish_updates(self, packages):
             """
@@ -1378,13 +1410,13 @@ init python in distribute:
 
         def dump(self):
             for k, v in sorted(self.file_lists.items()):
-                print
-                print k + ":"
+                print()
+                print(k + ":")
 
                 v.sort()
 
                 for i in v:
-                    print "   ", i.name, "xbit" if i.executable else ""
+                    print("   ", i.name, "xbit" if i.executable else "")
 
     class GuiReporter(object):
         """
@@ -1423,7 +1455,7 @@ init python in distribute:
             what = what.replace("[", "{")
             what = what.replace("]", "}")
             what = what.format(**kwargs)
-            print what
+            print(what)
 
         def progress(self, what, done, total, **kwargs):
             what = what.replace("[", "{")

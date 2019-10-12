@@ -271,13 +271,6 @@ init python:
     build.classify_renpy("**/thumbs.db", None)
     build.classify_renpy("**/.*", None)
 
-    try:
-        with open(os.path.join(config.renpy_base, "atom", "executable.txt")) as f:
-            for l in f:
-                build.executable(l.strip())
-    except:
-        pass
-
     build.classify_renpy("**.old", None)
     build.classify_renpy("**.new", None)
     build.classify_renpy("**.bak", None)
@@ -334,9 +327,7 @@ init python:
     # Packages.
     build.packages = [ ]
 
-    build.package("Windows Release", "zip", "source binary")
-    build.package("Linux Release", "tar.bz2", "source binary")
-    build.package("Mac Release", "dmg", "source binary")
+    build.package("Mac Release", "zip", "source binary")
 
 # Enable the special launcher translation mode.
 define config.translate_launcher = True
