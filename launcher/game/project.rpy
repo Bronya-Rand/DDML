@@ -821,26 +821,21 @@ label delete_mod_folder:
     jump front_page
 
 label add_a_mod:
-
     # Checks if user set Mod Install Folder
     if persistent.projects_directory is None:
         call choose_projects_directory
-
     # Ren'Py Failsafe
     if persistent.projects_directory is None:
         $ interface.error(_("The Mod directory could not be set. Giving up."))
     # Checks if user set DDLC ZIP Location (All OS)
     if persistent.zip_directory is None:
         call choose_zip_directory
-
     # Ren'Py Failsafe 2
     if persistent.zip_directory is None:
         $ interface.error(_("The DDLC ZIP directory could not be set. Giving up."))
-
     # Checks if User set Mod ZIP Directory
     if persistent.mzip_directory is None:
         call choose_modzip_directory
-
     # Ren'Py Failsafe 3
     if persistent.mzip_directory is None:
         $ interface.error(_("The Mod ZIP directory could not be set. Giving up."))
@@ -890,7 +885,7 @@ label add_a_mod:
         mzte = [x[0] for x in os.walk(mzt)]
         try:
             mzte[1]
-            if (str(mzte[1]) == mzt + "/cache" or str(mzte[1]) == mzt + "/gui" or str(mzte[1]) == mzt + "/mod_assets" or str(mzte[1]) == mzt + "/images" or str(mzte[1]) == mzt + "/fonts" or str(mzte[1]) == mzt + "/audio" or str(mzte[1]) == mzt + "/python-packages" or str(mzte[1]) == mzt + "/saves" or str(mzte[1]) == mzt + "/submods"):
+            if (str(mzte[1]) == mzt + "/cache" or str(mzte[1]) == mzt + "/gui" or str(mzte[1]) == mzt + "/mod_assets" or str(mzte[1]) == mzt + "/images" or str(mzte[1]) == mzt + "/fonts" or str(mzte[1]) == mzt + "/python-packages" or str(mzte[1]) == mzt + "/saves" or str(mzte[1]) == mzt + "/submods"):
                 mztex = False
             else:
                 mztex = True
@@ -957,19 +952,15 @@ label add_a_mod:
     return
 
 label add_base_game:
-
     # Checks if user set Mod Install Folder
     if persistent.projects_directory is None:
         call choose_projects_directory
-
     # Ren'Py Failsafe
     if persistent.projects_directory is None:
         $ interface.error(_("The Mod directory could not be set. Giving up."))
-
     # Checks if user set DDLC ZIP Location (All OS)
     if persistent.zip_directory is None:
         call choose_zip_directory
-
     # Ren'Py Failsafe 2
     if persistent.zip_directory is None:
         $ interface.error(_("The DDLC ZIP directory could not be set. Giving up."))
@@ -1080,13 +1071,13 @@ label install_addon:
         # Asks ZIP name of add-on
         modzip_name = interface.input(
             _("Mod Add-On ZIP Name"),
-            _("Please enter the name of your Mod Add-On ZIP File. It is recommended to rename the ZIP for easy installation."),
+            _("Please enter the name of your Mod Update/Add-On ZIP File. Do not include '.zip' in the name."),
             filename=True,
             cancel=Jump("front_page"))
 
         modzip_name = modzip_name.strip()
         if not modzip_name:
-            interface.error(_("The mod add-on zip name may not be empty."))
+            interface.error(_("The mod update/add-on zip name may not be empty."))
 
         # Extract Mod
         interface.interaction(_("Extracting"), _("Extracting Mod ZIP, Please Wait..."),)
@@ -1162,7 +1153,7 @@ label install_addon:
         # Prevents copy of any other RPA or other mod files
         shutil.rmtree(persistent.projects_directory + '/temp')
 
-        interface.info("Mod Add-on for " + project.current.name + " has been installed.")
+        interface.info("Mod Update/Add-on for " + project.current.name + " has been installed.")
 
 init python:
 
