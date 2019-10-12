@@ -1,0 +1,9 @@
+errors.txt
+log.txt
+traceback.txt
+*.rpyb
+*.rpyc
+persistent
+*.save
+launcher/game/saves
+tmp

@@ -152,29 +152,6 @@ screen preferences:
                     xmaximum ONETHIRD
                     xfill True
 
-                    has vbox
-                    add SEPARATOR2
-
-                    frame:
-                        style "l_indent"
-                        yminimum 75
-                        has vbox
-
-                        text _("DDLC Copy:")
-                        add HALF_SPACER
-
-                        frame style "l_indent":
-                            if persistent.steam_release == True:
-                                text _("Steam Copy")
-                            else:
-                                if persistent.steam_release == None:
-                                    text _("No DDLC Copy Selected")
-                                else:
-                                    text _("DDLC.moe ZIP Copy")
-
-                    add SPACER
-                    #add SEPARATOR2
-
                     frame:
                         style "l_indent"
                         yminimum 75

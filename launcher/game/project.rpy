@@ -93,9 +93,9 @@ init python:
             with zipfile.ZipFile(persistent.zip_directory + '/ddlc-win.zip', "r") as z:
                 z.extractall(persistent.projects_directory + "/temp")
                 ddlc = persistent.projects_directory + '/temp' + '/DDLC-1.1.1-pc'
-                shutil.move(ddlc, persistent.project_dir)
         except: 
             interface.error(_("Cannot Locate 'ddlc-win.zip' in [persistent.zip_directory!q]."), _("Make sure you have DDLC downloaded from 'https://ddlc.moe' and check if it exists."),)
+        shutil.move(ddlc, persistent.project_dir)
     def rpa_copy():
         import glob
         import os
@@ -855,13 +855,13 @@ label add_a_mod:
         if not modinstall_foldername:
             interface.error(_("The mod name may not be empty."))
 
-        project_dir = os.path.join(persistent.projects_directory, modinstall_foldername)
+        persistent.project_dir = os.path.join(persistent.projects_directory, modinstall_foldername)
 
         if project.manager.get(modinstall_foldername) is not None:
             interface.error(_("[modinstall_foldername!q] already exists. Please choose a different mod name name."), modinstall_foldername=modinstall_foldername)
 
-        if os.path.exists(project_dir):
-            interface.error(_("[project_dir!q] already exists. Please choose a different mod name name."), project_dir=project_dir)
+        if os.path.exists(persistent.project_dir):
+            interface.error(_("[persistent.project_dir!q] already exists. Please choose a different mod name name."), project_dir=project_dir)
 
         interface.interaction(_("Making a Mod Folder"), _("Extracting DDLC, Please Wait..."),)
 
@@ -881,7 +881,7 @@ label add_a_mod:
         # Extract Mod
         interface.interaction(_("Extracting"), _("Extracting Mod ZIP, Please Wait..."),)
         modzip_extract(modzip_name)
-
+        mzt = persistent.projects_directory + "/temp"
         mzte = [x[0] for x in os.walk(mzt)]
         try:
             mzte[1]
@@ -978,13 +978,13 @@ label add_base_game:
         if not modinstall_foldername:
             interface.error(_("The folder name may not be empty."))
 
-        project_dir = os.path.join(persistent.projects_directory, modinstall_foldername)
+        persistent.project_dir = os.path.join(persistent.projects_directory, modinstall_foldername)
 
         if project.manager.get(modinstall_foldername) is not None:
             interface.error(_("[modinstall_foldername!q] already exists. Please choose a different folder name."), modinstall_foldername=modinstall_foldername)
 
-        if os.path.exists(project_dir):
-            interface.error(_("[project_dir!q] already exists. Please choose a different name."), project_dir=project_dir)
+        if os.path.exists(persistent.project_dir):
+            interface.error(_("[persistent.project_dir!q] already exists. Please choose a different name."), project_dir=project_dir)
 
         interface.interaction(_("Making a DDLC Folder"), _("Extracting DDLC, Please Wait..."),)
 
@@ -1070,7 +1070,7 @@ label install_addon:
         import shutil
         # Asks ZIP name of add-on
         modzip_name = interface.input(
-            _("Mod Add-On ZIP Name"),
+            _("Mod Update/Add-On ZIP Name"),
             _("Please enter the name of your Mod Update/Add-On ZIP File. Do not include '.zip' in the name."),
             filename=True,
             cancel=Jump("front_page"))

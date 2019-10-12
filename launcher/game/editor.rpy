@@ -1,4 +1,4 @@
-﻿# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+﻿# Copyright 2004-2019 Tom Rothamel <pytom@bishoujo.us>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -140,19 +140,47 @@ init 1 python in editor:
         Creates the list of FancyEditorInfo objects.
         """
 
+        import platform
+
         global fancy_editors
 
         scan_all()
 
         fei = fancy_editors = [ ]
 
+        # Atom.
+        AD = _("(Recommended) A modern and approachable text editor.")
+
+        if renpy.windows:
+            dlc = "atom-windows"
+            installed = os.path.exists(os.path.join(config.basedir, "atom/atom-windows"))
+        elif renpy.macintosh:
+            dlc = "atom-mac"
+            installed = os.path.exists(os.path.join(config.basedir, "atom/Atom.app"))
+        else:
+            dlc = "atom-linux"
+            installed = os.path.exists(os.path.join(config.basedir, "atom/atom-linux-" + platform.machine()))
+
+        e = FancyEditorInfo(
+            0,
+            "Atom",
+            AD,
+            dlc,
+            _("Up to 150 MB download required."),
+            None)
+
+        e.installed = e.installed and installed
+
+        fei.append(e)
+
+
         # Editra.
-        ED  = _("{b}Recommended.{/b} A beta editor with an easy to use interface and features that aid in development, such as spell-checking. Editra currently lacks the IME support required for Chinese, Japanese, and Korean text input.")
-        EDL  = _("{b}Recommended.{/b} A beta editor with an easy to use interface and features that aid in development, such as spell-checking. Editra currently lacks the IME support required for Chinese, Japanese, and Korean text input. On Linux, Editra requires wxPython.")
+        ED  = _("A mature editor. Editra lacks the IME support required for Chinese, Japanese, and Korean text input.")
+        EDL  = _("A mature editor. Editra lacks the IME support required for Chinese, Japanese, and Korean text input. On Linux, Editra requires wxPython.")
 
         if renpy.windows:
             dlc = "editra-windows"
-            installed = os.path.exists(os.path.join(config.basedir, "editra/Editra-win32"))
+            installed = os.path.exists(os.path.join(config.basedir, "editra/editra.exe"))
             description = ED
             error_message = None
         elif renpy.macintosh:
@@ -174,7 +202,7 @@ init 1 python in editor:
             _("Up to 22 MB download required."),
             error_message)
 
-        e.installed = e.installed or installed
+        e.installed = e.installed and installed
 
         fei.append(e)
 
@@ -190,12 +218,12 @@ init 1 python in editor:
 
         fei.append(FancyEditorInfo(
             3,
-            "System Editor",
+            _("System Editor"),
             _("Invokes the editor your operating system has associated with .rpy files."),
             None))
 
         for k in editors:
-            if k in [ "Editra", "jEdit", "System Editor", "None" ]:
+            if k in [ "Atom", "Editra", "jEdit", "System Editor", "None" ]:
                 continue
 
             fei.append(FancyEditorInfo(
@@ -206,7 +234,7 @@ init 1 python in editor:
 
         fei.append(FancyEditorInfo(
             5,
-            "None",
+            _("None"),
             _("Prevents Ren'Py from opening a text editor."),
             None))
 
@@ -307,7 +335,7 @@ init 1 python in editor:
 
 
     class Edit(Action):
-        alt = "Edit [text]."
+        alt = _("Edit [text].")
 
         def __init__(self, filename, line=None, check=False):
             """
@@ -410,8 +438,6 @@ init 1 python in editor:
         Opens all scripts that are part of the current project in a web browser.
         """
 
-        alt = "Edit [text]."
-
         def __init__(self):
             return
 
@@ -443,6 +469,42 @@ init 1 python in editor:
             except Exception, e:
                 exception = traceback.format_exception_only(type(e), e)[-1][:-1]
                 renpy.invoke_in_new_context(interface.error, _("An exception occured while launching the text editor:\n[exception!q]"), error_message, exception=exception)
+
+
+    class EditProject(Action):
+        """
+        Opens the project's base directory in an editor.
+        """
+
+        def __call__(self):
+
+            if not check_editor():
+                return
+
+            try:
+
+                e = renpy.editor.editor
+
+                e.begin()
+                e.open_project(project.current.path)
+                e.end()
+
+            except Exception, e:
+                exception = traceback.format_exception_only(type(e), e)[-1][:-1]
+                renpy.invoke_in_new_context(interface.error, _("An exception occured while launching the text editor:\n[exception!q]"), error_message, exception=exception)
+
+
+    def CanEditProject():
+        """
+        Returns True if EditProject can be used.
+        """
+
+        try:
+            e = renpy.editor.editor
+            return e.has_projects
+        except:
+            return False
+
 
 screen editor:
 
