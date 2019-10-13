@@ -1,4 +1,4 @@
-# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+# Copyright 2004-2019 Tom Rothamel <pytom@bishoujo.us>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -21,6 +21,8 @@
 
 # This file contains support for string translation and string formatting
 # operations.
+
+from __future__ import print_function
 
 import renpy
 import string
@@ -167,15 +169,31 @@ class Formatter(string.Formatter):
         if "r" in conversion:
             value = repr(value)
         elif "s" in conversion:
-            value = str(value)
+            value = unicode(value)
 
         if "t" in conversion:
+            if not isinstance(value, basestring):
+                value = unicode(value)
+
             value = renpy.translation.translate_string(value)
 
         if "q" in conversion:
+            if not isinstance(value, basestring):
+                value = unicode(value)
+
             value = value.replace("{", "{{")
 
+        if "u" in conversion:
+            value = value.upper()
+
+        if "l" in conversion:
+            value = value.lower()
+
+        if "c" in conversion and value:
+            value = value[0].upper() + value[1:]
+
         return value
+
 
 # The instance of Formatter we use.
 formatter = Formatter()
@@ -212,6 +230,9 @@ def substitute(s, scope=None, force=False, translate=True):
     occurred, or False if no substitution occurred.
     """
 
+    if not isinstance(s, basestring):
+        s = unicode(s)
+
     if translate:
         s = renpy.translation.translate_string(s)
 
@@ -229,6 +250,10 @@ def substitute(s, scope=None, force=False, translate=True):
     else:
         kwargs = renpy.store.__dict__  # @UndefinedVariable
 
-    s = formatter.vformat(s, (), kwargs)
+    try:
+        s = formatter.vformat(s, (), kwargs)
+    except:
+        if renpy.display.predict.predicting:  # @UndefinedVariable
+            return " ", True
 
     return s, (s != old_s)

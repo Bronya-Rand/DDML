@@ -1,4 +1,5 @@
 ﻿# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+# Copyright 2018-2019 GanstaKingofSA <azarieldc@gmail.com>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -28,6 +29,7 @@
 # commented-out code, and you may want to uncomment them when
 # appropriate.
 
+## DDML Configuration
 init -1 python hide:
 
     # Should we enable the use of developer tools? This should be
@@ -44,12 +46,12 @@ init -1 python hide:
     # This controls the title of the window, when Ren'Py is
     # running in a window.
 
-    config.window_title = u"DDML"
+    config.window_title = u"Doki Doki Mod Launcher"
 
     # These control the name and version of the game, that are reported
     # with tracebacks and other debugging logs.
     config.name = "DDML"
-    config.version = "5.1.0-Windows-Release"
+    config.version = "7.3.4"
 
     #####################
     # Themes
@@ -230,7 +232,7 @@ init python:
     if 'RENPY_BUILD_VERSION' in os.environ:
         build.directory_name = "renpy-" + os.environ['RENPY_BUILD_VERSION']
     else:
-        build.directory_name = "renpy-" + config.version.rsplit('.', 1)[0]
+        build.directory_name = "DDML-" + config.version
 
     # The name that's uses for executables - the program that users will run
     # to start the game. For example, if this is 'mygame', then on Windows,
@@ -239,7 +241,7 @@ init python:
 
     # If True, Ren'Py will include update information into packages. This
     # allows the updater to run.
-    build.include_update = True
+    build.include_update = False
 
     # Allow empty directories, so we can distribute the images directory.
     build.exclude_empty_directories = False
@@ -269,16 +271,12 @@ init python:
     build.classify_renpy("**/thumbs.db", None)
     build.classify_renpy("**/.*", None)
 
-    build.classify_renpy("rapt/**", "rapt")
-
-    build.classify_renpy("renios/prototype/base/", None)
-    build.classify_renpy("renios/prototype/prototype.xcodeproj/*.xcworkspace/", None)
-    build.classify_renpy("renios/prototype/prototype.xcodeproj/xcuserdata/", None)
-    build.classify_renpy("renios/prototype/**", "renios")
-    build.classify_renpy("renios/buildlib/**", "renios")
-    build.classify_renpy("renios/ios.py", "renios")
-    build.classify_renpy("renios/version.txt", "renios")
-    build.classify_renpy("renios/", "renios")
+    try:
+        with open(os.path.join(config.renpy_base, "atom", "executable.txt")) as f:
+            for l in f:
+                build.executable(l.strip())
+    except:
+        pass
 
     build.classify_renpy("**.old", None)
     build.classify_renpy("**.new", None)
@@ -290,7 +288,6 @@ init python:
     build.classify_renpy("**/errors.txt", None)
     build.classify_renpy("**/saves/", None)
     build.classify_renpy("**/tmp/", None)
-    build.classify_renpy("**/.Editra", None)
 
     # main source.
 
@@ -313,14 +310,10 @@ init python:
 
     # games.
     build.classify_renpy("launcher/game/theme/", None)
+    build.classify_renpy("launcher/game/saves", None)
     build.classify_renpy("gui/game/gui/", None)
 
     source_and_binary("launcher")
-    source_and_binary("templates", binary=None)
-    source_and_binary("gui", binary=None)
-
-    source_and_binary("the_question")
-    source_and_binary("tutorial")
 
     # docs.
     build.classify_renpy("doc/", "source")
@@ -328,20 +321,6 @@ init python:
     build.classify_renpy("doc/_sources/", None)
     build.classify_renpy("doc/**", "source")
     build.classify_renpy("LICENSE.txt", "source")
-
-    # module.
-    build.classify_renpy("module/", "source")
-    build.classify_renpy("module/*.c", "source")
-    build.classify_renpy("module/gen/", "source")
-    build.classify_renpy("module/gen/*.c", "source")
-    build.classify_renpy("module/*.h", "source")
-    build.classify_renpy("module/*.py*", "source")
-    build.classify_renpy("module/include/", "source")
-    build.classify_renpy("module/include/*.pxd", "source")
-    build.classify_renpy("module/include/*.pxi", "source")
-    build.classify_renpy("module/pysdlsound/", "source")
-    build.classify_renpy("module/pysdlsound/*.py", "source")
-    build.classify_renpy("module/pysdlsound/*.pyx", "source")
 
     # all-platforms binary.
     build.classify_renpy("lib/**/_renpysteam*", None)
@@ -352,34 +331,15 @@ init python:
     build.classify_renpy("renpy.sh", "binary")
     # renpy.app is now built from scratch from distribute.rpy.
 
-    # jedit rules.
-    build.classify_renpy("jedit/**", "jedit")
-
-    # editra rules.
-    build.classify_renpy("editra/", "editra-all")
-    build.classify_renpy("editra/Editra.edit.py", "editra-all")
-    build.classify_renpy("editra/Editra/**", "editra-linux editra-windows")
-    build.classify_renpy("editra/Editra-mac.app/**", "editra-mac")
-    build.classify_renpy("editra/lib/**", "editra-windows")
-    build.classify_renpy("editra/editra.exe", "editra-windows")
-
-
-    # Executable rules.
-    build.executable("editra/Editra/Editra")
-
     # Packages.
     build.packages = [ ]
 
-    build.package("sdk", "zip tar.bz2 dmg", "source binary")
-    build.package("source", "tar.bz2", "source source_only", update=False)
-
-    build.package("jedit", "zip", "jedit", dlc=True)
-    build.package("editra-linux", "tar.bz2", "editra-all editra-linux", dlc=True)
-    build.package("editra-mac", "zip", "editra-all editra-mac", dlc=True)
-    build.package("editra-windows", "zip", "editra-all editra-windows", dlc=True)
-    build.package("rapt", "zip", "rapt", dlc=True)
-    build.package("renios", "zip", "renios", dlc=True)
-
+    build.package("Windows Release", "zip", "source binary")
+    build.package("Linux Release", "tar.bz2", "source binary")
+    build.package("Mac Release", "dmg", "source binary")
 
 # Enable the special launcher translation mode.
 define config.translate_launcher = True
+
+# Reduce the rate of screen updates.
+default preferences.gl_powersave = True

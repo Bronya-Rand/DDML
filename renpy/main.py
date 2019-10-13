@@ -1,4 +1,4 @@
-# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+# Copyright 2004-2019 Tom Rothamel <pytom@bishoujo.us>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -31,6 +31,8 @@ import os
 import sys
 import time
 import zipfile
+import gc
+
 import __main__
 
 last_clock = time.time()
@@ -119,16 +121,6 @@ def run(restart):
         start_label = 'start'
 
     game.context().goto_label(start_label)
-
-    # Perhaps warp.
-    warp_label = renpy.warp.warp()
-
-    if warp_label is not None:
-
-        game.context().goto_label(warp_label)
-        game.context().call('_after_warp')
-
-        renpy.config.skipping = None
 
     try:
         renpy.exports.log("--- " + time.ctime())
@@ -236,8 +228,57 @@ def choose_variants():
             renpy.config.variants.insert(0, 'phone')
             renpy.config.variants.insert(0, 'small')
 
+    elif renpy.emscripten:
+        import emscripten, re
+
+        # web
+        renpy.config.variants.insert(0, 'web')
+
+        # mobile
+        userAgent = emscripten.run_script_string(r'''navigator.userAgent''')
+        mobile = re.search('Mobile|Android|iPad|iPhone', userAgent)
+        if mobile:
+            renpy.config.variants.insert(0, 'mobile')
+        # Reserve android/ios for when the OS API is exposed
+        #if re.search('Android', userAgent):
+        #    renpy.config.variants.insert(0, 'android')
+        #if re.search('iPad|iPhone', userAgent):
+        #    renpy.config.variants.insert(0, 'ios')
+
+        # touch
+        touch = emscripten.run_script_int(r'''
+          ('ontouchstart' in window) ||
+            (navigator.maxTouchPoints > 0) ||
+            (navigator.msMaxTouchPoints > 0)''')
+        if touch == 1:
+            # mitigate hybrids (e.g. ms surface) by restricting touch to mobile
+            if mobile:
+                renpy.config.variants.insert(0, 'touch')
+
+        # large/medium/small
+        # tablet/phone
+        # screen.width/height is auto-adjusted by browser,
+        # so it can be used as a physical sizereference
+        # (see also window.devicePixelRatio)
+        # e.g. Galaxy S5:
+        # - physical / OpenGL: 1080x1920
+        # - web screen: 360x640 w/ devicePixelRatio=3
+        ref_width  = emscripten.run_script_int(r'''screen.width''')
+        ref_height = emscripten.run_script_int(r'''screen.height''')
+        # medium reference point: ipad 1024x768, ipad pro 1336x1024 (browser "pixels")
+        if mobile:
+            if (ref_width < 768 or ref_height < 768):
+                renpy.config.variants.insert(0, 'small')
+                renpy.config.variants.insert(0, 'phone')
+            else:
+                renpy.config.variants.insert(0, 'medium')
+                renpy.config.variants.insert(0, 'tablet')
+        else:
+            renpy.config.variants.insert(0, 'large')
+
     else:
         renpy.config.variants.insert(0, 'pc')
+
         renpy.config.variants.insert(0, 'large')
 
 
@@ -275,9 +316,21 @@ def main():
     else:
         renpy.config.commondir = None
 
+    # Add path from env variable, if any
+    if "RENPY_SEARCHPATH" in os.environ:
+        renpy.config.searchpath.extend(os.environ["RENPY_SEARCHPATH"].split("::"))
+
     if renpy.android:
         renpy.config.searchpath = [ ]
         renpy.config.commondir = None
+
+        if "ANDROID_PUBLIC" in os.environ:
+            android_game = os.path.join(os.environ["ANDROID_PUBLIC"], "game")
+
+            print("Android searchpath: ", android_game)
+
+            if os.path.exists(android_game):
+                renpy.config.searchpath.insert(0, android_game)
 
     # Load Ren'Py extensions.
     for dir in renpy.config.searchpath:  # @ReservedAssignment
@@ -343,15 +396,16 @@ def main():
     # labels as in other scripts (usually happens on script rename).
     if (renpy.game.args.command == 'compile') and not (renpy.game.args.keep_orphan_rpyc):  # @UndefinedVariable
 
-        for (fn, _dir) in renpy.game.script.script_files:
+        for (fn, dn) in renpy.game.script.script_files:
 
-            if dir is None:
+            if dn is None:
                 continue
 
-            if not os.path.isfile(os.path.join(dir, fn+".rpy")):
+            if not os.path.isfile(os.path.join(dn, fn + ".rpy")):
+
                 try:
-                    name = os.path.join(dir, fn+".rpyc")
-                    os.rename(name, name+".bak")
+                    name = os.path.join(dn, fn + ".rpyc")
+                    os.rename(name, name + ".bak")
                 except OSError:
                     # This perhaps shouldn't happen since either .rpy or .rpyc should exist
                     pass
@@ -388,14 +442,23 @@ def main():
     game.persistent = renpy.persistent.init()
     game.preferences = game.persistent._preferences
 
+    for i in renpy.game.persistent._seen_translates:  # @UndefinedVariable
+        if i in renpy.game.script.translator.default_translates:
+            renpy.game.seen_translates_count += 1
+
     if game.persistent._virtual_size:
         renpy.config.screen_width, renpy.config.screen_height = game.persistent._virtual_size
 
-    # Init save locations.
+    # Init save locations and loadsave.
     renpy.savelocation.init()
 
     # We need to be 100% sure we kill the savelocation thread.
     try:
+
+        # Init save slots.
+        renpy.loadsave.init()
+
+        log_clock("Loading save slot metadata.")
 
         # Load persistent data from all save locations.
         renpy.persistent.update()
@@ -416,12 +479,20 @@ def main():
         renpy.game.exception_info = 'While executing init code:'
 
         for _prio, node in game.script.initcode:
-            game.context().run(node)
+
+            if isinstance(node, renpy.ast.Node):
+                renpy.game.context().run(node)
+            else:
+                # An init function.
+                node()
 
         renpy.game.exception_info = 'After initialization, but before game start.'
 
         # Check if we should simulate android.
         renpy.android = renpy.android or renpy.config.simulate_android  # @UndefinedVariable
+
+        # Re-set up the logging.
+        renpy.log.post_init()
 
         # Run the post init code, if any.
         for i in renpy.game.post_init:
@@ -429,11 +500,10 @@ def main():
 
         renpy.game.script.report_duplicate_labels()
 
-        game.persistent._virtual_size = renpy.config.screen_width, renpy.config.screen_height
+        # Sort the images.
+        renpy.display.image.image_names.sort()
 
-        for i in renpy.game.persistent._seen_translates:  # @UndefinedVariable
-            if i in renpy.game.script.translator.default_translates:
-                renpy.game.seen_translates_count += 1
+        game.persistent._virtual_size = renpy.config.screen_width, renpy.config.screen_height
 
         log_clock("Running init code")
 
@@ -469,6 +539,23 @@ def main():
         renpy.python.make_clean_stores()
         log_clock("Making clean stores")
 
+        gc.collect()
+
+        if renpy.config.manage_gc:
+            gc.set_threshold(*renpy.config.gc_thresholds)
+
+            gc_debug = int(os.environ.get("RENPY_GC_DEBUG", 0))
+
+            if renpy.config.gc_print_unreachable:
+                gc_debug |= gc.DEBUG_SAVEALL
+
+            gc.set_debug(gc_debug)
+
+        log_clock("Initial gc.")
+
+        # Start debugging file opens.
+        renpy.debug.init_main_thread_open()
+
         # (Perhaps) Initialize graphics.
         if not game.interface:
             renpy.display.core.Interface()
@@ -489,7 +576,7 @@ def main():
                     restart = (renpy.config.end_game_transition, "_invoke_main_menu", "_main_menu")
                     renpy.persistent.update(True)
 
-            except game.FullRestartException, e:
+            except game.FullRestartException as e:
                 restart = e.reason
 
             finally:
@@ -501,6 +588,8 @@ def main():
                 renpy.loadsave.autosave_not_running.wait(3.0)
 
     finally:
+
+        gc.set_debug(0)
 
         renpy.loader.auto_quit()
         renpy.savelocation.quit()

@@ -1,4 +1,5 @@
 ﻿# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+# Copyright 2018-2019 GanstaKingofSA <azarieldc@gmail.com>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -58,10 +59,42 @@ init python:
             except:
                 pass
 
+    class ImgDir(Action):
+        """
+        Opens `images` in a file browser.
+        """
+
+        alt = _("Open [text] directory.")
+
+        def __init__(self, directory, absolute=False):
+            if absolute:
+                self.directory = directory
+            else:
+                self.directory = os.path.join(os.getcwd(), directory)
+
+        def get_sensitive(self):
+            return os.path.exists(self.directory)
+
+        def __call__(self):
+
+            try:
+                directory = renpy.fsencode(self.directory)
+
+                if renpy.windows:
+                    os.startfile(directory)
+                elif renpy.macintosh:
+                    subprocess.Popen([ "open", directory ])
+                else:
+                    subprocess.Popen([ "xdg-open", directory ])
+
+            except:
+                pass
+
     # Used for testing.
     def Relaunch():
         renpy.quit(relaunch=True)
 
+## DDML Front Page
 screen front_page:
     frame:
         alt ""
@@ -180,7 +213,7 @@ screen front_page_project_list:
 
             null height 12
 
-# This is used for the right side of the screen, which is where the project-specific
+# This is used for the right side of the screen, which is where the mod-specific
 # buttons are.
 screen front_page_project:
 
@@ -205,8 +238,9 @@ screen front_page_project:
 
                 frame style "l_indent":
                     has vbox
-
-                    textbutton _("Browse Game Directory") action OpenDirectory("game")
+                    textbutton _("Install Update, Patch or Add-On") action Jump("addon_install")
+                    textbutton _("Delete 'scripts.rpa'") action Jump("scripts_rpa")
+                    textbutton _("Delete 'images.rpa'") action Jump("images_rpa")
                     textbutton _("Delete Saves") action Jump("rmpersistent")
                     # textbutton _("save") action None style "l_list"
                 # textbutton "Relaunch" action Relaunch
@@ -219,8 +253,8 @@ screen front_page_project:
                     has vbox
                     if persistent.projects_directory:
                         textbutton _("Browse Mod Directory") action OpenDirectory(persistent.projects_directory)
-                        textbutton _("Delete 'scripts.rpa'") action Jump("scripts_rpa")
-                        textbutton _("Delete 'images.rpa'") action Jump("images_rpa")
+                        textbutton _("Browse Game Directory") action OpenDirectory("game")
+                        textbutton _("Browse Save Directory") action OpenDirectory(os.getenv('APPDATA') + '/RenPy')
                     textbutton _("Delete Mod") action Jump("delete_mod_folder")
 
 label main_menu:

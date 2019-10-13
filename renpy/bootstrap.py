@@ -1,4 +1,4 @@
-# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+# Copyright 2004-2019 Tom Rothamel <pytom@bishoujo.us>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -25,13 +25,19 @@ import sys
 import subprocess
 import io
 
-import renpy.error
-
 FSENCODING = sys.getfilesystemencoding() or "utf-8"
 
 # Sets the default encoding to the filesystem encoding.
+old_stdout = sys.stdout
+old_stderr = sys.stderr
+
 reload(sys)
 sys.setdefaultencoding(FSENCODING)  # @UndefinedVariable
+
+sys.stdout = old_stdout
+sys.stderr = old_stderr
+
+import renpy.error
 
 
 # Extra things used for distribution.
@@ -77,6 +83,19 @@ def extra_imports():
     import plistlib; plistlib
     import _renpysteam; _renpysteam
     import compileall; compileall
+    import cProfile; cProfile
+    import pstats; pstats
+    import _ssl; _ssl
+    import SimpleHTTPServer; SimpleHTTPServer
+    import wave; wave
+    import sunau; sunau
+
+    # Used by requests.
+    import cgi; cgi
+    import Cookie; Cookie
+    import hmac; hmac
+    import Queue; Queue
+    import uuid; uuid
 
 
 class NullFile(io.IOBase):
@@ -100,6 +119,7 @@ def null_files():
             sys.stdout = NullFile()
     except:
         pass
+
 
 null_files()
 
@@ -233,7 +253,8 @@ def bootstrap(renpy_base):
     # won't import.)
     try:
         import pygame_sdl2
-        pygame_sdl2.import_as_pygame()
+        if not ("pygame" in sys.modules):
+            pygame_sdl2.import_as_pygame()
     except:
         print("""\
 Could not import pygame_sdl2. Please ensure that this program has been built
@@ -334,6 +355,9 @@ You may be using a system install of python. Please run {0}.sh,
         if renpy.display.draw:
             renpy.display.draw.quit()
 
+        renpy.audio.audio.quit()
+
         # Prevent subprocess from throwing errors while trying to run it's
         # __del__ method during shutdown.
-        subprocess.Popen.__del__ = popen_del
+        if not renpy.emscripten:
+            subprocess.Popen.__del__ = popen_del

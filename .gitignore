@@ -6,3 +6,4 @@ traceback.txt
 persistent
 *.save
 launcher/game/saves
+tmp

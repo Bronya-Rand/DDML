@@ -1,4 +1,5 @@
 ﻿# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+# Copyright 2018-2019 GanstaKingofSA <azarieldc@gmail.com>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -106,8 +107,8 @@ screen bottom_info:
                     spacing INDENT
                     xalign 1.0
                     
-                    textbutton _("preferences") style "l_link" action Jump("preferences")
-                    textbutton _("quit") style "l_link" action Quit(confirm=False)
+                    textbutton _("Settings") style "l_link" action Jump("preferences")
+                    textbutton _("Exit") style "l_link" action Quit(confirm=False)
 
 
 screen common:

@@ -1,4 +1,4 @@
-﻿# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+﻿# Copyright 2004-2019 Tom Rothamel <pytom@bishoujo.us>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -26,27 +26,28 @@ init -1600 python:
         # Bindings present almost everywhere, unless explicitly
         # disabled.
         rollback = [ 'K_PAGEUP', 'repeat_K_PAGEUP', 'K_AC_BACK', 'mousedown_4' ],
-        screenshot = [ 's' ],
+        screenshot = [ 's', 'alt_K_s', 'alt_shift_K_s' ],
         toggle_afm = [ ],
         toggle_fullscreen = [ 'f', 'alt_K_RETURN', 'alt_K_KP_ENTER', 'K_F11' ],
         game_menu = [ 'K_ESCAPE', 'K_MENU', 'mouseup_3' ],
         hide_windows = [ 'mouseup_2', 'h' ],
         launch_editor = [ 'E' ],
         dump_styles = [ ],
-        reload_game = [ 'R' ],
+        reload_game = [ 'R', 'alt_shift_K_r' ],
         inspector = [ 'I' ],
-        full_inspector = [ 'alt_I' ],
-        developer = [ 'D' ],
+        full_inspector = [ 'alt_shift_K_i' ],
+        developer = [ 'D', 'alt_shift_K_d' ],
         quit = [ ],
         iconify = [ ],
         help = [ 'K_F1', 'meta_shift_/' ],
-        choose_renderer = [ 'G' ],
+        choose_renderer = [ 'G', 'alt_shift_K_g' ],
         progress_screen = [ 'alt_shift_K_p', 'meta_shift_K_p', 'K_F2' ],
+        accessibility = [ "K_a" ],
 
         # Accessibility.
-        self_voicing = [ 'v', 'V' ],
-        clipboard_voicing = [ 'C' ],
-        debug_voicing = [ 'alt_V', 'meta_V' ],
+        self_voicing = [ 'v', 'V', 'alt_K_v'  ],
+        clipboard_voicing = [ 'C', 'alt_shift_K_c' ],
+        debug_voicing = [ 'alt_shift_K_v', 'meta_shift_K_v' ],
 
         # Say.
         rollforward = [ 'mousedown_5', 'K_PAGEDOWN', 'repeat_K_PAGEDOWN' ],
@@ -78,6 +79,8 @@ init -1600 python:
         input_delete = [ 'K_DELETE', 'repeat_K_DELETE' ],
         input_home = [ 'K_HOME' ],
         input_end = [ 'K_END' ],
+        input_copy = [ 'ctrl_K_INSERT', 'ctrl_K_c' ],
+        input_paste = [ 'shift_K_INSERT', 'ctrl_K_v' ],
 
         # Viewport.
         viewport_leftarrow = [ 'K_LEFT', 'repeat_K_LEFT' ],
@@ -88,6 +91,8 @@ init -1600 python:
         viewport_wheeldown = [ 'mousedown_5' ],
         viewport_drag_start = [ 'mousedown_1' ],
         viewport_drag_end = [ 'mouseup_1' ],
+        viewport_pageup = [  'K_PAGEUP', 'repeat_K_PAGEUP' ],
+        viewport_pagedown = [  'K_PAGEDOWN', 'repeat_K_PAGEDOWN' ],
 
         # These keys control skipping.
         skip = [ 'K_LCTRL', 'K_RCTRL' ],
@@ -111,9 +116,12 @@ init -1600 python:
         drag_deactivate = [ 'mouseup_1' ],
 
         # Debug console.
-        console = [ 'shift_O' ],
+        console = [ 'shift_O', 'alt_shift_K_o' ],
         console_older = [ 'K_UP', 'repeat_K_UP' ],
         console_newer = [ 'K_DOWN', 'repeat_K_DOWN'],
+
+        # Director
+        director = [ 'd' ],
 
         # Ignored (kept for backwards compatibility).
         toggle_music = [ 'm' ],
@@ -121,6 +129,8 @@ init -1600 python:
         viewport_down = [ 'mousedown_5' ],
 
         # Profile commands.
+        performance = [ 'K_F3' ],
+        image_load_log = [ 'K_F4' ],
         profile_once = [ 'K_F8' ],
         memory_profile = [ 'K_F7' ],
 
@@ -172,7 +182,7 @@ init -1600 python:
     def _keymap_toggle_afm():
         if renpy.context()._menu:
             return
-        
+
         renpy.run(Preference("auto-forward", "toggle"))
 
     def _toggle_skipping():
@@ -219,7 +229,13 @@ init -1600 python:
 
         try:
             import webbrowser
-            webbrowser.open_new("file:///" + config.basedir + "/" + help)
+            import os
+
+            file_path = os.path.join(config.basedir, help)
+            if not os.path.isfile(file_path):
+                return
+
+            webbrowser.open_new("file:///" + file_path)
         except:
             pass
 
@@ -247,10 +263,14 @@ init -1600 python:
             i += 1
 
         try:
-            renpy.screenshot(fn)
+            if not renpy.screenshot(fn):
+                renpy.notify(__("Failed to save screenshot as %s.") % fn)
+                return
         except:
             import traceback
             traceback.print_exc()
+            renpy.notify(__("Failed to save screenshot as %s.") % fn)
+            return
 
         if config.screenshot_callback is not None:
             config.screenshot_callback(fn)
@@ -301,7 +321,9 @@ init -1600 python:
         renpy.restart_interaction()
 
     def _memory_profile():
-        if not config.developer:
+        import os
+
+        if not renpy.experimental:
             return
 
         renpy.memory.diff_memory()
@@ -361,6 +383,9 @@ init -1100 python:
         clipboard_voicing = Preference("clipboard voicing", "toggle"),
         debug_voicing = Preference("debug voicing", "toggle"),
         progress_screen = _progress_screen,
+        director = director.Start(),
+        performance = ToggleScreen("_performance"),
+        accessibility = ToggleScreen("_accessibility"),
         )
 
     config.underlay = [ _default_keymap ]
@@ -394,10 +419,14 @@ label _hide_windows:
 
 label _save_reload_game:
     python hide:
+
         renpy.music.stop()
 
         if renpy.can_load("_reload-1"):
             renpy.utter_restart()
+
+        import time
+        renpy.session["_reload_time"] = time.time()
 
         renpy.take_screenshot((config.thumbnail_width, config.thumbnail_height))
 

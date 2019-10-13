@@ -1,6 +1,6 @@
 #@PydevCodeAnalysisIgnore
 #cython: profile=False
-# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+# Copyright 2004-2019 Tom Rothamel <pytom@bishoujo.us>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -20,6 +20,8 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+from __future__ import print_function
 
 from gl1 cimport *
 from gldraw cimport *
@@ -180,7 +182,7 @@ cdef class LimitedEnviron(Environ):
         else:
             glDisableClientState(GL_TEXTURE_COORD_ARRAY)
 
-    cdef void set_color(self, float r, float g, float b, float a):
+    cdef void set_color(self, double r, double g, double b, double a):
         glColor4f(r, g, b, a)
 
 

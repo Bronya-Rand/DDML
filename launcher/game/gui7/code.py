@@ -1,4 +1,4 @@
-# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+# Copyright 2004-2019 Tom Rothamel <pytom@bishoujo.us>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -38,6 +38,7 @@ class Define(object):
         self.name = name
         self.value = value
         self.comment = comment
+
 
 # A map from language name to a list of defines.
 language_defines = collections.defaultdict(list)
@@ -319,7 +320,8 @@ class CodeGenerator(object):
                         hashpad = False
 
                     s = renpy.translation.translate_string(s, language=self.p.language)
-                    m = re.match(r'## ([ *]*)(.*)', s)
+
+                    m = re.match(r'## ?([ *]*)(.*)', s)
 
                     prefix = m.group(1)
                     empty = ' ' * len(prefix)
@@ -338,7 +340,7 @@ class CodeGenerator(object):
                             s = indent + empty + s
 
                         if hashpad and len(s) < 79:
-                            s = s + " " + "#" * (79 - len(s))
+                            s = s + ' ' + "#" * (79 - len(s))
 
                         lines.append(s)
 
@@ -380,7 +382,9 @@ class CodeGenerator(object):
         if not os.path.exists(src):
             src = os.path.join(self.p.template, name)
 
-        shutil.copy(src, dst)
+        self.load_template(src)
+        self.remove_scale()
+        self.write_target(dst)
 
     def add_code(self, fn):
 

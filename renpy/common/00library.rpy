@@ -1,4 +1,4 @@
-﻿# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+﻿# Copyright 2004-2019 Tom Rothamel <pytom@bishoujo.us>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -22,12 +22,15 @@
 # This is kind of a catch-all file for things that are defined in the library,
 # but don't merit their own files.
 
-init -9999:
+init 9999:
     # Re-run the errorhandling setup, so we can adjust the styles to the new size
     # of the screen.
     call _errorhandling
 
 init -1700 python:
+
+    # Should we debug the equality operations?
+    config.debug_equality = False
 
     class DictEquality(object):
         """
@@ -36,13 +39,24 @@ init -1700 python:
         """
 
         def __eq__(self, o):
-            if self is o:
-                return True
 
-            if _type(self) is _type(o):
-                return (self.__dict__ == o.__dict__)
+            try:
+                if self is o:
+                    return True
 
-            return False
+                if _type(self) is _type(o):
+                    return (self.__dict__ == o.__dict__)
+
+                return False
+
+            except:
+                if config.debug_equality:
+                    raise
+
+                return False
+
+        def __ne__(self, o):
+            return not (self == o)
 
     class FieldEquality(object):
         """
@@ -55,21 +69,35 @@ init -1700 python:
         identity_fields = [ ]
 
         def __eq__(self, o):
-            if self is o:
+
+            try:
+
+                if self is o:
+                    return True
+
+                if _type(self) is not _type(o):
+                    return False
+
+                for k in self.equality_fields:
+                    if self.__dict__[k] != o.__dict__[k]:
+                        return False
+
+                for k in self.identity_fields:
+                    if self.__dict__[k] is not o.__dict__[k]:
+                        return False
+
                 return True
 
-            if _type(self) is not _type(o):
+            except:
+
+                if config.debug_equality:
+                    raise
+
                 return False
 
-            for k in self.equality_fields:
-                if self.__dict__[k] != o.__dict__[k]:
-                    return False
+        def __ne__(self, o):
+            return not (self == o)
 
-            for k in self.identity_fields:
-                if self.__dict__[k] is not o.__dict__[k]:
-                    return False
-
-            return True
 
 init -1700 python:
 
@@ -115,7 +143,7 @@ init -1700 python:
 
     config.extend_interjection = "{fast}"
 
-    def extend(what, interact=True):
+    def extend(what, interact=True, *args, **kwargs):
         who = _last_say_who
         who = renpy.eval_who(who)
 
@@ -129,27 +157,15 @@ init -1700 python:
 
         what = _last_say_what + config.extend_interjection + _last_raw_what
 
-        renpy.exports.say(who, what, interact=interact)
+        args = args + _last_say_args
+        kw = dict(_last_say_kwargs)
+        kw.update(kwargs)
+        kw["interact"] = interact and kw.get("interact", True)
+
+        renpy.exports.say(who, what, *args, **kw)
         store._last_say_what = what
 
     extend.record_say = False
-
-
-    ##########################################################################
-    # Self-voicing
-
-    # Strings used internally in Ren'Py.
-    _("Self-voicing disabled.")
-    _("Clipboard voicing enabled. ")
-    _("Self-voicing enabled. ")
-
-    def sv(what, interact=True):
-        """
-        Uses the narrator to speak `what` iff self-voicing is enabled.
-        """
-
-        if _preferences.self_voicing:
-            return narrator(what, interact=interact)
 
 
     ##########################################################################
@@ -213,6 +229,9 @@ init -1700 python:
     # Prediction of screens.
     def _predict_screens():
 
+        for i in config.overlay_screens:
+            renpy.predict_screen(i)
+
         s = _game_menu_screen
 
         if s is None:
@@ -244,9 +263,9 @@ init -1700 python:
         except:
             pass
 
-    def say(who, what, interact=True):
+    def say(who, what, interact=True, *args, **kwargs):
         who = Character(who, kind=name_only)
-        who(what, interact=interact)
+        who(what, interact=interact, *args, **kwargs)
 
     ##########################################################################
     # Misc.
@@ -263,7 +282,14 @@ init -1700 python:
 
 init -1000 python:
     # Set developer to the auto default.
-    config.developer = "auto"
+    config.original_developer = "auto"
+
+    if config.script_version:
+        config.developer = False
+        config.default_developer = False
+    else:
+        config.developer = True
+        config.default_developer = True
 
     # Lock the library object.
     config.locked = True
@@ -271,16 +297,81 @@ init -1000 python:
     # Record the builtins.
     renpy.lint.renpy_builtins = set(globals())
 
+    for i in """
+adv
+alt
+anim
+blinds
+center
+default
+default_transition
+dissolve
+ease
+easeinbottom
+easeinleft
+easeinright
+easeintop
+easeoutbottom
+easeoutleft
+easeoutright
+easeouttop
+fade
+hpunch
+irisin
+irisout
+left
+menu
+mouse_visible
+move
+moveinbottom
+moveinleft
+moveinright
+moveintop
+moveoutbottom
+moveoutleft
+moveoutright
+moveouttop
+name_only
+nvl
+nvl_variant
+offscreenleft
+offscreenright
+pixellate
+pushdown
+pushleft
+pushright
+pushup
+right
+save_name
+slideawaydown
+slideawayleft
+slideawayright
+slideawayup
+slidedown
+slideleft
+slideright
+slideup
+squares
+suppress_overlay
+sv
+top
+topleft
+topright
+truecenter
+vpunch
+wipedown
+wipeleft
+wiperight
+wipeup
+zoomin
+zoominout
+zoomout
+""".split():
+
+        renpy.lint.renpy_builtins.remove(i)
+
 # After init, make some changes based on if config.developer is True.
 init 1700 python hide:
-
-    config.original_developer = config.developer
-
-    if config.developer == "auto":
-        if config.script_version:
-            config.developer = False
-        else:
-            config.developer = True
 
     if config.developer:
 
@@ -293,10 +384,18 @@ init 1700 python hide:
     if config.window_title is None:
         config.window_title = config.name or "A Ren'Py Game"
 
+    import os
+    if "RENPY_GL_MODERN" in os.environ:
+        config.gl_npot = True
+        config.cache_surfaces = False
 
-# Used by renpy.return() to return.
+        print("Modern GL Enabled.")
+
+
+
+# Used by renpy.return_statement() to return.
 label _renpy_return:
-    return
+    return _return
 
 # Entry point for the developer screen. The rest of it is loaded from
 # _developer.rpym

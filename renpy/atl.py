@@ -1,4 +1,4 @@
-# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+# Copyright 2004-2019 Tom Rothamel <pytom@bishoujo.us>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -18,6 +18,8 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+from __future__ import print_function
 
 import renpy.display
 import renpy.pyanalysis
@@ -57,6 +59,12 @@ def pause(t):
     else:
         return 1.0
 
+
+@atl_warper
+def instant(t):
+    return 1.0
+
+
 position = renpy.object.Sentinel("position")
 
 
@@ -74,6 +82,7 @@ def float_or_none(x):
     if x is None:
         return x
     return float(x)
+
 
 # A dictionary giving property names and the corresponding default
 # values.
@@ -107,6 +116,7 @@ PROPERTIES = {
     "crop" : (float, float, float, float),
     "crop_relative" : bool,
     "size" : (int, int),
+    "maxsize" : (int, int),
     "corner1" : (float, float),
     "corner2" : (float, float),
     "subpixel" : bool,
@@ -203,6 +213,7 @@ def interpolate_spline(t, spline):
 
     return correct_type(rv, spline[-1], position)
 
+
 # A list of atl transforms that may need to be compile.
 compile_queue = [ ]
 
@@ -239,6 +250,9 @@ class Context(object):
             return False
 
         return self.context == other.context
+
+    def __ne__(self, other):
+        return not (self == other)
 
 # This is intended to be subclassed by ATLTransform. It takes care of
 # managing ATL execution, which allows ATLTransform itself to not care
@@ -313,6 +327,15 @@ class ATLTransformBase(renpy.object.Object):
         if renpy.game.context().init_phase:
             compile_queue.append(self)
 
+    def _handles_event(self, event):
+        if (self.block is not None) and (self.block._handles_event(event)):
+            return True
+
+        if self.child is None:
+            return False
+
+        return self.child._handles_event(event)
+
     def get_block(self):
         """
         Returns the compiled block to use.
@@ -365,7 +388,12 @@ class ATLTransformBase(renpy.object.Object):
         self.atl_st_offset = t.atl_st_offset
 
         if self.child is renpy.display.motion.null:
-            self.child = t.child
+
+            if t.child and t.child._duplicatable:
+                self.child = t.child._duplicate(None)
+            else:
+                self.child = t.child
+
             self.raw_child = t.raw_child
 
     def __call__(self, *args, **kwargs):
@@ -415,9 +443,6 @@ class ATLTransformBase(renpy.object.Object):
         if child is None:
             child = self.child
 
-        if child is None:
-            child = renpy.display.motion.get_null()
-
         # Create a new ATL Transform.
         parameters = renpy.ast.ParameterInfo({ }, positional, None, None)
 
@@ -463,12 +488,13 @@ class ATLTransformBase(renpy.object.Object):
 
         block = self.atl.compile(self.context)
 
-        if len(block.statements) == 1 and isinstance(block.statements[0], Interpolation):
-
-            interp = block.statements[0]
-
-            if interp.duration == 0 and interp.properties:
-                self.properties = interp.properties[:]
+        if all(
+            isinstance(statement, Interpolation) and statement.duration == 0
+            for statement in block.statements
+        ):
+            self.properties = []
+            for interp in block.statements:
+                self.properties.extend(interp.properties)
 
         if not constant and renpy.display.predict.predicting:
             self.predict_block = block
@@ -494,11 +520,7 @@ class ATLTransformBase(renpy.object.Object):
         if block is None:
             block = self.compile()
 
-        # Propagate transform_events from children.
-        if self.child:
-            if self.child.transform_event != self.last_child_transform_event:
-                self.last_child_transform_event = self.child.transform_event
-                self.transform_event = self.child.transform_event
+        events = [ ]
 
         # Hide request.
         if trans.hide_request:
@@ -508,11 +530,26 @@ class ATLTransformBase(renpy.object.Object):
             self.transform_event = "replaced"
 
         # Notice transform events.
+        if renpy.config.atl_multiple_events:
+            if self.transform_event != self.last_transform_event:
+                events.append(self.transform_event)
+                self.last_transform_event = self.transform_event
+
+        # Propagate transform_events from children.
+        if (self.child is not None) and self.child.transform_event != self.last_child_transform_event:
+            self.last_child_transform_event = self.child.transform_event
+
+            if self.child.transform_event is not None:
+                self.transform_event = self.child.transform_event
+
+        # Notice transform events, again.
         if self.transform_event != self.last_transform_event:
-            event = self.transform_event
+            events.append(self.transform_event)
             self.last_transform_event = self.transform_event
-        else:
-            event = None
+
+        if self.transform_event in renpy.config.repeat_transform_events:
+            self.transform_event = None
+            self.last_transform_event = None
 
         old_exception_info = renpy.game.exception_info
 
@@ -524,7 +561,7 @@ class ATLTransformBase(renpy.object.Object):
         else:
             timebase = st - self.atl_st_offset
 
-        action, arg, pause = block.execute(trans, timebase, self.atl_state, event)
+        action, arg, pause = block.execute(trans, timebase, self.atl_state, events)
 
         renpy.game.exception_info = old_exception_info
 
@@ -545,6 +582,7 @@ class ATLTransformBase(renpy.object.Object):
             block = self.compile()
 
         return self.children + block.visit()
+
 
 # This is used in mark_constant to analyze expressions for constness.
 is_constant_expr = renpy.pyanalysis.Analysis().is_constant_expr
@@ -612,12 +650,16 @@ class Statement(renpy.object.Object):
     #
     # Pause is the amount of time until execute should be called again,
     # or None if there's no need to call execute ever again.
-    def execute(self, trans, st, state, event):
+    def execute(self, trans, st, state, events):
         raise Exception("Not implemented.")
 
     # Return a list of displayable children.
     def visit(self):
         return [ ]
+
+    # Does this respond to an event?
+    def _handles_event(self, event):
+        return False
 
 # This represents a Raw ATL block.
 
@@ -677,7 +719,15 @@ class Block(Statement):
 
         self.times.sort()
 
-    def execute(self, trans, st, state, event):
+    def _handles_event(self, event):
+
+        for i in self.statements:
+            if i._handles_event(event):
+                return True
+
+        return False
+
+    def execute(self, trans, st, state, events):
 
         executing(self.loc)
 
@@ -718,7 +768,7 @@ class Block(Statement):
 
                 # Find the statement and try to run it.
                 stmt = self.statements[index]
-                action, arg, pause = stmt.execute(trans, target - start, child_state, event)
+                action, arg, pause = stmt.execute(trans, target - start, child_state, events)
 
                 # On continue, persist our state.
                 if action == "continue":
@@ -868,7 +918,7 @@ class RawMultipurpose(RawStatement):
         if self.warp_function:
             warper = ctx.eval(self.warp_function)
         else:
-            warper = self.warper or "pause"
+            warper = self.warper or "instant"
 
             if warper not in warpers:
                 raise Exception("ATL Warper %s is unknown at runtime." % warper)
@@ -1015,7 +1065,7 @@ class Child(Statement):
         self.child = child
         self.transition = transition
 
-    def execute(self, trans, st, state, event):
+    def execute(self, trans, st, state, events):
 
         executing(self.loc)
 
@@ -1061,15 +1111,27 @@ class Interpolation(Statement):
         # The number of complete circles we make.
         self.circles = circles
 
-    def execute(self, trans, st, state, event):
+    def execute(self, trans, st, state, events):
 
         executing(self.loc)
 
         warper = warpers.get(self.warper, self.warper)
 
+        if (self.warper != "instant") and (state is None) and (
+                (trans.atl_state is not None) or (trans.st == 0)
+                ):
+            first = True
+        else:
+            first = False
+
         if self.duration:
             complete = min(1.0, st / self.duration)
         else:
+            complete = 1.0
+
+        if complete < 0.0:
+            complete = 0.0
+        elif complete > 1.0:
             complete = 1.0
 
         complete = warper(complete)
@@ -1081,8 +1143,14 @@ class Interpolation(Statement):
             newts = renpy.display.motion.TransformState()
             newts.take_state(trans.state)
 
+            has_angle = False
+
             for k, v in self.properties:
                 setattr(newts, k, v)
+
+                if k == "angle":
+                    newts.last_angle = v
+                    has_angle = True
 
             # Now, the things we change linearly are in the difference
             # between the new and old states.
@@ -1091,8 +1159,10 @@ class Interpolation(Statement):
             revolution = None
             splines = [ ]
 
-            # Clockwise revolution.
-            if self.revolution is not None:
+            revdir = self.revolution
+            circles = self.circles
+
+            if (revdir or (has_angle and renpy.config.automatic_polar_motion)) and (newts.xaround is not None):
 
                 # Remove various irrelevant motions.
                 for i in [ 'xpos', 'ypos',
@@ -1103,7 +1173,7 @@ class Interpolation(Statement):
 
                     linear.pop(i, None)
 
-                if newts.xaround is not None:
+                if revdir is not None:
 
                     # Ensure we rotate around the new point.
                     trans.state.xaround = newts.xaround
@@ -1120,20 +1190,25 @@ class Interpolation(Statement):
                     # Make sure the revolution is in the appropriate direction,
                     # and contains an appropriate number of circles.
 
-                    if self.revolution == "clockwise":
+                    if revdir == "clockwise":
                         if endangle < startangle:
                             startangle -= 360
 
-                        startangle -= self.circles * 360
+                        startangle -= circles * 360
 
-                    elif self.revolution == "counterclockwise":
+                    elif revdir == "counterclockwise":
                         if endangle > startangle:
                             startangle += 360
 
-                        startangle += self.circles * 360
+                        startangle += circles * 360
 
                     # Store the revolution.
                     revolution = (startangle, endangle, startradius, endradius)
+
+                else:
+
+                    last_angle = trans.state.last_angle or trans.state.angle
+                    revolution = (last_angle, newts.last_angle, trans.state.radius, newts.radius)
 
             # Figure out the splines.
             for name, values in self.splines:
@@ -1159,7 +1234,11 @@ class Interpolation(Statement):
         # Handle the revolution.
         if revolution is not None:
             startangle, endangle, startradius, endradius = revolution
-            trans.state.angle = interpolate(complete, startangle, endangle, float)
+
+            angle = interpolate(complete, startangle, endangle, float)
+            trans.state.last_angle = angle
+            trans.state.angle = angle
+
             trans.state.radius = interpolate(complete, startradius, endradius, float)
 
         # Handle any splines we might have.
@@ -1167,11 +1246,11 @@ class Interpolation(Statement):
             value = interpolate_spline(complete, values)
             setattr(trans.state, name, value)
 
-        if st >= self.duration:
+        if ((not first) or (not renpy.config.atl_one_frame)) and (st >= self.duration):
             return "next", st - self.duration, None
         else:
             if not self.properties and not self.revolution and not self.splines:
-                return "continue", state, self.duration - st
+                return "continue", state, max(0, self.duration - st)
             else:
                 return "continue", state, 0
 
@@ -1208,7 +1287,7 @@ class Repeat(Statement):
 
         self.repeats = repeats
 
-    def execute(self, trans, st, state, event):
+    def execute(self, trans, st, state, events):
         return "repeat", (self.repeats, st), 0
 
 
@@ -1244,7 +1323,15 @@ class Parallel(Statement):
         super(Parallel, self).__init__(loc)
         self.blocks = blocks
 
-    def execute(self, trans, st, state, event):
+    def _handles_event(self, event):
+
+        for i in self.blocks:
+            if i._handles_event(event):
+                return True
+
+        return False
+
+    def execute(self, trans, st, state, events):
 
         executing(self.loc)
 
@@ -1262,7 +1349,7 @@ class Parallel(Statement):
 
         for i, istate in state:
 
-            action, arg, pause = i.execute(trans, st, istate, event)
+            action, arg, pause = i.execute(trans, st, istate, events)
 
             if pause is not None:
                 pauses.append(pause)
@@ -1318,7 +1405,15 @@ class Choice(Statement):
 
         self.choices = choices
 
-    def execute(self, trans, st, state, event):
+    def _handles_event(self, event):
+
+        for i in self.choices:
+            if i[1]._handles_event(event):
+                return True
+
+        return False
+
+    def execute(self, trans, st, state, events):
 
         executing(self.loc)
 
@@ -1340,7 +1435,7 @@ class Choice(Statement):
         else:
             choice, cstate = state
 
-        action, arg, pause = choice.execute(trans, st, cstate, event)
+        action, arg, pause = choice.execute(trans, st, cstate, events)
 
         if action == "continue":
             return "continue", (choice, arg), pause
@@ -1375,7 +1470,7 @@ class Time(Statement):
 
         self.time = time
 
-    def execute(self, trans, st, state, event):
+    def execute(self, trans, st, state, events):
         return "continue", None, None
 
 
@@ -1392,7 +1487,6 @@ class RawOn(RawStatement):
             self.handlers[i] = block
 
     def compile(self, ctx):  # @ReservedAssignment
-
         compiling(self.loc)
 
         handlers = { }
@@ -1423,7 +1517,13 @@ class On(Statement):
 
         self.handlers = handlers
 
-    def execute(self, trans, st, state, event):
+    def _handles_event(self, event):
+        if event in self.handlers:
+            return True
+        else:
+            return False
+
+    def execute(self, trans, st, state, events):
 
         executing(self.loc)
 
@@ -1435,15 +1535,17 @@ class On(Statement):
 
         # If we have an external event, and we have a handler for it,
         # handle it.
-        if event in self.handlers:
+        for event in events:
 
-            # Do not allow people to abort the hide or replaced event.
-            lock_event = (name == "hide" and trans.hide_request) or (name == "replaced" and trans.replaced_request)
+            if event in self.handlers:
 
-            if not lock_event:
-                name = event
-                start = st
-                cstate = None
+                # Do not allow people to abort the hide or replaced event.
+                lock_event = (name == "hide" and trans.hide_request) or (name == "replaced" and trans.replaced_request)
+
+                if not lock_event:
+                    name = event
+                    start = st
+                    cstate = None
 
         while True:
 
@@ -1451,7 +1553,7 @@ class On(Statement):
             if name not in self.handlers:
                 return "continue", (name, start, cstate), None
 
-            action, arg, pause = self.handlers[name].execute(trans, st - start, cstate, event)
+            action, arg, pause = self.handlers[name].execute(trans, st - start, cstate, events)
 
             # If we get a continue, save our state.
             if action == "continue":
@@ -1517,7 +1619,7 @@ class Event(Statement):
 
         self.name = name
 
-    def execute(self, trans, st, state, event):
+    def execute(self, trans, st, state, events):
         return "event", (self.name, st), None
 
 
@@ -1543,7 +1645,10 @@ class Function(Statement):
 
         self.function = function
 
-    def execute(self, trans, st, state, event):
+    def _handles_event(self, event):
+        return True
+
+    def execute(self, trans, st, state, events):
         fr = self.function(trans, st, trans.at)
 
         if fr is not None:
@@ -1723,6 +1828,7 @@ def parse_atl(l):
                 if l.keyword('circles'):
                     expr = l.require(l.simple_expression)
                     rm.add_circles(expr)
+                    continue
 
                 # Try to parse a property.
                 cp = l.checkpoint()
