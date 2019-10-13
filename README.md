@@ -1,5 +1,5 @@
 # Welcome to the Doki Doki Mod Launcher (DDML) Repository!
-Here contains all files for the next build of Doki Doki Mod Launcher. This tool adheres to the Team Salvato IP Guidelines and RenpyTom Guidelines for DDLC and Ren'Py SDK modding as listed in **README.md** and **LICENSE**.
+Here contains all files for the current build of Doki Doki Mod Launcher. This tool adheres to the Team Salvato IP Guidelines and RenpyTom Guidelines for DDLC and Ren'Py SDK modding as listed in **README.md** and **LICENSE**.
 
 **DISCLAIMER**
 
