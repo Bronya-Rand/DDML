@@ -28,14 +28,6 @@ init python:
         EasyDialogs = None
 
     import os
-    def rpy_move(ext):
-        import os
-        import shutil
-        for file in os.listdir(ext):
-            print file
-            src_file = os.path.join(ext, file)
-            dst_file = os.path.join(persistent.project_dir, file)
-            shutil.move(src_file, dst_file)
     def ext_move(ext,path):
         import os
         import shutil
@@ -51,6 +43,7 @@ init python:
             shutil.move(src_file, dst_file)
     def rpy_ext(ext):
         import os
+        import shutil
         for file in os.listdir(ext):
             base = [".exe", ".sh", ".py", ".txt", ".md", ".html"]
             if file.endswith(tuple(base)):
@@ -99,14 +92,17 @@ init python:
     def rpa_copy():
         import glob
         import os
+        import shutil
         if glob.glob(persistent.mzip_directory + '/*.rpa'):
             interface.interaction(_("Copying"), _("Copying Mod Files from Mod ZIP Directory, Please Wait..."),)
             for file in os.listdir(persistent.mzip_directory):
                 if file.endswith('.rpa'):
-                    src = os.path.join(persistent.mzip_directory, file)
-                    shutil.move(src, persistent.projects_directory + '/temp')    
+                    src = os.path.join(persistent.mzip_directory, file) 
                     shutil.copy(src,persistent.project_dir + '/game')
-                    shutil.rmtree(persistent.projects_directory + '/temp')
+            for file in os.listdir(persistent.mzip_directory):
+                if file.endswith('.rpa'):
+                    src = os.path.join(persistent.mzip_directory, file)
+                    os.remove(src)
             # Auto-Refresh
             project.manager.scan()
             renpy.jump("front_page")
@@ -117,7 +113,7 @@ init python:
             with zipfile.ZipFile(persistent.mzip_directory + '/' + name + ".zip", "r") as z:
                 z.extractall(persistent.projects_directory + "/temp")
         except:
-            shutil.rmtree(persistent.projects_directory + '/' + persistent.project_dir)
+            shutil.rmtree(persistent.project_dir)
             interface.error(_("Cannot locate ZIP in [persistent.mzip_directory!q]."), _("Check the name of your Mod ZIP file and try again."))
 
 init python in project:
@@ -885,10 +881,10 @@ label add_a_mod:
         mzte = [x[0] for x in os.walk(mzt)]
         try:
             mzte[1]
-            if (str(mzte[1]) == mzt + "/cache" or str(mzte[1]) == mzt + "/gui" or str(mzte[1]) == mzt + "/mod_assets" or str(mzte[1]) == mzt + "/images" or str(mzte[1]) == mzt + "/fonts" or str(mzte[1]) == mzt + "/python-packages" or str(mzte[1]) == mzt + "/saves" or str(mzte[1]) == mzt + "/submods"):
-                mztex = False
-            else:
+            if str(mzte[1]).endswith('-Mod') or str(mzte[1]).endswith('-pc') or str(mzte[1]).endswith('-mac'):
                 mztex = True
+            else:
+                mztex = False
         except IndexError:
             mztex = False
 
@@ -1083,17 +1079,16 @@ label install_addon:
         interface.interaction(_("Extracting"), _("Extracting Mod ZIP, Please Wait..."),)
         modzip_extract(modzip_name)
         # Search for if there is a folder in /temp that isn't mod related (Yuri-1.0)
+        mzt = persistent.projects_directory + "/temp"
         mzte = [x[0] for x in os.walk(mzt)]
         try:
             # outputs folder in array
             mzte[1]
             # if folder is DDLC/Mod Related
-            if (str(mzte[1]) == mzt + "/cache" or str(mzte[1]) == mzt + "/gui" or str(mzte[1]) == mzt + "/mod_assets" or str(mzte[1]) == mzt + "/images" or str(mzte[1]) == mzt + "/fonts" or str(mzte[1]) == mzt + "/python-packages" or str(mzte[1]) == mzt + "/saves" or str(mzte[1]) == mzt + "/submods"):
-                # return false for advanced scan
-                mztex = False
-            else:
-                # return true for advanced scan
+            if str(mzte[1]).endswith('-Mod') or str(mzte[1]).endswith('-pc') or str(mzte[1]).endswith('-mac'):
                 mztex = True
+            else:
+                mztex = False
         # if there is no folders in there
         except IndexError:
             # return false for advanced scan
