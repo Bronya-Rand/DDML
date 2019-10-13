@@ -1,6 +1,6 @@
 #@PydevCodeAnalysisIgnore
 #cython: profile=False
-# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+# Copyright 2004-2019 Tom Rothamel <pytom@bishoujo.us>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -21,6 +21,8 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+from __future__ import print_function
+
 DEF ANGLE = False
 
 from gl cimport *
@@ -39,7 +41,7 @@ import collections
 import renpy
 
 # The maximum size of a texture.
-MAX_SIZE = 1024
+MAX_SIZE = 2048
 
 # Possible sizes for a texture, ordered from largest to smallest.
 # (Now set in test_texture_sizes.)
@@ -47,6 +49,12 @@ SIZES = [ 64 ]
 
 # A list of texture number allocated.
 texture_numbers = set()
+
+# The texture generation.
+generation = 1
+
+# A map from texture number to generation
+texture_generation = { }
 
 cdef GLenum tex_format = GL_RGBA
 cdef GLenum tex_internalformat = GL_RGBA
@@ -235,8 +243,8 @@ def test_texture_sizes(Environ environ, draw):
     # Clean up.
     environ.set_texture(0, NULL)
 
-    if MAX_SIZE > 1024:
-        MAX_SIZE = 1024
+    if MAX_SIZE > 2048:
+        MAX_SIZE = 2048
 
     if not SIZES:
         renpy.display.log.write("Textures are not rendering properly.")
@@ -261,25 +269,12 @@ cdef class TextureCore:
         self.generation = 0
         self.number = 0
 
-        # The format of this texture in the GPU (or 0 if not known).
-        self.format = 0
-
-        # These are used to map an index into texture coordinates.
-        self.xmul = 0
-        self.xadd = 0
-        self.ymul = 0
-        self.yadd = 0
-
         # These contained the premultiplied (but not GPU-loaded)
         # surface. They allow us to defer loading until the surface is
         # needed.
 
         self.premult = None
         self.premult_size = None
-        self.premult_left = 0
-        self.premult_right = 0
-        self.premult_top = 0
-        self.premult_bottom = 0
 
         # True if we're in NEAREST mode. False if we're in LINEAR mode.
         self.nearest = False
@@ -287,7 +282,6 @@ cdef class TextureCore:
         # The free list we should be put on, or None if we're already on
         # a free list.
         self.free_list = None
-
 
     def __del__(self):
 
@@ -373,10 +367,12 @@ cdef class TextureCore:
             glBindTexture(GL_TEXTURE_2D, self.number)
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
 
             self.nearest = False
 
-            # If we haven't initalized the texture yet, and we're
+            # If we haven't initialized the texture yet, and we're
             # smaller than it, load in the empty texture.
             if w < self.width or h < self.height:
 
@@ -423,6 +419,8 @@ cdef class TextureCore:
             glBindTexture(GL_TEXTURE_2D, self.number)
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
 
             self.nearest = False
 
@@ -448,6 +446,7 @@ cdef class TextureCore:
         """
 
         global total_texture_size
+        global texture_count
 
         cdef unsigned int texnums[1]
 
@@ -459,8 +458,12 @@ cdef class TextureCore:
         self.number = texnums[0]
         self.format = 0
 
+        texture_generation[self.number] = generation
+
         texture_numbers.add(texnums[0])
+
         total_texture_size += self.width * self.height * 4
+        texture_count += 1
 
         return 0
 
@@ -471,6 +474,7 @@ cdef class TextureCore:
         """
 
         global total_texture_size
+        global texture_count
 
         if self.number == 0:
             return
@@ -478,11 +482,15 @@ cdef class TextureCore:
         cdef GLuint texnums[1]
 
         texnums[0] = self.number
-        glDeleteTextures(1, texnums)
+
+        if texture_generation[self.number] == self.generation:
+            glDeleteTextures(1, texnums)
+
         self.number = 0
 
         texture_numbers.discard(self.number)
         total_texture_size -= self.width * self.height * 4
+        texture_count -= 1
 
 
 class Texture(TextureCore):
@@ -508,8 +516,14 @@ class Texture(TextureCore):
 # size.
 free_textures = collections.defaultdict(list)
 
+# A list of NPOT textures that need to be freed.
+npot_free_textures = [ ]
 
-# The total size (in bytes) of all the textures that have been allocated.
+# The number of textues that have been allocated but not deallocated.
+texture_count = 0
+
+# The total size (in bytes) of all the textures that have been allocated
+# but not deallocated.
 total_texture_size = 0
 
 # This allocates a texture, either from the free list, or by asking
@@ -520,7 +534,11 @@ def alloc_texture(width, height):
     returned texture has a reference count of 1.
     """
 
-    global total_texture_size
+    if renpy.game.preferences.gl_npot:
+        rv = Texture(width, height)
+        rv.free_list = npot_free_textures
+        rv.generation = generation
+        return rv
 
     l = free_textures[width, height]
 
@@ -535,20 +553,32 @@ def alloc_texture(width, height):
 
 
 def dealloc_textures():
-    global texture_numbers
-    global total_texture_size
-
     cdef GLuint texnums[1]
 
-    for t in texture_numbers:
-        texnums[0] = t
+    for l in free_textures.values():
+        for t in l:
+            t.deallocate()
 
-        glDeleteTextures(1, texnums)
+    for i in npot_free_textures:
+        i.deallocate()
 
-    texture_numbers = set()
+    npot_free_textures[:] = [ ]
+
+    if not renpy.game.preferences.gl_npot:
+
+        for t in texture_numbers:
+            texnums[0] = t
+            glDeleteTextures(1, texnums)
+
     free_textures.clear()
 
-    total_texture_size = 0
+    # Do not reset texture numbers - we don't want to reuse a number that's
+    # in use, only to have it deallocated later.
+
+    global generation
+    generation += 1
+
+
 
 def cleanup():
     """
@@ -564,7 +594,10 @@ def cleanup():
             t = l.pop()
             t.deallocate()
 
+    for i in npot_free_textures:
+        i.deallocate()
 
+    npot_free_textures[:] = [ ]
 
 def compute_subrow(row, offset, width):
     """
@@ -656,6 +689,9 @@ cdef class TextureGrid(object):
         # one.
         self.half_cache = None
 
+        # Has the texture been made ready once?
+        self.ready = False
+
     def __getstate__(self): #@DuplicatedSignature
         if renpy.config.developer:
             raise Exception("Can't pickle a texture.")
@@ -691,13 +727,15 @@ cdef class TextureGrid(object):
         return rv
 
 
-    cdef void make_ready(self, bint nearest):
+    cpdef void make_ready(self, bint nearest):
         """
         Makes ready all the tile-textures in this texture grid.
         """
 
         cdef list row
         cdef TextureCore t
+
+        self.ready = True
 
         for row in self.tiles:
             for t in row:
@@ -709,6 +747,9 @@ cdef class TextureGrid(object):
                     t.make_linear()
 
 
+
+# The old value of the gl_npot preference.
+old_gl_npot = None
 
 # This is a cache from (width, size) to the results of compute_tiling.
 tiling_cache = { }
@@ -727,6 +768,20 @@ def compute_tiling(width, max_size, min_fill_factor):
     While we're thinking about this as if it's working horizontally
     (x, width, etc), it
     """
+
+    global old_gl_npot
+
+
+    gl_npot = renpy.game.preferences.gl_npot
+
+    if old_gl_npot != gl_npot:
+        old_gl_npot = gl_npot
+        tiling_cache.clear()
+
+    if gl_npot:
+        max_size = min(SIZES[0], max_size)
+
+    orig_width = width
 
     # Check the cache.
     key = (width, max_size)
@@ -748,21 +803,29 @@ def compute_tiling(width, max_size, min_fill_factor):
     # The index into the row.
     row_index = 0
 
-    while width:
-
-        # The size of the left border of this tile.
+    if gl_npot and width <= max_size:
+        left_border = 0
+        right_border = 0
+    else:
         left_border = 1
-        # The size of the right border of this tile.
         right_border = 1
 
-        # Figure out the texture size to use.
-        for size in SIZES:
-            if size > max_size:
-                continue
+    while width:
 
-            # Ensure each texture is full enough.
-            if size * min_fill_factor <= width + left_border + right_border:
-                break
+        if gl_npot:
+
+            size = min(width + left_border + right_border, max_size)
+
+        else:
+
+            # Figure out the texture size to use.
+            for size in SIZES:
+                if size > max_size:
+                    continue
+
+                # Ensure each texture is full enough.
+                if size * min_fill_factor <= width + left_border + right_border:
+                    break
 
         # The number of pixels to display to the user from this tile.
         row_size = min(width, size - left_border - right_border)
@@ -786,7 +849,11 @@ def texture_grid_from_surface(surf, transient):
     This takes a Surface and turns it into a TextureGrid.
     """
 
-    if transient:
+    if renpy.game.preferences.gl_npot:
+        max_size = SIZES[0]
+        fill_factor = 0.5
+
+    elif transient:
         max_size = SIZES[0]
         fill_factor = 0.5
     else:
@@ -800,25 +867,17 @@ def texture_grid_from_surface(surf, transient):
     rv.columns, texcolumns = compute_tiling(width, max_size, fill_factor)
     rv.rows, texrows = compute_tiling(height, max_size, fill_factor)
 
-    rownum = 0
-    lastrow = len(texrows) - 1
-    lastcol = len(texcolumns) - 1
-
-    for y, height, texheight in texrows:
-
-        border_top = (rownum == 0)
-        border_bottom = (rownum == lastrow)
-        rownum += 1
+    for rv_row, texrow in zip(rv.rows, texrows):
+        border_top, _, border_bottom = rv_row
+        y, height, texheight = texrow
 
         row = [ ]
 
         colnum = 0
 
-        for x, width, texwidth in texcolumns:
-
-            border_left = (colnum == 0)
-            border_right = (colnum == lastcol)
-            colnum += 1
+        for rv_col, texcol in zip(rv.columns, texcolumns):
+            border_left, _, border_right = rv_col
+            x, width, texwidth = texcol
 
             tex = alloc_texture(texwidth, texheight)
             tex.load_surface(surf, x, y, width, height,
@@ -920,7 +979,7 @@ def align_axes(*args):
     return rv
 
 
-cpdef blit(TextureGrid tg, double sx, double sy, render.Matrix2D transform, double alpha, double over, Environ environ, bint nearest):
+cpdef blit(TextureGrid tg, double sx, double sy, Matrix transform, double alpha, double over, Environ environ, bint nearest):
     """
     This draws texgrid `tg` to the screen. `sx` and `sy` are offsets from
     the upper-left corner of the screen.
@@ -965,7 +1024,7 @@ cpdef blit(TextureGrid tg, double sx, double sy, render.Matrix2D transform, doub
 
         y += texh
 
-cpdef blend(TextureGrid tg0, TextureGrid tg1, double sx, double sy, render.Matrix2D transform, double alpha, double over, double fraction, Environ environ, bint nearest):
+cpdef blend(TextureGrid tg0, TextureGrid tg1, double sx, double sy, Matrix transform, double alpha, double over, double fraction, Environ environ, bint nearest):
     """
     Blends two textures to the screen.
 
@@ -1022,7 +1081,7 @@ cpdef blend(TextureGrid tg0, TextureGrid tg1, double sx, double sy, render.Matri
         y += t0h
 
 
-cpdef imageblend(TextureGrid tg0, TextureGrid tg1, TextureGrid tg2, double sx, double sy, render.Matrix2D transform, double alpha, double over, double fraction, int ramp, Environ environ, bint nearest):
+cpdef imageblend(TextureGrid tg0, TextureGrid tg1, TextureGrid tg2, double sx, double sy, Matrix transform, double alpha, double over, double fraction, int ramp, Environ environ, bint nearest):
     """
     This uses texture 0 to control the blending of tetures 1 and 2 to
     the screen.
@@ -1312,7 +1371,7 @@ cdef void draw_rectangle(
     double y,
     double w,
     double h,
-    render.Matrix2D transform,
+    Matrix transform,
     TextureCore tex0, float tex0x, float tex0y,
     TextureCore tex1, float tex1x, float tex1y,
     TextureCore tex2, float tex2x, float tex2y,

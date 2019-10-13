@@ -1,4 +1,4 @@
-# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+# Copyright 2004-2019 Tom Rothamel <pytom@bishoujo.us>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -18,6 +18,8 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+from __future__ import print_function
 
 import os
 import renpy
@@ -66,7 +68,7 @@ class Editor(object):
 
     def open(self, filename, line=None, **kwargs):  # @ReservedAssignment
         """
-        Ensures `path` is open in the editor. This may be called multiple
+        Ensures `filename` is open in the editor. This may be called multiple
         times per transaction.
 
         `line`
@@ -75,6 +77,14 @@ class Editor(object):
 
         The first open call in a transaction is somewhat special - that file
         should be given focus in a tabbed editor environment.
+        """
+
+    # This should be set to True if the editor supports projects.
+    has_projects = False
+
+    def open_project(self, directory):
+        """
+        Opens `directory` as a project in the editor.
         """
 
 
@@ -114,8 +124,13 @@ def init():
     if path is None:
         return
 
+    with open(path, "r") as f:
+        source = f.read()
+
+    code = compile(source, path, "exec")
+
     scope = { "__file__" : path }
-    execfile(path, scope, scope)
+    exec code in scope, scope
 
     if "Editor" in scope:
         editor = scope["Editor"]()

@@ -1,4 +1,4 @@
-# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+# Copyright 2004-2019 Tom Rothamel <pytom@bishoujo.us>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -57,6 +57,7 @@ def get_path(fn):
     return fn
 
 # Asset Loading
+
 
 try:
     import android.apk
@@ -180,6 +181,11 @@ def walkdir(dir):  # @ReservedAssignment
         if i[0] == ".":
             continue
 
+        try:
+            i = renpy.exports.fsdecode(i)
+        except:
+            continue
+
         if os.path.isdir(dir + "/" + i):
             for fn in walkdir(dir + "/" + i):
                 rv.append(i + "/" + fn)
@@ -194,6 +200,9 @@ game_files = [ ]
 
 # A list of files that are in the common directory.
 common_files = [ ]
+
+# A map from filename to if the file is loadable.
+loadable_cache = { }
 
 
 def cleardirfiles():
@@ -227,8 +236,8 @@ def scandirfiles():
             return
 
         files.append((dn, fn))
-
         seen.add(fn)
+        loadable_cache[fn.lower()] = True
 
     for apk in apks:
 
@@ -430,6 +439,7 @@ class SubFile(object):
     def write(self, s):
         raise Exception("Write not supported by SubFile")
 
+
 open_file = open
 
 if "RENPY_FORCE_SUBFILE" in os.environ:
@@ -455,6 +465,14 @@ def load_core(name):
         if rv is not None:
             return rv
 
+    # Look for the file directly.
+    if not renpy.config.force_archives:
+        try:
+            fn = transfn(name)
+            return open_file(fn, "rb")
+        except:
+            pass
+
     # Look for the file in the apk.
     for apk in apks:
         prefixed_name = "/".join("x-" + i for i in name.split("/"))
@@ -462,14 +480,6 @@ def load_core(name):
         try:
             return apk.open(prefixed_name)
         except IOError:
-            pass
-
-    # Look for the file directly.
-    if not renpy.config.force_archives:
-        try:
-            fn = transfn(name)
-            return open_file(fn, "rb")
-        except:
             pass
 
     # Look for it in archive files.
@@ -509,14 +519,33 @@ def load_core(name):
     return None
 
 
-def get_prefixes():
+def check_name(name):
+    """
+    Checks the name to see if it violates any of Ren'Py's rules.
+    """
+
+    if renpy.config.reject_backslash and "\\" in name:
+        raise Exception("Backslash in filename, use '/' instead: %r" % name)
+
+    if renpy.config.reject_relative:
+
+        split = name.split("/")
+
+        if ("." in split) or (".." in split):
+            raise Exception("Filenames may not contain relative directories like '.' and '..': %r" % name)
+
+
+def get_prefixes(tl=True):
     """
     Returns a list of prefixes to search for files.
     """
 
     rv = [ ]
 
-    language = renpy.game.preferences.language
+    if tl:
+        language = renpy.game.preferences.language  # @UndefinedVariable
+    else:
+        language = None
 
     for prefix in renpy.config.search_prefixes:
 
@@ -528,22 +557,23 @@ def get_prefixes():
     return rv
 
 
-def load(name):
+def load(name, tl=True):
+
+    if renpy.display.predict.predicting:  # @UndefinedVariable
+        if threading.current_thread().name == "MainThread":
+            raise Exception("Refusing to open {} while predicting.".format(name))
 
     if renpy.config.reject_backslash and "\\" in name:
         raise Exception("Backslash in filename, use '/' instead: %r" % name)
 
     name = re.sub(r'/+', '/', name).lstrip('/')
 
-    for p in get_prefixes():
+    for p in get_prefixes(tl):
         rv = load_core(p + name)
         if rv is not None:
             return rv
 
     raise IOError("Couldn't find file '%s'." % name)
-
-
-loadable_cache = { }
 
 
 def loadable_core(name):
@@ -556,17 +586,18 @@ def loadable_core(name):
     if name in loadable_cache:
         return loadable_cache[name]
 
-    for apk in apks:
-        prefixed_name = "/".join("x-" + i for i in name.split("/"))
-        if prefixed_name in apk.info:
-            return True
-
     try:
         transfn(name)
         loadable_cache[name] = True
         return True
     except:
         pass
+
+    for apk in apks:
+        prefixed_name = "/".join("x-" + i for i in name.split("/"))
+        if prefixed_name in apk.info:
+            loadable_cache[name] = True
+            return True
 
     for _prefix, index in archives:
         if name in index:
@@ -580,6 +611,9 @@ def loadable_core(name):
 def loadable(name):
 
     name = name.lstrip('/')
+
+    if (renpy.config.loadable_callback is not None) and renpy.config.loadable_callback(name):
+        return True
 
     for p in get_prefixes():
         if loadable_core(p + name):
@@ -700,34 +734,64 @@ class RenpyImporter(object):
         if filename.endswith("__init__.py"):
             mod.__path__ = [ filename[:-len("__init__.py")] ]
 
-        source = load(filename).read().decode("utf8")
-        if source and source[0] == u'\ufeff':
-            source = source[1:]
-        source = source.encode("raw_unicode_escape")
+        for encoding in [ "utf-8", "latin-1" ]:
 
-        source = source.replace("\r", "")
+            try:
 
-        code = compile(source, filename, 'exec', renpy.python.old_compile_flags, 1)
+                source = load(filename).read().decode(encoding)
+                if source and source[0] == u'\ufeff':
+                    source = source[1:]
+                source = source.encode("raw_unicode_escape")
+
+                source = source.replace("\r", "")
+
+                code = compile(source, filename, 'exec', renpy.python.old_compile_flags, 1)
+                break
+            except:
+                if encoding == "latin-1":
+                    raise
+
         exec code in mod.__dict__
 
-        return mod
+        return sys.modules[fullname]
 
     def get_data(self, filename):
         return load(filename).read()
 
 
+meta_backup = [ ]
+
+
+def add_python_directory(path):
+    """
+    :doc: other
+
+    Adds `path` to the list of paths searched for Python modules and packages.
+    The path should be a string relative to the game directory. This must be
+    called before an import statement.
+    """
+
+    if path and not path.endswith("/"):
+        path = path + "/"
+
+    sys.meta_path.insert(0, RenpyImporter(path))
+
+
 def init_importer():
-    sys.meta_path.insert(0, RenpyImporter("python-packages/"))
-    sys.meta_path.insert(0, RenpyImporter())
+    meta_backup[:] = sys.meta_path
+
+    add_python_directory("python-packages/")
+    add_python_directory("")
 
 
 def quit_importer():
-    sys.meta_path.pop(0)
-    sys.meta_path.pop(0)
+    sys.meta_path[:] = meta_backup
+
 
 # Auto-Reload
 
-# This is set to True if autoreload hads detected an autoreload is needed.
+
+# This is set to True if autoreload has detected an autoreload is needed.
 needs_autoreload = False
 
 # A map from filename to mtime, or None if the file doesn't exist.
@@ -762,6 +826,8 @@ def add_auto(fn, force=False):
     Adds fn as a file we watch for changes. If it's mtime changes or the file
     starts/stops existing, we trigger a reload.
     """
+
+    fn = fn.replace("\\", "/")
 
     if not renpy.autoreload:
         return

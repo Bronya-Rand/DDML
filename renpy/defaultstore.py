@@ -1,4 +1,4 @@
-# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+# Copyright 2004-2019 Tom Rothamel <pytom@bishoujo.us>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -19,11 +19,14 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+from __future__ import print_function
+
 from renpy.minstore import *
 
 # But please note that this will not be available in the body
 # of user code, unless we re-import it.
 import renpy.display
+import renpy.audio
 import renpy.text
 
 import renpy.display.im as im
@@ -45,6 +48,9 @@ _window_subtitle = ''
 # Should rollback be allowed?
 _rollback = True
 
+# Should beginning a new rollback be allowed?
+_begin_rollback = True
+
 # Should skipping be allowed?
 _skipping = True
 
@@ -60,6 +66,10 @@ _widget_properties = { }
 
 # The text rectangle, or None to use the automatic code.
 _text_rect = None
+
+# Are we in various menus?
+_menu = False
+main_menu = False
 
 
 class _Config(object):
@@ -91,6 +101,12 @@ class _Config(object):
         if name == "script_version":
             renpy.store._set_script_version(value)  # E1101 @UndefinedVariable
 
+        if name == "developer":
+            if value == "auto":
+                renpy.config.original_developer = value
+                renpy.config.developer = renpy.config.default_developer
+                return
+
         cvars[name] = value
 
     def __delattr__(self, name):
@@ -98,6 +114,7 @@ class _Config(object):
             raise Exception('Deleting configuration variables is not supported.')
         else:
             delattr(renpy.config, name)
+
 
 # The styles object.
 style = None
@@ -110,7 +127,9 @@ eval = renpy.python.py_eval  # @ReservedAssignment
 # Displayables.
 Bar = renpy.display.behavior.Bar
 Button = renpy.display.behavior.Button
+ImageButton = renpy.display.behavior.ImageButton
 Input = renpy.display.behavior.Input
+TextButton = renpy.display.behavior.TextButton
 
 ImageReference = renpy.display.image.ImageReference
 DynamicImage = renpy.display.image.DynamicImage
@@ -125,6 +144,11 @@ FileCurrentScreenshot = renpy.display.imagelike.FileCurrentScreenshot
 LiveComposite = renpy.display.layout.LiveComposite
 LiveCrop = renpy.display.layout.LiveCrop
 LiveTile = renpy.display.layout.LiveTile
+
+Composite = renpy.display.layout.Composite
+Crop = renpy.display.layout.Crop
+Tile = renpy.display.layout.Tile
+
 Flatten = renpy.display.layout.Flatten
 
 Null = renpy.display.layout.Null
@@ -185,6 +209,7 @@ MultipleTransition = renpy.curry.curry(renpy.display.transition.MultipleTransiti
 ComposeTransition = renpy.curry.curry(renpy.display.transition.ComposeTransition)
 Pause = renpy.curry.curry(renpy.display.transition.NoTransition)
 SubTransition = renpy.curry.curry(renpy.display.transition.SubTransition)
+
 # Misc.
 ADVSpeaker = ADVCharacter = renpy.character.ADVCharacter
 Speaker = Character = renpy.character.Character
@@ -194,12 +219,12 @@ MultiPersistent = renpy.persistent.MultiPersistent
 Action = renpy.ui.Action
 BarValue = renpy.ui.BarValue
 
+AudioData = renpy.audio.audio.AudioData
+
 # NOTE: When exporting something from here, decide if we need to add it to
 # renpy.pyanalysis.pure_functions.
 
 Style = renpy.style.Style  # @UndefinedVariable
-
-absolute = renpy.display.core.absolute
 
 NoRollback = renpy.python.NoRollback
 
@@ -230,7 +255,9 @@ class _layout_class(__builtins__["object"]):
 
         return rv
 
+
 Fixed = _layout_class(renpy.display.layout.MultiBox, """
+:name: Fixed
 :doc: disp_box
 :args: (*args, **properties)
 
@@ -255,6 +282,7 @@ A layout that lays out its members from top to bottom.
 
 Grid = _layout_class(renpy.display.layout.Grid, """
 :doc: disp_grid
+:args: (cols, rows, *args, **properties)
 
 Lays out displayables in a grid. The first two positional arguments
 are the number of columns and rows in the grid. This must be followed
@@ -355,6 +383,7 @@ adv = ADVCharacter(None,
                    with_none=None,
                    callback=None,
                    type='say',
+                   advance=True,
 
                    who_style='say_label',
                    what_style='say_dialogue',
@@ -378,13 +407,16 @@ def predict_say(who, what):
         pass
 
 
-def say(who, what, interact=True):
+def say(who, what, interact=True, *args, **kwargs):
     who = Character(who, kind=adv)
-    who(what, interact=interact)
+    who(what, interact=interact, *args, **kwargs)
 
-# Used by renpy.reshow_say.
+
+# Used by renpy.reshow_say and extend.
 _last_say_who = None
 _last_say_what = None
+_last_say_args = ()
+_last_say_kwargs = { }
 
 # Used to store the things pinned into the cache.
 _cache_pin_set = set()
@@ -404,10 +436,18 @@ _in_replay = None
 
 # Used to store the side image attributes.
 _side_image_attributes = None
+_side_image_attributes_reset = False
 
 # True if we're in the main_menu, False otherwise. This controls autosave,
 # among other things.
 main_menu = False
+
+# The action that's used when the player clicks the ignore button on the
+# error handling screen.
+_ignore_action = None
+
+# The save slot that Ren'Py saves to on quit.
+_quit_slot = None
 
 # Make these available to user code.
 import sys
@@ -422,5 +462,6 @@ def public_api():
     sorted
     os
     sys
+
 
 del public_api

@@ -20,39 +20,10 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-init python:
-    import shutil
-    import os
-    import time
-    import re
-
-    def check_language_support():
-        language = _preferences.language
-        new = False
-        legacy = False
-        # Check for a translation of the words "New GUI Interface".
-        if (language is None) or (__("Steam") != "Steam"):
-            new = True
-        try:
-            if (language is None) or os.path.exists(os.path.join(config.renpy_base, "templates", language)):
-                legacy = True
-        except:
-            pass
-        if new and legacy:
-            store.language_support = _("Both interfaces have been translated to your language.")
-        elif new:
-            store.language_support = _("Only the new GUI has been translated to your language.")
-        elif legacy:
-            store.language_support = _("Only the legacy theme interface has been translated to your language.")
-        else:
-            store.language_support = _("Neither interface has been translated to your language.")
-
 # Asks whether they downloaded DDLC from Steam or DDLC.moe/Itch.io
 label ddlc_location:
 
     python:
-
-        check_language_support()
 
         release_kind = interface.choice(
             _("Where did you download DDLC? If you downloaded DDLC from Steam, select Steam. If you downloaded DDLC from ddlc.moe or itch.io, select DDLC.moe."),

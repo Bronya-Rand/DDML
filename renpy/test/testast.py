@@ -1,4 +1,4 @@
-# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+# Copyright 2004-2019 Tom Rothamel <pytom@bishoujo.us>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -19,6 +19,8 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+from __future__ import print_function
+
 import renpy.display
 import renpy.test
 from renpy.test.testmouse import click_mouse, move_mouse
@@ -34,6 +36,9 @@ _test.timeout = 5.0
 
 # Should we force the test to proceed despite suppress_underlay?
 _test.force = False
+
+# How long should we wait for a transition before we proceed?
+_test.transition_timeout = 5.0
 
 
 class Node(object):
@@ -97,7 +102,7 @@ class Pattern(Node):
 
         self.report()
 
-        if renpy.display.interface.trans_pause:
+        if renpy.display.interface.trans_pause and (t < _test.transition_timeout):
             return state
 
         if self.position is not None:
@@ -148,6 +153,51 @@ class Move(Pattern):
     def perform(self, x, y, state, t):
         move_mouse(x, y)
         return None
+
+
+class Scroll(Node):
+
+    def __init__(self, loc, pattern=None):
+        Node.__init__(self, loc)
+        self.pattern = pattern
+
+    def start(self):
+        return True
+
+    def execute(self, state, t):
+
+        self.report()
+
+        f = renpy.test.testfocus.find_focus(self.pattern)
+
+        if f is None:
+            return True
+
+        if not isinstance(f.widget, renpy.display.behavior.Bar):
+            return True
+
+        adj = f.widget.adjustment
+
+        if adj.value == adj.range:
+            new = 0
+        else:
+            new = adj.value + adj.page
+
+            if new > adj.range:
+                new = adj.range
+
+        adj.change(new)
+
+        return None
+
+    def ready(self):
+
+        f = renpy.test.testfocus.find_focus(self.pattern)
+
+        if f is not None:
+            return True
+        else:
+            return False
 
 
 class Drag(Node):
@@ -336,7 +386,8 @@ class Until(Node):
     once before quitting.
     """
 
-    def __init__(self, left, right):
+    def __init__(self, loc, left, right):
+        Node.__init__(self, loc)
         self.left = left
         self.right = right
 
@@ -365,6 +416,9 @@ class Until(Node):
 
         return child, child_state, start
 
+    def ready(self):
+        return self.left.ready() or self.right.ready()
+
 
 class If(Node):
     """
@@ -372,7 +426,9 @@ class If(Node):
     statement.
     """
 
-    def __init__(self, condition, block):
+    def __init__(self, loc, condition, block):
+        Node.__init__(self, loc)
+
         self.condition = condition
         self.block = block
 
@@ -445,7 +501,9 @@ class Assert(Node):
 
 class Jump(Node):
 
-    def __init__(self, target):
+    def __init__(self, loc, target):
+        Node.__init__(self, loc)
+
         self.target = target
 
     def start(self):
@@ -455,10 +513,13 @@ class Jump(Node):
 
 class Call(Node):
 
-    def __init__(self, target):
+    def __init__(self, loc, target):
+        Node.__init__(self, loc)
+
         self.target = target
 
     def start(self):
+        print("Call test", self.target)
         node = renpy.test.testexecution.lookup(self.target, self)
         return (node, None, 0)
 

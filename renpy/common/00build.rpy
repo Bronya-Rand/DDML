@@ -1,4 +1,4 @@
-﻿# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+﻿# Copyright 2004-2019 Tom Rothamel <pytom@bishoujo.us>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -69,16 +69,20 @@ init -1500 python in build:
 
         ( "**/*.pyc", None),
 
-        ( "renpy.py", "renpy"),
+        ( "renpy.py", "all"),
 
         ( "renpy/", "all"),
+        ( "renpy/**.py", "renpy"),
+        ( "renpy/**.pyx", "renpy"),
+        ( "renpy/**.pyd", "renpy"),
+        ( "renpy/**.pxi", "renpy"),
         ( "renpy/common/", "all"),
         ( "renpy/common/_compat/**", "renpy"),
         ( "renpy/common/**.rpy", "renpy"),
         ( "renpy/common/**.rpym", "renpy"),
         ( "renpy/common/_compat/**", "renpy"),
         ( "renpy/common/**", "all"),
-        ( "renpy/**", "renpy"),
+        ( "renpy/**", "all"),
 
         # Ignore Ren'Py and renpy.exe.
         ( "lib/*/renpy", None),
@@ -88,8 +92,7 @@ init -1500 python in build:
         ( "lib/windows-i686/**", "windows"),
 
         # Linux patterns.
-        ( "lib/linux-x86_64/**", "linux"),
-        ( "lib/linux-i686/**", "linux"),
+        ( "lib/linux-*/**", "linux"),
 
         # Mac patterns
         ( "lib/darwin-x86_64/**", "mac"),
@@ -133,6 +136,7 @@ init -1500 python in build:
         ("dialogue.txt", None),
         ("dialogue.tab", None),
         ("profile_screen.txt", None),
+        ("files.txt", None),
 
         ("tmp/", None),
         ("game/saves/", None),
@@ -143,13 +147,17 @@ init -1500 python in build:
         ("android.txt", None),
 
         (".android.json", "android"),
-        ("android-icon.png", "android"),
-        ("android-presplash.*", "android"),
-        ("android-*-icon.png", "android"),
-        ("android-*-presplash.*", "android"),
-        ("ouya_icon.png", "android"),
+        ("android-*.png", "android"),
+        ("android-*.jpg", "android"),
+        ("ouya_icon.png", None),
 
         ("ios-presplash.*", "ios"),
+        ("ios-launchimage.png", None),
+        ("ios-icon.png", None),
+
+        ("web-presplash.png", "web"),
+        ("web-presplash.jpg", "web"),
+
         ])
 
     base_patterns = [ ]
@@ -326,9 +334,11 @@ init -1500 python in build:
     package("linux", "tar.bz2", "linux renpy all", "Linux x86/x86_64")
     package("mac", "app-zip app-dmg", "mac renpy all", "Macintosh x86_64")
     package("win", "zip", "windows renpy all", "Windows x86")
-    package("steam", "zip", "windows linux mac renpy all", "Windows, Mac, Linux for Steam")
-    package("android", "directory", "android renpy all", hidden=True, update=False, dlc=True)
-    package("ios", "directory", "ios renpy all", hidden=True, update=False, dlc=True)
+    package("market", "zip", "windows linux mac renpy all", "Windows, Mac, Linux for Markets")
+    package("steam", "zip", "windows linux mac renpy all", hidden=True)
+    package("android", "directory", "android all", hidden=True, update=False, dlc=True)
+    package("ios", "directory", "ios all", hidden=True, update=False, dlc=True)
+    package("web", "zip", "web all", update=False, dlc=True)
 
     # Data that we expect the user to set.
 
@@ -379,16 +389,16 @@ init -1500 python in build:
     mac_identity = None
 
     # The command used for mac codesigning.
-    mac_codesign_command = [ "/usr/bin/codesign", "-s", "{identity}", "-f", "--deep", "--no-strict", "{app}" ]
+    mac_codesign_command = [ "/usr/bin/codesign", "--entitlements={entitlements}", "--options=runtime", "--timestamp", "-s", "{identity}", "-f", "--deep", "--no-strict", "{app}" ]
 
     # The command used to build a dmg.
     mac_create_dmg_command = [ "/usr/bin/hdiutil", "create", "-format", "UDBZ", "-volname", "{volname}", "-srcfolder", "{sourcedir}", "-ov", "{dmg}" ]
 
     # The command used to sign a dmg.
-    mac_codesign_dmg_command = [ "/usr/bin/codesign", "-s", "{identity}", "-f", "{dmg}" ]
+    mac_codesign_dmg_command = [ "/usr/bin/codesign", "--timestamp", "-s", "{identity}", "-f", "{dmg}" ]
 
     # Do we want to add the script_version file?
-    script_version = False
+    script_version = True
 
 
     # This function is called by the json_dump command to dump the build data
@@ -397,15 +407,22 @@ init -1500 python in build:
 
         rv = { }
 
+        excludes = [ ]
+
         if not include_old_themes:
-            exclude_old_themes = [
+            excludes.extend([
                 ( "renpy/common/_compat/**", None),
                 ( "renpy/common/_roundrect/**", None),
                 ( "renpy/common/_outline/**", None),
                 ( "renpy/common/_theme**", None),
-            ]
-        else:
-            exclude_old_themes = [ ]
+            ])
+
+        import sys
+
+        if "_ssl" not in sys.modules:
+            excludes.extend([
+                ( "lib/**/_ssl.*", None),
+            ])
 
         rv["directory_name"] = directory_name
         rv["executable_name"] = executable_name
@@ -415,10 +432,10 @@ init -1500 python in build:
         rv["archives"] = archives
         rv["documentation_patterns"] = documentation_patterns
         rv["base_patterns"] = early_base_patterns + base_patterns + late_base_patterns
-        rv["renpy_patterns"] = exclude_old_themes + renpy_patterns
+        rv["renpy_patterns"] = excludes + renpy_patterns
         rv["xbit_patterns"] = xbit_patterns
         rv["version"] = version or directory_name
-        rv["display_name"] = display_name or executable_name
+        rv["display_name"] = display_name or config.name or executable_name
 
         rv["exclude_empty_directories"] = exclude_empty_directories
 

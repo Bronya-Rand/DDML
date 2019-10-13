@@ -1,4 +1,4 @@
-﻿# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
+﻿# Copyright 2004-2019 Tom Rothamel <pytom@bishoujo.us>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -182,7 +182,7 @@ init -1500 python in iap:
         def init(self):
             restore(False)
 
-    if renpy.ios:
+    if renpy.renpy.ios:
         import pyobjus
         IAPHelper = pyobjus.autoclass(b"IAPHelper")
         NSMutableArray = pyobjus.autoclass(b"NSMutableArray")
@@ -583,9 +583,9 @@ init -1500 python in iap:
                 persistent._iap_purchases[p.identifier] = False
 
         # Set up the back end.
-        if renpy.android:
+        if renpy.renpy.android:
             backend = init_android()
-        elif renpy.ios:
+        elif renpy.renpy.ios:
             backend = IOSBackend()
         else:
             backend = NoneBackend()
