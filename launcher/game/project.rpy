@@ -1108,7 +1108,7 @@ label install_addon:
                 reg_move(mzt, '/game')
             else:
                 if os.path.exists(persistent.project_dir + '/game/python-packages'):
-                    if os.path.exists(str(mzte[1]) + '/game/python-packages'):
+                    if os.path.exists(mzt + '/game/python-packages'):
                         shutil.rmtree(persistent.project_dir + '/game/python-packages')
                     else:
                         pass
