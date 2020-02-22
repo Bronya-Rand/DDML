@@ -121,6 +121,25 @@ screen front_page:
                             left_margin (HALF_INDENT) 
                             action Jump("move_mod_folder")
 
+                    add HALF_SPACER
+                    add SEPARATOR
+                    add HALF_SPACER
+
+                    hbox:
+                        xfill True
+                        textbutton _("+ Add a Mod"):
+                            left_margin (HALF_INDENT) 
+                            action Jump("add_a_mod")
+
+                    add HALF_SPACER
+                    add SEPARATOR
+                    add HALF_SPACER
+                    hbox:
+                        xfill True
+                        textbutton _("+ Add DDLC Only"):
+                            left_margin (HALF_INDENT) 
+                            action Jump("add_base_game")
+
         # Project section - on right.
 
         if project.current is not None:
@@ -211,9 +230,9 @@ screen front_page_project:
                     if renpy.windows:
                         textbutton _("Browse Save Directory") action OpenDirectory(os.getenv('APPDATA') + '/RenPy')
                     elif renpy.macintosh:
-                        textbutton _("Browse Save Directory") action OpenDirectory("$HOME/Library/RenPy")
+                        textbutton _("Browse Save Directory") action OpenDirectory(os.getenv('$HOME') +"/Library/RenPy")
                     else:
-                        textbutton _("Browse Save Directory") action OpenDirectory("$HOME/.renpy")
+                        textbutton _("Browse Save Directory") action OpenDirectory(os.getenv('$HOME') + "/.renpy")
                 textbutton _("Delete Mod") action Jump("delete_mod_folder")
 
                 # textbutton "Relaunch" action Relaunch

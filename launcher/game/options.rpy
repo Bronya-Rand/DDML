@@ -316,7 +316,7 @@ init python:
     build.classify_renpy("doc/", "source")
     build.classify_renpy("doc/.doctrees/", None)
     build.classify_renpy("doc/_sources/", None)
-    build.classify_renpy("doc/**", "source")
+    build.classify_renpy("doc/**", None)
     build.classify_renpy("LICENSE.txt", "source")
 
     # all-platforms binary.
