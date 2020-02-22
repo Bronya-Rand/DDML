@@ -7,3 +7,4 @@ persistent
 *.save
 launcher/game/saves
 tmp
+*.pyo

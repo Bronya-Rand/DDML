@@ -1,5 +1,4 @@
-# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
-# Copyright 2018-2019 GanstaKingofSA <azarieldc@gmail.com>
+﻿# Copyright 2004-2019 Tom Rothamel <pytom@bishoujo.us>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -20,7 +19,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-# Code that manages mods
+# Code that manages projects.
 
 init python:
     if renpy.windows:
@@ -29,102 +28,9 @@ init python:
         EasyDialogs = None
 
     import os
-    def ext_move(ext,path):
-        import os
-        import shutil
-        if os.path.exists(persistent.project_dir + '/game/python-packages'):
-            if os.path.exists(ext + path + '/python-packages'):
-                shutil.rmtree(persistent.project_dir + '/game/python-packages')
-            else:
-                pass
-        for file in os.listdir(ext + path):
-            print file
-            src_file = os.path.join(ext + path, file)
-            dst_file = os.path.join(persistent.project_dir + path, file)
-            shutil.move(src_file, dst_file)
-    def rpy_ext(ext):
-        import os
-        import shutil
-        for file in os.listdir(ext):
-            base = [".exe", ".sh", ".py", ".txt", ".md", ".html"]
-            if file.endswith(tuple(base)):
-                src = os.path.join(ext, file)
-                shutil.move(src, persistent.project_dir)
-    def lib_move(ext):
-        import os
-        import shutil
-        shutil.rmtree(persistent.project_dir + '/lib')
-        for file in os.listdir(ext + '/lib'):
-            print file
-            src_file = os.path.join(ext + '/lib', file)
-            dst_file = os.path.join(persistent.project_dir + '/lib', file)
-            shutil.move(src_file, dst_file)
-    def rpy_move(ext):
-        import os
-        import shutil
-        for file in os.listdir(persistent.project_dir + '/renpy'):
-            file_path = os.path.join(persistent.project_dir + '/renpy', file)
-            if os.path.isfile(file_path):
-                os.unlink(file_path)
-            elif os.path.isdir(file_path): 
-                shutil.rmtree(file_path)
-        for file in os.listdir(ext + '/renpy'):
-            print file
-            src_file = os.path.join(ext + '/renpy', file)
-            dst_file = os.path.join(persistent.project_dir + '/renpy', file)
-            shutil.move(src_file, dst_file)
-    def reg_move(mzt, ext):
-        import os
-        import shutil
-        if os.path.exists(persistent.project_dir + '/game/python-packages'):
-            if os.path.exists(mzt + '/python-packages'):
-                shutil.rmtree(persistent.project_dir + '/game/python-packages')
-        shutil.move(mzt + ext, persistent.project_dir)
-    def zip_extract():
-        import zipfile
-        import shutil
-        try: 
-            with zipfile.ZipFile(persistent.zip_directory + '/ddlc-win.zip', "r") as z:
-                z.extractall(persistent.projects_directory + "/temp")
-                ddlc = persistent.projects_directory + '/temp' + '/DDLC-1.1.1-pc'
-                shutil.move(ddlc, persistent.project_dir)
-        except: 
-            interface.error(_("Cannot Locate 'ddlc-win.zip' in [persistent.zip_directory!q]."), _("Make sure you have DDLC downloaded from 'https://ddlc.moe' and check if it exists."),)
-    def steam_copy():
-        import shutil
-        try:
-            shutil.copytree(persistent.zip_directory + "/Doki Doki Literature Club", persistent.project_dir)
-        except:
-            interface.error(_("Cannot Locate Your Doki Doki Literature Club Folder"), _("Make sure it is set to your 'Steam\steamapps\common' folder."),)
-    def rpa_copy():
-        import glob
-        import os
-        import shutil
-        if glob.glob(persistent.mzip_directory + '/*.rpa'):
-            interface.interaction(_("Copying"), _("Copying Mod Files from Mod ZIP Directory, Please Wait..."),)
-            for file in os.listdir(persistent.mzip_directory):
-                if file.endswith('.rpa'):
-                    src = os.path.join(persistent.mzip_directory, file)  
-                    shutil.copy(src, persistent.project_dir + '/game')
-            for file in os.listdir(persistent.mzip_directory):
-                if file.endswith('.rpa'):
-                    src = os.path.join(persistent.mzip_directory, file)
-                    os.remove(src)
-            # Auto-Refresh
-            project.manager.scan()
-            renpy.jump("front_page")
-    def modzip_extract(name):
-        import zipfile
-        import shutil
-        try:
-            with zipfile.ZipFile(persistent.mzip_directory + '/' + name + ".zip", "r") as z:
-                z.extractall(persistent.projects_directory + "/temp")
-        except:
-            shutil.rmtree(persistent.project_dir)
-            interface.error(_("Cannot locate ZIP in [persistent.mzip_directory!q]."), _("Check the name of your Mod ZIP file and try again."))
 
 init python in project:
-    from store import persistent, config, Action, renpy
+    from store import persistent, config, Action, renpy, _preferences
     import store.util as util
     import store.interface as interface
 
@@ -138,8 +44,13 @@ init python in project:
     if persistent.blurb is None:
         persistent.blurb = 0
 
+    project_filter = [ i.strip() for i in os.environ.get("RENPY_PROJECT_FILTER", "").split(":") if i.strip() ]
+
     LAUNCH_BLURBS = [
-        _("Launching the Mod. Please Wait."),
+        _("After making changes to the script, press shift+R to reload your game."),
+        _("Press shift+O (the letter) to access the console."),
+        _("Press shift+D to access the developer menu."),
+        _("Have you backed up your projects recently?"),
     ]
 
     class Project(object):
@@ -170,6 +81,9 @@ init python in project:
             # Load the data.
             self.load_data()
 
+            # A name to display the project.
+            self.display_name = self.data.get("display_name", self.name)
+
             # The project's temporary directory.
             self.tmp = None
 
@@ -181,6 +95,10 @@ init python in project:
             self.dump_mtime = 0
 
         def get_dump_filename(self):
+
+            if os.path.exists(os.path.join(self.gamedir, "saves")):
+                return os.path.join(self.gamedir, "saves", "navigation.json")
+
             self.make_tmp()
             return os.path.join(self.tmp, "navigation.json")
 
@@ -213,6 +131,7 @@ init python in project:
             data.setdefault("packages", [ "pc", "mac" ])
             data.setdefault("add_from", True)
             data.setdefault("force_recompile", True)
+            data.setdefault("android_build", "Release")
 
             if "renamed_all" not in data:
                 dp = data["packages"]
@@ -227,6 +146,18 @@ init python in project:
                         dp.append("mac")
 
                 data["renamed_all"] = True
+
+            if "renamed_steam" not in data:
+                dp = data["packages"]
+
+                if "steam" in dp:
+                    dp.remove("steam")
+
+                    if "market" not in dp:
+                        dp.append("market")
+
+                data["renamed_steam"] = True
+
 
         def make_tmp(self):
             """
@@ -245,8 +176,23 @@ init python in project:
                 pass
 
             if os.path.isdir(tmp):
-                self.tmp = tmp
-                return
+                try:
+
+                    fn = os.path.join(tmp, "write_test.txt")
+
+                    if os.path.exists(fn):
+                        os.unlink(fn)
+
+                    with open(fn, "w") as f:
+                        f.write("Test")
+
+                    os.unlink(fn)
+
+                    self.tmp = tmp
+                    return
+
+                except:
+                    pass
 
             self.tmp = tempfile.mkdtemp()
 
@@ -314,6 +260,7 @@ init python in project:
                 cmd.append("--json-dump-common")
 
             environ = dict(os.environ)
+            environ["RENPY_LAUNCHER_LANGUAGE"] = _preferences.language or "english"
             environ.update(env)
 
             encoded_environ = { }
@@ -332,6 +279,9 @@ init python in project:
             if wait:
                 if p.wait():
                     interface.error(_("Launching the project failed."), _("Please ensure that your project launches normally before running this command."))
+
+            renpy.not_infinite_loop(30)
+
 
         def update_dump(self, force=False, gui=True, compile=False):
             """
@@ -468,6 +418,10 @@ init python in project:
            # Directories that have been scanned.
            self.scanned = set()
 
+           # The tutorial game, and the language it's for.
+           self.tutoral = None
+           self.tutorial_language = "the meowing of a cat"
+
            self.scan()
 
         def scan(self):
@@ -475,20 +429,12 @@ init python in project:
             Scans for projects.
             """
 
+            global current
+
             if (persistent.projects_directory is not None) and not os.path.isdir(persistent.projects_directory):
                 persistent.projects_directory = None
 
             self.projects_directory = persistent.projects_directory
-
-            if (persistent.zip_directory is not None) and not os.path.isdir(persistent.zip_directory):
-                persistent.zip_directory = None
-
-            self.ddlc_directory = persistent.zip_directory
-
-            if (persistent.mzip_directory is not None) and not os.path.isdir(persistent.mzip_directory):
-                persistent.mzip_directory = None
-
-            self.ddlcmod_directory = persistent.zip_directory
 
             self.projects = [ ]
             self.templates = [ ]
@@ -498,11 +444,23 @@ init python in project:
             if self.projects_directory is not None:
                 self.scan_directory(self.projects_directory)
 
+
             self.scan_directory(config.renpy_base)
             self.scan_directory(os.path.join(config.renpy_base, "templates"))
 
             self.projects.sort(key=lambda p : p.name.lower())
             self.templates.sort(key=lambda p : p.name.lower())
+
+
+            # Select the default project.
+            if persistent.active_project is not None:
+                p = self.get(persistent.active_project)
+
+                if (p is not None) and (p.name not in [ "tutorial", "tutorial_7" ]):
+                    current = p
+                    return
+
+            current = self.get_tutorial()
 
 
         def find_basedir(self, d):
@@ -546,52 +504,60 @@ init python in project:
             for pdir in util.listdir(d):
 
                 ppath = os.path.join(d, pdir)
+                self.scan_directory_direct(ppath, pdir)
 
-                # A project must be a directory.
-                if not os.path.isdir(ppath):
-                    continue
+            # If a file called "projects.txt" exists, include any projects listed in it.
+            extra_projects_fn = os.path.join(d, "projects.txt")
 
-                try:
-                    ppath = self.find_basedir(ppath)
-                except:
-                    continue
+            if os.path.exists(extra_projects_fn):
 
-                if ppath is None:
-                    continue
+                with open(extra_projects_fn, "r") as f:
 
-                if ppath in self.scanned:
-                    continue
+                    for path in f:
+                        path = path.strip()
+                        if len(path) > 0:
+                            self.scan_directory_direct(path)
 
-                self.scanned.add(ppath)
 
-                # We have a project directory, so create a Project.
-                p = Project(ppath, pdir)
+        def scan_directory_direct(self, ppath, name=None):
+            """
+            Checks if there is a project in `ppath` and creates a project
+            object with the name `name` if so.
+            """
 
-                project_type = p.data.get("type", "normal")
-
-                if project_type == "hidden":
-                    pass
-                elif project_type == "template":
-                    self.templates.append(p)
-                else:
-                    self.projects.append(p)
-
-                self.all_projects.append(p)
-
-            # Select the default project.
-            if persistent.active_project is not None:
-                p = self.get(persistent.active_project)
-
-                if p is not None:
-                    current = p
-                    return
-
-            p = self.get("tutorial")
-            if p is not None:
-                current = p
+            # A project must be a directory.
+            if not os.path.isdir(ppath):
                 return
 
-            current = None
+            try:
+                ppath = self.find_basedir(ppath)
+            except:
+                return
+
+            if ppath is None:
+                return
+
+            if ppath in self.scanned:
+                return
+
+            self.scanned.add(ppath)
+
+            # We have a project directory, so create a Project.
+            p = Project(ppath, name)
+
+            if project_filter and (p.name not in project_filter):
+                return
+
+            project_type = p.data.get("type", "normal")
+
+            if project_type == "hidden":
+                pass
+            elif project_type == "template":
+                self.templates.append(p)
+            else:
+                self.projects.append(p)
+
+            self.all_projects.append(p)
 
 
         def get(self, name):
@@ -606,6 +572,37 @@ init python in project:
                     return p
 
             return None
+
+        def get_tutorial(self):
+
+            language = _preferences.language
+            if persistent.force_new_tutorial:
+                language = None
+
+            if language == self.tutorial_language:
+                return self.tutorial
+
+            rv = self.get("oldtutorial")
+            p = self.get("tutorial")
+
+            if p is not None:
+
+                if language is None:
+                    rv = p
+
+                elif rv is None:
+                    rv = p
+
+                elif os.path.exists(os.path.join(p.path, "game", "tl", _preferences.language)):
+                    rv = p
+
+                elif not os.path.exists(os.path.join(rv.path, "game", "tl", _preferences.language)):
+                    rv = p
+
+            self.tutorial_language = language
+            self.tutorial = rv
+
+            return rv
 
     manager = ProjectManager()
 
@@ -658,6 +655,55 @@ init python in project:
             if self.label is not None:
                 renpy.jump(self.label)
 
+    class SelectTutorial(Action):
+        """
+        Selects the tutorial.
+        """
+
+        def __init__(self, if_tutorial=False):
+            """
+            Only selects if we're already in a tutorial.
+            """
+
+            self.if_tutorial = if_tutorial
+
+        def __call__(self):
+
+            p = manager.get_tutorial()
+
+            if p is None:
+                return
+
+            global current
+
+            if self.if_tutorial:
+                if (current is not None) and current.name not in [ "tutorial", "oldtutorial" ]:
+                    return None
+
+            current = p
+            persistent.active_project = p.name
+
+            renpy.restart_interaction()
+
+        def get_sensitive(self):
+            if self.if_tutorial:
+                return True
+
+            return (manager.get_tutorial() is not None)
+
+        def get_selected(self):
+            if self.if_tutorial:
+                return False
+
+            p = manager.get_tutorial()
+
+            if p is None:
+                return False
+
+            if current is None:
+                return False
+
+            return current.path == p.path
 
     class Launch(Action):
         """
@@ -708,16 +754,19 @@ init 10 python:
             persistent.projects_directory = None
 
 ###############################################################################
-# Code to choose the mod folder.
+# Code to choose the projects directory.
+
 label choose_projects_directory:
 
     python hide:
-        interface.interaction(_("Mod Directory"), _("Please choose where you want to install your mods.\n{b}The directory chooser may have opened behind this window.{/b}"), _("DDML will scan for mods in this folder, and will install and place mods and DDLC copies into this folder."),)
+
+        interface.interaction(_("PROJECTS DIRECTORY"), _("Please choose the projects directory using the directory chooser.\n{b}The directory chooser may have opened behind this window.{/b}"), _("This launcher will scan for projects in this directory, will create new projects in this directory, and will place built projects into this directory."),)
 
         path, is_default = choose_directory(persistent.projects_directory)
 
         if is_default:
-            interface.info(_("DDML has set the Mod directory to:"), "[path!q]", path=path)
+            interface.error(_("The operation has been cancelled."))
+            renpy.jump("front_page")
 
         persistent.projects_directory = path
 
@@ -725,268 +774,19 @@ label choose_projects_directory:
 
     return
 
-# Code to move mod folder
-label move_mod_folder:
-
-    python hide:
-
-        import os
-        import shutil
-
-        oldmod_dir = persistent.projects_directory
-
-        interface.interaction(_("New Mod Directory"), _("Please choose the new mod folder using the directory chooser.\n{b}The directory chooser may have opened behind this window.{/b}"), _("DDML will create new mods in this folder, and place old and new mods into this folder."),)
-
-        pathnew, is_default = choose_directory(persistent.projects_directory)
-
-        if is_default:
-            interface.error(_("The operation has been cancelled."))
-
-        persistent.projects_directory = pathnew
-
-        # Moves Mods from old folder to new folder
-        for file in os.listdir(oldmod_dir):
-            print file
-            src_file = os.path.join(oldmod_dir, file)
-            dst_file = os.path.join(persistent.projects_directory, file)
-            shutil.move(src_file, dst_file)
-
-        project.manager.scan()
-
-    return
-
-# Asks user the directory where they download their mod ZIPs.
 label choose_modzip_directory:
 
     python hide:
 
         interface.interaction(_("Mod ZIP Download Directory"), _("Please choose the folder your Mod ZIPs are downloaded to."), _("This will make DDML find the Mod ZIP in this folder."),)
 
-        pathmz, is_defaultmz = choose_directory(persistent.mzip_directory)
+        path, is_default = choose_directory(persistent.mzip_directory)
 
-        if is_defaultmz:
+        if is_default:
             interface.error(_("The operation has been cancelled."))
             renpy.jump("front_page")
 
-        persistent.mzip_directory = pathmz
-
-    return
-
-# Code to delete a mod from the mod folder
-label delete_mod_folder:
-
-    python hide:
-        import shutil
-        mod_delete_response = interface.input(
-            _("Deleting a Mod"),
-            _("Are you sure you want to delete this mod? Type either Yes or No."),
-            filename=False,
-            cancel=Jump("front_page"))
-
-        mod_delete_response = mod_delete_response.strip()
-
-        if not mod_delete_response:
-            interface.error(_("The operation has been cancelled."))
-
-        mod_response = mod_delete_response
-
-        if mod_response == "No" or mod_response == "no":
-            interface.error(_("The operation has been cancelled."))
-        elif mod_response == "Yes" or mod_response == "yes":
-            deleted_mod_name = project.current.name
-            shutil.rmtree(persistent.projects_directory + '/' + project.current.name)
-        else:
-            interface.error(_("Invalid Input."))
-
-        interface.info(deleted_mod_name + " has been deleted.")
-        deleted_mod_name = None
-
-        project.manager.scan()
-
-    jump front_page
-
-# Code to add a mod
-label add_a_mod:
-    # Checks if user set Mod Install Folder
-    if persistent.projects_directory is None:
-        call choose_projects_directory
-    # Ren'Py Failsafe
-    if persistent.projects_directory is None:
-        $ interface.error(_("The Mod directory could not be set. Giving up."))
-    # Checks if user set DDLC ZIP Location (All OS)
-    if persistent.zip_directory is None:
-        call ddlc_location
-    # Ren'Py Failsafe 2
-    if persistent.zip_directory is None:
-        $ interface.error(_("The DDLC Copy directory could not be set. Giving up."))
-    # Checks if User set Mod ZIP Directory
-    if persistent.mzip_directory is None:
-        call choose_modzip_directory
-    # Ren'Py Failsafe 3
-    if persistent.mzip_directory is None:
-        $ interface.error(_("The Mod ZIP directory could not be set. Giving up."))
-
-    python hide:
-        import glob
-        import shutil
-        import os
-        # Asks User the name of the folder they want their mod folder to be
-        modinstall_foldername = interface.input(
-            _("Mod Folder Name"),
-            _("Please enter the name of the mod you are installing:"),
-            filename=True,
-            cancel=Jump("front_page"))
-
-        modinstall_foldername = modinstall_foldername.strip()
-        if not modinstall_foldername:
-            interface.error(_("The mod name may not be empty."))
-
-        persistent.project_dir = os.path.join(persistent.projects_directory, modinstall_foldername)
-
-        if project.manager.get(modinstall_foldername) is not None:
-            interface.error(_("[modinstall_foldername!q] already exists. Please choose a different project name."), modinstall_foldername=modinstall_foldername)
-        if os.path.exists(persistent.project_dir):
-            interface.error(_("[persistent.project_dir!q] already exists. Please choose a different project name."), project_dir=project_dir)
-
-        interface.interaction(_("Making a Mod Folder"), _("Extracting DDLC, Please Wait..."),)
-        # Asks if the copy is Steam
-        if persistent.steam_release == True:
-            # Copy DDLC (Steam Release) (Assuming Steam Copy is Unmodded)
-            steam_copy()
-        else:
-            # Extract DDLC (Moe Release)
-            zip_extract()
-        # RPA Download Install Check (for mods that aren't in ZIPs or downloaded as seperate .rpas)
-        rpa_copy()
-        # Asks User name of ZIP
-        modzip_name = interface.input(
-            _("Mod ZIP Name"),
-            _("Please enter the name of your Mod ZIP File. Do not include '.zip' in the name."),
-            filename=True,
-            cancel=Jump("front_page"))
-
-        modzip_name = modzip_name.strip()
-        if not modzip_name:
-            shutil.rmtree(persistent.projects_directory + '/' + project_dir)
-            interface.error(_("The mod zip name may not be empty."))
-
-        # Extract Mod
-        interface.interaction(_("Extracting"), _("Extracting Mod ZIP, Please Wait..."),)
-        modzip_extract(modzip_name)
-        # Search for if there is a folder in /temp that isn't mod related (Yuri-1.0)
-        mzt = persistent.projects_directory + "/temp"
-        mzte = [x[0] for x in os.walk(mzt)]
-        try:
-            mzte[1]
-            if str(mzte[1]).endswith('-Mod') or str(mzte[1]).endswith('-pc') or str(mzte[1]).endswith('-mac'):
-                mztex = True
-            else:
-                mztex = False
-        # if there is no folders in there
-        except IndexError:
-            # return false for advanced scan
-            mztex = False
-        if mztex == False:
-            # if folder inside is /game to move to mod folder
-            if glob.glob(mzt + '/characters'):
-                reg_move(mzt, '/characters')
-            if glob.glob(mzt + '/lib'):
-                lib_move('/lib')
-                rpy_move()
-            if glob.glob(mzt + '/renpy'):
-                rpy_move('/renpy')
-                rpy_move()
-            if glob.glob(mzt + '/game'):
-                reg_move(mzt, '/game')
-            else:
-                if os.path.exists(persistent.project_dir + '/game/python-packages'):
-                    if os.path.exists(mzt + '/python-packages'):
-                        shutil.rmtree(persistent.project_dir + '/game/python-packages')
-                    else:
-                        pass
-                # move mod files to the /game folder or mod folder
-                for file in os.listdir(mzt):
-                    print file
-                    src_file = os.path.join(mzt, file)
-                    dst_file = os.path.join(persistent.project_dir + '/game', file)
-                    shutil.move(src_file, dst_file)
-        else:
-            #Extended Scanning (If Contents during extract are inside another folder (Yuri-1.0/script-ch1.rpyc))
-            # if folder inside is /game to move to mod folder
-            if glob.glob(str(mzte[1]) + '/characters'):
-                ext_move(str(mzte[1]), '/characters')
-            if glob.glob(str(mzte[1]) + '/lib'):
-                lib_move(str(mzte[1]))
-                rpy_ext(str(mzte[1]))
-            if glob.glob(str(mzte[1]) + '/renpy'):
-                rpy_move(str(mzte[1]))
-                rpy_ext(str(mzte[1]))
-            if glob.glob(str(mzte[1]) + '/game'):
-                ext_move(str(mzte[1]),'/game')
-            else:
-                # move mod files to the /game folder or mod folder
-                if os.path.exists(persistent.project_dir + '/game/python-packages'):
-                    if os.path.exists(str(mzte[1]) + '/python-packages'):
-                        shutil.rmtree(persistent.project_dir + '/game/python-packages')
-                    else:
-                        pass
-                import os
-                for file in os.listdir(str(mzte[1])):
-                    print file
-                    src_file = os.path.join(str(mzte[1]), file)
-                    dst_file = os.path.join(persistent.project_dir + '/game', file)
-                    shutil.move(src_file, dst_file)
-
-        # Prevents copy of any other RPA or other mod files
-        shutil.rmtree(persistent.projects_directory + '/temp')
-        # Auto-Refresh
-        project.manager.scan()
-    return
-# Code to install DDLC only
-label add_base_game:
-    # Checks if user set Mod Install Folder
-    if persistent.projects_directory is None:
-        call choose_projects_directory
-    # Ren'Py Failsafe
-    if persistent.projects_directory is None:
-        $ interface.error(_("The Mod directory could not be set. Giving up."))
-    # Checks if user set DDLC ZIP Location (All OS)
-    if persistent.zip_directory is None:
-        call ddlc_location
-    # Ren'Py Failsafe 2
-    if persistent.zip_directory is None:
-        $ interface.error(_("The DDLC ZIP directory could not be set. Giving up."))
-
-    python hide:
-        import shutil
-        # Asks User the name of the folder they want their mod folder to be
-        modinstall_foldername = interface.input(
-            _("DDLC Folder Name"),
-            _("Please enter the name of your DDLC folder:"),
-            filename=True,
-            cancel=Jump("front_page"))
-
-        modinstall_foldername = modinstall_foldername.strip()
-        if not modinstall_foldername:
-            interface.error(_("The folder name may not be empty."))
-
-        persistent.project_dir = os.path.join(persistent.projects_directory, modinstall_foldername)
-
-        if project.manager.get(modinstall_foldername) is not None:
-            interface.error(_("[modinstall_foldername!q] already exists. Please choose a different folder name."), modinstall_foldername=modinstall_foldername)
-
-        if os.path.exists(persistent.project_dir):
-            interface.error(_("[persistent.project_dir!q] already exists. Please choose a different name."), project_dir=project_dir)
-
-        interface.interaction(_("Making a DDLC Folder"), _("Extracting DDLC, Please Wait..."),)
-        
-        # Asks if the copy is Steam
-        if persistent.steam_release == True:
-            steam_copy()
-        else:
-            zip_extract()
-
-        project.manager.scan()
+        persistent.mzip_directory = path
 
     return
 
@@ -1041,113 +841,52 @@ label delete_images:
 
     jump front_page
 
-# Add-On Installation for some mods (BETA)
-label install_addon:
-    # Checks if user set Mod Install Folder
-    if persistent.projects_directory is None:
-        call choose_projects_directory
-    # Ren'Py Failsafe
-    if persistent.projects_directory is None:
-        $ interface.error(_("The Mod directory could not be set. Giving up."))
-    # Checks if user set DDLC ZIP Location (All OS)
-    if persistent.zip_directory is None:
-        call ddlc_location
-    # Ren'Py Failsafe 2
-    if persistent.zip_directory is None:
-        $ interface.error(_("The DDLC Copy directory could not be set. Giving up."))
-    # Checks if User set Mod ZIP Directory
-    if persistent.mzip_directory is None:
-        call choose_modzip_directory
-    # Ren'Py Failsafe 3
-    if persistent.mzip_directory is None:
-        $ interface.error(_("The Mod ZIP directory could not be set. Giving up."))
+# Asks whether they downloaded DDLC from Steam or DDLC.moe/Itch.io
+label ddlc_location:
+
+    python:
+
+        release_kind = interface.choice(
+            _("Where did you download DDLC? If you downloaded DDLC from Steam, select Steam. If you downloaded DDLC from ddlc.moe or itch.io, select DDLC.moe."),
+            [ ( 'ddlc_steam_release', _("Steam") ), ( 'ddlc_moe_release', _("DDLC.moe")) ],
+            "ddlc_steam_release",
+            cancel=Jump("front_page"),
+            )
+
+        renpy.jump(release_kind)
+# Asks User where ddlc-win.zip is
+label ddlc_moe_release:
+
     python hide:
-        import os
-        import glob
-        import shutil
-        # Asks ZIP name of add-on
-        modzip_name = interface.input(
-            _("Mod Add-On ZIP Name"),
-            _("Please enter the name of your Mod Add-On ZIP File. It is recommended to rename the ZIP for easy installation."),
-            filename=True,
-            cancel=Jump("front_page"))
 
-        modzip_name = modzip_name.strip()
-        if not modzip_name:
-            interface.error(_("The mod add-on zip name may not be empty."))
+        interface.interaction(_("DDLC ZIP/DDLC.moe Directory"), _("Please choose the folder where you have 'ddlc-win.zip'."), _("This will make DDML find DDLC and copy it to your Mod Folder for Mods."),)
 
-        # Extract Mod
-        interface.interaction(_("Extracting"), _("Extracting Mod ZIP, Please Wait..."),)
-        modzip_extract(modzip_name)
-        # Search for if there is a folder in /temp that isn't mod related (Yuri-1.0)
-        mzt = persistent.projects_directory + "/temp"
-        mzte = [x[0] for x in os.walk(mzt)]
-        try:
-            mzte[1]
-            if str(mzte[1]).endswith('-Mod') or str(mzte[1]).endswith('-pc') or str(mzte[1]).endswith('-mac'):
-                mztex = True
-            else:
-                mztex = False
-        # if there is no folders in there
-        except IndexError:
-            # return false for advanced scan
-            mztex = False
+        path, is_default = choose_directory(persistent.zip_directory)
 
-        if mztex == False:
-            # if folder inside is /game to move to mod folder
-            if glob.glob(mzt + '/characters'):
-                reg_move(mzt, '/characters')
-            if glob.glob(mzt + '/lib'):
-                lib_move('/lib')
-                rpy_move()
-            if glob.glob(mzt + '/renpy'):
-                rpy_move('/renpy')
-                rpy_move()
-            if glob.glob(mzt + '/game'):
-                reg_move(mzt, '/game')
-            else:
-                if os.path.exists(persistent.project_dir + '/game/python-packages'):
-                    if os.path.exists(mzt + '/game/python-packages'):
-                        shutil.rmtree(persistent.project_dir + '/game/python-packages')
-                    else:
-                        pass
-                # move mod files to the /game folder or mod folder
-                for file in os.listdir(mzt):
-                    print file
-                    src_file = os.path.join(mzt, file)
-                    dst_file = os.path.join(persistent.project_dir + '/game', file)
-                    shutil.move(src_file, dst_file)
-        else:
-            #Extended Scanning (If Contents during extract are inside another folder (Yuri-1.0/script-ch1.rpyc))
-            # if folder inside is /game to move to mod folder
-            if glob.glob(str(mzte[1]) + '/characters'):
-                ext_move(str(mzte[1]), '/characters')
-            if glob.glob(str(mzte[1]) + '/lib'):
-                lib_move(str(mzte[1]))
-                rpy_ext(str(mzte[1]))
-            if glob.glob(str(mzte[1]) + '/renpy'):
-                rpy_move(str(mzte[1]))
-                rpy_ext(str(mzte[1]))
-            if glob.glob(str(mzte[1]) + '/game'):
-                ext_move(str(mzte[1]),'/game')
-            else:
-                # move mod files to the /game folder or mod folder
-                if os.path.exists(persistent.project_dir + '/game/python-packages'):
-                    if os.path.exists(str(mzte[1]) + '/python-packages'):
-                        shutil.rmtree(persistent.project_dir + '/game/python-packages')
-                    else:
-                        pass
-                import os
-                for file in os.listdir(str(mzte[1])):
-                    print file
-                    src_file = os.path.join(str(mzte[1]), file)
-                    dst_file = os.path.join(persistent.project_dir + '/game', file)
-                    shutil.move(src_file, dst_file)
+        if is_default:
+            interface.error(_("The operation has been cancelled."))
+            renpy.jump("front_page")
 
-        # Prevents copy of any other RPA or other mod files
-        shutil.rmtree(persistent.projects_directory + '/temp')
+        persistent.zip_directory = path
+    # Returns False that this directory is Steam
+    $ persistent.steam_release = False
 
-        interface.info("Mod Add-on for " + project.current.name + " has been installed.")
+    return
+# Asks User where Steam/SteamApps/Common is
+label ddlc_steam_release:
+
+    python hide:
+        interface.interaction(_("Steam Directory"), _("Please choose the 'common' folder inside of the Steam folder."), _("This will make DDML find DDLC and copy it to your Mod Folder for Mods."),)
+
+        path, is_default = choose_directory(persistent.zip_directory)
+
+        if is_default:
+            interface.error(_("The operation has been cancelled."))
+            renpy.jump("front_page")
+
+        persistent.zip_directory = path
+    # Returns True that this directory is Steam
+    $ persistent.steam_release = True
 
     return
 

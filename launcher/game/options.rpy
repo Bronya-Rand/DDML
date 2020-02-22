@@ -1,5 +1,4 @@
-﻿# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
-# Copyright 2018-2019 GanstaKingofSA <azarieldc@gmail.com>
+﻿# Copyright 2004-2019 Tom Rothamel <pytom@bishoujo.us>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -29,7 +28,6 @@
 # commented-out code, and you may want to uncomment them when
 # appropriate.
 
-## DDML Configuration
 init -1 python hide:
 
     # Should we enable the use of developer tools? This should be
@@ -51,7 +49,7 @@ init -1 python hide:
     # These control the name and version of the game, that are reported
     # with tracebacks and other debugging logs.
     config.name = "DDML"
-    config.version = "7.3.4"
+    config.version = renpy.version().split()[1]
 
     #####################
     # Themes
@@ -230,9 +228,9 @@ init python:
     # directory 'mygame-1.0-win', in the 'mygame-1.0-win.zip' file.
 
     if 'RENPY_BUILD_VERSION' in os.environ:
-        build.directory_name = "renpy-" + os.environ['RENPY_BUILD_VERSION']
+        build.directory_name = "DDML-" + os.environ['RENPY_BUILD_VERSION']
     else:
-        build.directory_name = "DDML-" + config.version
+        build.directory_name = "DDML-" + config.version.rsplit('.', 1)[0]
 
     # The name that's uses for executables - the program that users will run
     # to start the game. For example, if this is 'mygame', then on Windows,
@@ -241,7 +239,7 @@ init python:
 
     # If True, Ren'Py will include update information into packages. This
     # allows the updater to run.
-    build.include_update = False
+    build.include_update = True
 
     # Allow empty directories, so we can distribute the images directory.
     build.exclude_empty_directories = False
@@ -310,7 +308,6 @@ init python:
 
     # games.
     build.classify_renpy("launcher/game/theme/", None)
-    build.classify_renpy("launcher/game/saves", None)
     build.classify_renpy("gui/game/gui/", None)
 
     source_and_binary("launcher")

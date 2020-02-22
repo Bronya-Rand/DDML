@@ -1,6 +1,4 @@
-#!/usr/bin/env python
-
-# Copyright 2004-2019 Tom Rothamel <pytom@bishoujo.us>
+﻿# Copyright 2004-2019 Tom Rothamel <pytom@bishoujo.us>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -21,34 +19,27 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-# This is used on Linux and Mac to prompt the user for the projects
-# directory.
+# Checks for various abilities that might be taken away from us by
+# redistributors.
 
-import sys
+init 1 python in ability:
 
-# Python3 and Python2-style imports.
-try:
-    from tkinter import Tk
-    from tkinter.filedialog import askdirectory
-except ImportError:
-    from Tkinter import Tk
-    from tkFileDialog import askdirectory
+    from store import config
+    import store
+    import store.updater as updater
 
-# Binary mode stdout for python3.
-try:
-    sys.stdout = sys.stdout.buffer
-except:
-    pass
+    import os
 
-# Create the TK canvas.
+    EXECUTABLES = [ "renpy.exe", "renpy.app", "renpy.sh" ]
 
-if __name__ == "__main__":
-    root = Tk()
-    root.withdraw()
+    # can_distribute - True if we can distribute
+    for i in EXECUTABLES:
+        if not os.path.exists(os.path.join(config.renpy_base, i)):
+            can_distribute = False
+    else:
+        can_distribute = True
 
-    result = askdirectory(initialdir=sys.argv[1], parent=root, title="Select Ren'Py Projects Directory")
 
-    if result == ():
-        result = ""
+    # can_update - True if we can update.
+    can_update = updater.can_update() or (store.UPDATE_SIMULATE is not None)
 
-    sys.stdout.write(result.encode("utf8"))

@@ -1,5 +1,4 @@
-﻿# Copyright 2004-2017 Tom Rothamel <pytom@bishoujo.us>
-# Copyright 2018-2019 GanstaKingofSA <azarieldc@gmail.com>
+﻿# Copyright 2004-2019 Tom Rothamel <pytom@bishoujo.us>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -59,42 +58,10 @@ init python:
             except:
                 pass
 
-    class ImgDir(Action):
-        """
-        Opens `images` in a file browser.
-        """
-
-        alt = _("Open [text] directory.")
-
-        def __init__(self, directory, absolute=False):
-            if absolute:
-                self.directory = directory
-            else:
-                self.directory = os.path.join(os.getcwd(), directory)
-
-        def get_sensitive(self):
-            return os.path.exists(self.directory)
-
-        def __call__(self):
-
-            try:
-                directory = renpy.fsencode(self.directory)
-
-                if renpy.windows:
-                    os.startfile(directory)
-                elif renpy.macintosh:
-                    subprocess.Popen([ "open", directory ])
-                else:
-                    subprocess.Popen([ "xdg-open", directory ])
-
-            except:
-                pass
-
     # Used for testing.
     def Relaunch():
         renpy.quit(relaunch=True)
 
-## DDML Front Page
 screen front_page:
     frame:
         alt ""
@@ -154,26 +121,6 @@ screen front_page:
                             left_margin (HALF_INDENT) 
                             action Jump("move_mod_folder")
 
-                    add HALF_SPACER
-                    add SEPARATOR
-                    add HALF_SPACER
-
-                    hbox:
-                        xfill True
-                        textbutton _("+ Add a Mod"):
-                            left_margin (HALF_INDENT) 
-                            action Jump("add_a_mod")
-
-                    add HALF_SPACER
-                    add SEPARATOR
-                    add HALF_SPACER
-                    hbox:
-                        xfill True
-                        textbutton _("+ Add DDLC Only"):
-                            left_margin (HALF_INDENT) 
-                            action Jump("add_base_game")
-
-
         # Project section - on right.
 
         if project.current is not None:
@@ -182,6 +129,8 @@ screen front_page:
     if project.current is not None:
         textbutton _("Launch Mod") action project.Launch() style "l_right_button"
         key "K_F5" action project.Launch()
+
+
 
 # This is used by front_page to display the list of known projects on the screen.
 screen front_page_project_list:
@@ -213,7 +162,8 @@ screen front_page_project_list:
 
             null height 12
 
-# This is used for the right side of the screen, which is where the mod-specific
+
+# This is used for the right side of the screen, which is where the project-specific
 # buttons are.
 screen front_page_project:
 
@@ -225,10 +175,10 @@ screen front_page_project:
 
         frame style "l_label":
             has hbox xfill True
-            text "[p.name!q]" style "l_label_text"
+            text "[p.display_name!q]" style "l_label_text"
             label _("Active Mod") style "l_alternate"
 
-        grid 1 2:
+        grid 1 1:
             xfill True
             spacing HALF_INDENT
 
@@ -238,30 +188,37 @@ screen front_page_project:
 
                 frame style "l_indent":
                     has vbox
+
                     textbutton _("Install Update, Patch or Add-On") action Jump("install_addon")
                     textbutton _("Delete 'scripts.rpa'") action Jump("scripts_rpa")
                     textbutton _("Delete 'images.rpa'") action Jump("images_rpa")
                     textbutton _("Delete Saves") action Jump("rmpersistent")
-                    # textbutton _("save") action None style "l_list"
+
+        add SPACER
+
+        label _("DDML Options") style "l_label_small"
+
+        grid 1 1:
+            xfill True
+            spacing HALF_INDENT
+
+            frame style "l_indent":
+                has vbox
+
+                if persistent.projects_directory:
+                    textbutton _("Browse Mod Directory") action OpenDirectory(persistent.projects_directory)
+                    textbutton _("Browse Game Directory") action OpenDirectory("game")
+                    textbutton _("Browse Save Directory") action OpenDirectory(os.getenv('APPDATA') + '/RenPy')
+                textbutton _("Delete Mod") action Jump("delete_mod_folder")
+
                 # textbutton "Relaunch" action Relaunch
-            
-            vbox:
-
-                label _("DDML Options") style "l_label_small"
-
-                frame style "l_indent":
-                    has vbox
-                    if persistent.projects_directory:
-                        textbutton _("Browse Mod Directory") action OpenDirectory(persistent.projects_directory)
-                        textbutton _("Browse Game Directory") action OpenDirectory("game")
-                        textbutton _("Browse Save Directory") action OpenDirectory(os.getenv('APPDATA') + '/RenPy')
-                    textbutton _("Delete Mod") action Jump("delete_mod_folder")
 
 label main_menu:
     return
 
 label start:
     show screen bottom_info
+    $ dmgcheck()
 
 label front_page:
     call screen front_page
@@ -298,3 +255,66 @@ label force_recompile:
         project.current.launch([ 'compile' ], wait=True)
 
     jump front_page
+
+# Code to delete a mod from the mod folder
+label delete_mod_folder:
+
+    python hide:
+        import shutil
+        mod_delete_response = interface.input(
+            _("Deleting a Mod"),
+            _("Are you sure you want to delete this mod? Type either Yes or No."),
+            filename=False,
+            cancel=Jump("front_page"))
+
+        mod_delete_response = mod_delete_response.strip()
+
+        if not mod_delete_response:
+            interface.error(_("The operation has been cancelled."))
+
+        mod_response = mod_delete_response
+
+        if mod_response == "No" or mod_response == "no":
+            interface.error(_("The operation has been cancelled."))
+        elif mod_response == "Yes" or mod_response == "yes":
+            deleted_mod_name = project.current.name
+            shutil.rmtree(persistent.projects_directory + '/' + project.current.name)
+        else:
+            interface.error(_("Invalid Input."))
+
+        interface.info(deleted_mod_name + " has been deleted.")
+        deleted_mod_name = None
+
+        project.manager.scan()
+
+    jump front_page
+
+# Code to move mod folder
+label move_mod_folder:
+
+    python hide:
+
+        import os
+        import shutil
+
+        oldmod_dir = persistent.projects_directory
+
+        interface.interaction(_("New Mod Directory"), _("Please choose the new mod folder using the directory chooser.\n{b}The directory chooser may have opened behind this window.{/b}"), _("DDML will create new mods in this folder, and place old and new mods into this folder."),)
+
+        pathnew, is_default = choose_directory(persistent.projects_directory)
+
+        if is_default:
+            interface.error(_("The operation has been cancelled."))
+
+        persistent.projects_directory = pathnew
+
+        # Moves Mods from old folder to new folder
+        for file in os.listdir(oldmod_dir):
+            print file
+            src_file = os.path.join(oldmod_dir, file)
+            dst_file = os.path.join(persistent.projects_directory, file)
+            shutil.move(src_file, dst_file)
+
+        project.manager.scan()
+
+    return

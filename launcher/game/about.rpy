@@ -1,6 +1,4 @@
-#!/usr/bin/env python
-
-# Copyright 2004-2019 Tom Rothamel <pytom@bishoujo.us>
+﻿# Copyright 2004-2019 Tom Rothamel <pytom@bishoujo.us>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -21,34 +19,31 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-# This is used on Linux and Mac to prompt the user for the projects
-# directory.
+screen about:
 
-import sys
+    $ version = renpy.version()
 
-# Python3 and Python2-style imports.
-try:
-    from tkinter import Tk
-    from tkinter.filedialog import askdirectory
-except ImportError:
-    from Tkinter import Tk
-    from tkFileDialog import askdirectory
+    frame:
+        style_group "l"
+        style "l_root"
 
-# Binary mode stdout for python3.
-try:
-    sys.stdout = sys.stdout.buffer
-except:
-    pass
+        window:
+            xfill True
 
-# Create the TK canvas.
+            has vbox xfill True
 
-if __name__ == "__main__":
-    root = Tk()
-    root.withdraw()
+            add "images/logo.png" xalign 0.5 yoffset -5
 
-    result = askdirectory(initialdir=sys.argv[1], parent=root, title="Select Ren'Py Projects Directory")
+            null height 15
 
-    if result == ():
-        result = ""
+            text _("[version!q]") xalign 0.5 bold True
 
-    sys.stdout.write(result.encode("utf8"))
+            null height 20
+
+            textbutton _("View license") action interface.OpenLicense() xalign 0.5
+
+    textbutton _("Return") action Jump("front_page") style "l_left_button"
+
+label about:
+    call screen about
+
