@@ -254,7 +254,12 @@ screen front_page_project:
                     if persistent.projects_directory:
                         textbutton _("Browse Mod Directory") action OpenDirectory(persistent.projects_directory)
                         textbutton _("Browse Game Directory") action OpenDirectory("game")
-                        textbutton _("Browse Save Directory") action OpenDirectory(os.getenv('APPDATA') + '/RenPy')
+                        if renpy.windows:
+                            textbutton _("Browse Save Directory") action OpenDirectory(os.getenv('APPDATA') + '/RenPy')
+                        elif renpy.macintosh:
+                            textbutton _("Browse Save Directory") action OpenDirectory("$HOME/Library/RenPy")
+                        else:
+                            textbutton _("Browse Save Directory") action OpenDirectory("$HOME/.renpy")
                     textbutton _("Delete Mod") action Jump("delete_mod_folder")
 
 label main_menu:
