@@ -228,16 +228,16 @@ screen preferences:
                         textbutton _("Change Browser") action Jump("browser")
                         add SPACER
                     #add SEPARATOR2
+                    if renpy.windows:
+                        frame:
+                            style "l_indent"
+                            yminimum 75
+                            has vbox
 
-                    frame:
-                        style "l_indent"
-                        yminimum 75
-                        has vbox
-
-                        text _("Customization:")
-                        add HALF_SPACER
-                        frame style "l_indent":
-                            textbutton _("Change Layout") action ImgDir("launcher/game/images")
+                            text _("Customization:")
+                            add HALF_SPACER
+                            frame style "l_indent":
+                                textbutton _("Change Layout") action ImgDir("launcher/game/images")
                     add SPACER
                     frame:
                         style "l_indent"
