@@ -24,6 +24,7 @@ init python:
         persistent.gl_enable = True
 
     config.gl_enable = persistent.gl_enable
+    persistent.b_ddml = None
 
     if persistent.show_edit_funcs is None:
         persistent.show_edit_funcs = True
