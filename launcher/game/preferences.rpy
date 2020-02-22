@@ -199,19 +199,34 @@ screen preferences:
                         style "l_indent"
                         yminimum 75
                         has vbox
+                        if renpy.macintosh:
+                            text _("OS auto-extracts '.zip' files?")
+                            add HALF_SPACER
 
-                        text _("DDLC Copy:")
-                        add HALF_SPACER
-
-                        frame style "l_indent":
-                            if persistent.steam_release == True:
-                                text _("Steam Copy")
-                            else:
-                                if persistent.steam_release == None:
-                                    text _("No DDLC Copy Selected")
+                            frame style "l_indent":
+                                if persistent.safari != None:
+                                    if persistent.safari == True:
+                                        text _("Yes")
+                                    else:
+                                        text _("No")
                                 else:
-                                    text _("DDLC.moe ZIP Copy")
+                                    text _("None Selected")
+                        else:
+                            text _("DDLC Copy:")
+                            add HALF_SPACER
+
+                            frame style "l_indent":
+                                if persistent.steam_release == True:
+                                    text _("Steam Copy")
+                                else:
+                                    if persistent.steam_release == None:
+                                        text _("No DDLC Copy Selected")
+                                    else:
+                                        text _("DDLC.moe ZIP Copy")
                     add SPACER
+                    if renpy.macintosh:     
+                        textbutton _("Change Browser") action Jump("browser")
+                        add SPACER
                     #add SEPARATOR2
 
                     frame:
@@ -251,7 +266,10 @@ label projects_directory_preference:
 
 # Setting Configuration Calls
 label projects_zip_preference:
-    call ddlc_location
+    if renpy.macintosh:
+        call choose_modzip_directory
+    else:
+        call ddlc_location
     jump preferences
 
 label projects_mzip_preference:

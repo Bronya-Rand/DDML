@@ -47,10 +47,7 @@ init python in project:
     project_filter = [ i.strip() for i in os.environ.get("RENPY_PROJECT_FILTER", "").split(":") if i.strip() ]
 
     LAUNCH_BLURBS = [
-        _("After making changes to the script, press shift+R to reload your game."),
-        _("Press shift+O (the letter) to access the console."),
-        _("Press shift+D to access the developer menu."),
-        _("Have you backed up your projects recently?"),
+        _("Launching. Please wait..."),
     ]
 
     class Project(object):
@@ -760,7 +757,7 @@ label choose_projects_directory:
 
     python hide:
 
-        interface.interaction(_("PROJECTS DIRECTORY"), _("Please choose the projects directory using the directory chooser.\n{b}The directory chooser may have opened behind this window.{/b}"), _("This launcher will scan for projects in this directory, will create new projects in this directory, and will place built projects into this directory."),)
+        interface.interaction(_("Mod Folder Directory"), _("Please choose the projects directory using the directory chooser.\n{b}The directory chooser may have opened behind this window.{/b}"), _("This launcher will scan for projects in this directory, will create new projects in this directory, and will place built projects into this directory."),)
 
         path, is_default = choose_directory(persistent.projects_directory)
 
@@ -809,8 +806,12 @@ label delete_scripts:
         interface.interaction(_("Deleting scripts.rpa"), _("Please wait..."),)
 
         import os
-        try: os.remove(persistent.projects_directory + "/" + project.current.name + "/game/scripts.rpa")
-        except: interface.error(_("images.rpa already deleted or is missing."), _("Check the game directory and try again."))
+        if renpy.macintosh:
+            try: os.remove(persistent.projects_directory + "/" + project.current.name + "/DDLC.app/Contents/Resources/autorun/game/scripts.rpa")
+            except: interface.error(_("scripts.rpa already deleted or is missing."), _("Check the game directory and try again."))
+        else:
+            try: os.remove(persistent.projects_directory + "/" + project.current.name + "/game/scripts.rpa")
+            except: interface.error(_("images.rpa already deleted or is missing."), _("Check the game directory and try again."))
         
         interface.info("scripts.rpa has been deleted.")
 
@@ -834,8 +835,12 @@ label delete_images:
         interface.interaction(_("Deleting images.rpa"), _("Please wait..."),)
 
         import os
-        try: os.remove(persistent.projects_directory + "/" + project.current.name + "/game/images.rpa")
-        except: interface.error(_("images.rpa already deleted or is missing."), _("Check the game directory and try again."))
+        if renpy.macintosh:
+            try: os.remove(persistent.projects_directory + "/" + project.current.name + "/DDLC.app/Contents/Resources/autorun/game/images.rpa")
+            except: interface.error(_("images.rpa already deleted or is missing."), _("Check the game directory and try again."))
+        else:
+            try: os.remove(persistent.projects_directory + "/" + project.current.name + "/game/images.rpa")
+            except: interface.error(_("images.rpa already deleted or is missing."), _("Check the game directory and try again."))
         
         interface.info("images.rpa has been deleted.")
 
@@ -854,6 +859,7 @@ label ddlc_location:
             )
 
         renpy.jump(release_kind)
+
 # Asks User where ddlc-win.zip is
 label ddlc_moe_release:
 
@@ -872,6 +878,7 @@ label ddlc_moe_release:
     $ persistent.steam_release = False
 
     return
+
 # Asks User where Steam/SteamApps/Common is
 label ddlc_steam_release:
 
@@ -888,6 +895,30 @@ label ddlc_steam_release:
     # Returns True that this directory is Steam
     $ persistent.steam_release = True
 
+    return
+
+# Browser Prompt
+label browser:
+
+    python:
+
+        browser_kind = interface.choice(
+            _("Does your operating system auto-extract '.zip' files? DDLC and some mods may be affected if your OS auto-extracts ZIP files."),
+            [ ( 'safari_download', _("Yes") ), ( 'regular_download', _("No")) ],
+            "safari_download",
+            cancel=Jump("front_page"),
+            )
+
+        renpy.jump(browser_kind)
+
+# Set Safari or Auto-Extract Browser to True
+label safari_download:
+    $ persistent.safari = True
+    return
+# Set Safaro to False for Third Party or Auto-Extract Off
+
+label regular_download:
+    $ persistent.safari = False
     return
 
 init python:
