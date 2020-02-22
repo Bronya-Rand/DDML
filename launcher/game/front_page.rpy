@@ -230,9 +230,9 @@ screen front_page_project:
                     if renpy.windows:
                         textbutton _("Browse Save Directory") action OpenDirectory(os.getenv('APPDATA') + '/RenPy')
                     elif renpy.macintosh:
-                        textbutton _("Browse Save Directory") action OpenDirectory(os.getenv('$HOME') +"/Library/RenPy")
+                        textbutton _("Browse Save Directory") action OpenDirectory(os.environ['HOME'] +"/Library/RenPy")
                     else:
-                        textbutton _("Browse Save Directory") action OpenDirectory(os.getenv('$HOME') + "/.renpy")
+                        textbutton _("Browse Save Directory") action OpenDirectory(os.environ['HOME'] + "/.renpy")
                 textbutton _("Delete Mod") action Jump("delete_mod_folder")
 
                 # textbutton "Relaunch" action Relaunch
