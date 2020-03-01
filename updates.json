@@ -1,0 +1,11 @@
+{
+  "sdk": {
+    "sums_url": "DDML-7.3.5-sdk.sums", 
+    "version": "c760d10491c8b89ad21f0f0991528489e323c4de30e788fdadf820984ae464ef", 
+    "zsync_url": "DDML-7.3.5-sdk.zsync", 
+    "json_url": "DDML-7.3.5-sdk.update.json", 
+    "pretty_version": "Ren'Py 7.3.5.606", 
+    "sums_size": 8532, 
+    "digest": "188467428b80869eef4a93ff8da08bc4fb10ad1834a8728e5fc397e4e7ed9a62"
+  }
+}
