@@ -111,3 +111,75 @@ init python:
             path = os.path.expanduser("~")
 
         return path, is_default
+
+    def choose_file(path):
+       """
+       Pops up a file chooser.
+
+       `path`
+           The directory that is selected by default. If None, config.renpy_base
+           is selected.
+
+       Returns a (path, is_default) tuple, where path is the chosen directory,
+       and is_default is true if and only if it was chosen by default mechanism
+       rather than user choice.
+       """
+
+       if path:
+           default_path = path
+           path = None
+       else:
+           try:
+               default_path = os.path.dirname(os.path.abspath(config.renpy_base))
+           except:
+               default_path = os.path.abspath(config.renpy_base)
+
+       if EasyDialogs:
+
+           choice = EasyDialogs.AskFileForOpen(defaultLocation=default_path, wanted=unicode)
+
+           if choice is not None:
+               path = choice
+           else:
+               path = None
+
+       else:
+
+           try:
+
+               cmd = [ "/usr/bin/python", os.path.join(config.gamedir, "tkaskfile.py"), renpy.fsencode(default_path) ]
+
+               p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+               choice = p.stdout.read()
+               code = p.wait()
+
+           except:
+               import traceback
+               traceback.print_exc()
+
+               code = 0
+               choice = ""
+               path = None
+
+               interface.error(_("Ren'Py was unable to run python with tkinter to choose the file. Please install the python-tk or tkinter package."), label=None)
+
+           if code:
+               interface.error(_("Ren'Py was unable to run python with tkinter to choose the file. Please install the python-tk or tkinter package."), label=None)
+
+           elif choice:
+               path = choice.decode("utf-8")
+
+       is_default = False
+
+       # Path being None or "" means nothing was selected.
+       if not path:
+           path = default_path
+           is_default = True
+
+       path = renpy.fsdecode(path)
+
+       if path.endswith(".zip"):
+           return path, is_default
+       elif path.endswith(".rar"):
+           interface.error(_(".RAR files cannot be unzipped. Please convert the file to a ZIP and try again."),)
+       

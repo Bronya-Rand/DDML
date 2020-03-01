@@ -46,7 +46,7 @@ if __name__ == "__main__":
     root = Tk()
     root.withdraw()
 
-    result = askdirectory(initialdir=sys.argv[1], parent=root, title="Select Ren'Py Projects Directory")
+    result = askdirectory(initialdir=sys.argv[1], parent=root, title="Select Directory")
 
     if result == ():
         result = ""

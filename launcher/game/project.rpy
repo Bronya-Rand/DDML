@@ -771,22 +771,6 @@ label choose_projects_directory:
 
     return
 
-label choose_modzip_directory:
-
-    python hide:
-
-        interface.interaction(_("Mod ZIP Download Directory"), _("Please choose the folder your Mod ZIPs are downloaded to."), _("This will make DDML find the Mod ZIP in this folder."),)
-
-        path, is_default = choose_directory(persistent.mzip_directory)
-
-        if is_default:
-            interface.error(_("The operation has been cancelled."))
-            renpy.jump("front_page")
-
-        persistent.mzip_directory = path
-
-    return
-
 # Deletes scripts.rpa for some mods
 label scripts_rpa:
 
@@ -862,18 +846,43 @@ label ddlc_location:
 
 # Asks User where ddlc-win.zip is
 label ddlc_moe_release:
+    if renpy.macintosh:
+        if persistent.safari is None:
+            call browser
+        if persistent.safari is None:
+            $ interface.error(_("The browser could not be set. Giving up."))
 
     python hide:
 
-        interface.interaction(_("DDLC ZIP/DDLC.moe Directory"), _("Please choose the folder where you have 'ddlc-win.zip'."), _("This will make DDML find DDLC and copy it to your Mod Folder for Mods."),)
+        if renpy.macintosh and persistent.safari == True:
+            interface.interaction(_("DDLC Folder"), _("Please choose the DDLC folder. It must be the original zip folder from DDLC.moe."),)
+            try:
+                path, is_default = choose_directory(persistent.zip_directory)
+            except TypeError: #JIC
+                interface.error(_("The operation has been cancelled."))
+                renpy.jump("front_page")
 
-        path, is_default = choose_directory(persistent.zip_directory)
+            if is_default:
+                interface.error(_("The operation has been cancelled."))
+                renpy.jump("front_page")
 
-        if is_default:
-            interface.error(_("The operation has been cancelled."))
-            renpy.jump("front_page")
+            persistent.zip_directory = path
 
-        persistent.zip_directory = path
+        else:
+            interface.interaction(_("DDLC ZIP File"), _("Please choose the DDLC ZIP. It must be the original zip from DDLC.moe."),)
+
+            try:
+                path, is_default = choose_file(persistent.zip_directory)
+            except TypeError:
+                interface.error(_("The operation has been cancelled."))
+                renpy.jump("front_page")
+
+            if is_default:
+                interface.error(_("The operation has been cancelled."))
+                renpy.jump("front_page")
+        
+            persistent.zip_directory = path
+
     # Returns False that this directory is Steam
     $ persistent.steam_release = False
 

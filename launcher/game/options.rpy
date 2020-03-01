@@ -331,9 +331,7 @@ init python:
     # Packages.
     build.packages = [ ]
 
-    build.package("Windows Release", "zip", "source binary")
-    build.package("Linux Release", "tar.bz2", "source binary")
-    build.package("Mac Release", "zip", "source binary")
+    build.package("all", "zip", "source binary")
 
 # Enable the special launcher translation mode.
 define config.translate_launcher = True

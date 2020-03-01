@@ -112,7 +112,7 @@ init python:
     def zip_extract(project):
         if renpy.macintosh:
             try: 
-                with zipfile.ZipFile(persistent.zip_directory + '/ddlc-mac.zip', "r") as z:
+                with zipfile.ZipFile(persistent.zip_directory, "r") as z:
                     z.extractall(persistent.projects_directory + "/temp")
                     ddlc = persistent.projects_directory + '/temp'
                     shutil.move(ddlc, project)
@@ -120,7 +120,7 @@ init python:
                 interface.error(_("Cannot Locate 'ddlc-mac.zip' in [persistent.zip_directory!q]."), _("Make sure you have DDLC downloaded from 'https://ddlc.moe' and check if it exists."),)
         else:
             try: 
-                with zipfile.ZipFile(persistent.zip_directory + '/ddlc-win.zip', "r") as z:
+                with zipfile.ZipFile(persistent.zip_directory, "r") as z:
                     z.extractall(persistent.projects_directory + "/temp")
                     ddlc = persistent.projects_directory + '/temp' + '/DDLC-1.1.1-pc'
                     shutil.move(ddlc, project)
@@ -136,36 +136,13 @@ init python:
     def ddlc_copy(project):
         import shutil
         try:
-            shutil.copytree(persistent.zip_directory + "/ddlc-mac", project)
+            shutil.copytree(persistent.zip_directory, project)
         except:
             interface.error(_("Cannot find DDLC.app."). _("Please make sure your OS and ZIP Directory are set correctly."),)
-
-    def rpa_copy(project):
-        if renpy.macintosh:
-            if glob.glob(persistent.mzip_directory + '/*.rpa'):
-                interface.interaction(_("Copying"), _("Copying Mod Files from Mod ZIP Directory, Please Wait..."),)
-                for file in os.listdir(persistent.mzip_directory):
-                    if file.endswith('.rpa'):
-                        src = os.path.join(persistent.mzip_directory, file)
-                        shutil.copy(src, project + '/DDLC.app/Contents/Resources/autorun/game')
-                for file in os.listdir(persistent.mzip_directory):
-                    if file.endswith('.rpa'):
-                        os.remove(src)
-        else:
-            if glob.glob(persistent.mzip_directory + '/*.rpa'):
-                interface.interaction(_("Copying"), _("Copying Mod Files from Mod ZIP Directory, Please Wait..."),)
-                for file in os.listdir(persistent.mzip_directory):
-                    if file.endswith('.rpa'):
-                        src = os.path.join(persistent.mzip_directory, file)  
-                        shutil.copy(src, project + '/game')
-                        os.remove(src)
-        # Auto-Refresh
-        project.manager.scan()
-        renpy.jump("front_page")
     
     def modzip_extract(project, name):
         try:
-            with zipfile.ZipFile(persistent.mzip_directory + '/' + name + ".zip", "r") as z:
+            with zipfile.ZipFile(name, "r") as z:
                 z.extractall(persistent.projects_directory + "/temp")
         except:
             shutil.rmtree(project)
@@ -174,7 +151,7 @@ init python:
     def modzip_copy(project, name):
         import shutil
         try:
-            shutil.copytree(persistent.mzip_directory + '/' + name, persistent.projects_directory + '/temp/' + name)
+            shutil.copytree(persistent.mzip_directory, persistent.projects_directory + '/temp/' + name)
         except:
             shutil.rmtree(project)
             interface.error(_("Cannot find Folder in [persistent.mzip_directory!q]."), _("Check the name of your Mod Folder extracted by MacOS and try again."))
@@ -249,13 +226,50 @@ label add_a_mod:
                 # Extract DDLC (Moe Release)
                 zip_extract(project_dir)
         # RPA Download Install Check (for mods that aren't in ZIPs or downloaded as seperate .rpas)
-        rpa_copy()
+        if glob.glob(persistent.mzip_directory + '/*.rpa'):
+            if renpy.macintosh:
+                interface.interaction(_("Copying"), _("Copying Mod Files from Mod ZIP Directory, Please Wait..."),)
+                for file in os.listdir(persistent.mzip_directory):
+                    if file.endswith('.rpa'):
+                        src = os.path.join(persistent.mzip_directory, file)
+                        shutil.copy(src, project + '/DDLC.app/Contents/Resources/autorun/game')
+                        os.remove(src)
+            else:
+                if glob.glob(persistent.mzip_directory + '/*.rpa'):
+                    interface.interaction(_("Copying"), _("Copying Mod Files from Mod ZIP Directory, Please Wait..."),)
+                    for file in os.listdir(persistent.mzip_directory):
+                        if file.endswith('.rpa'):
+                            src = os.path.join(persistent.mzip_directory, file)  
+                            shutil.copy(src, project + '/game')
+                            os.remove(src)
+            # Auto-Refresh
+            project.manager.scan()
+            renpy.jump("front_page")
+
         # Asks User name of ZIP
-        modzip_name = interface.input(
-            _("Mod ZIP Name"),
-            _("Please enter the name of your Mod ZIP File. Do not include '.zip' in the name."),
-            filename=True,
-            cancel=Jump("front_page"))
+        if renpy.macintosh and persistent.safari == True:
+            interface.interaction(_("Mod to Install Folder"), _("Please choose the the mod to install folder."),)
+            try:
+                path, is_default = choose_directory(persistent.mzip_directory)
+            except TypeError: #JIC
+                interface.error(_("The operation has been cancelled."))
+                renpy.jump("front_page")
+
+            if is_default:
+                interface.error(_("The operation has been cancelled."))
+                renpy.jump("front_page")
+
+            modzip_name = path
+        else:
+            interface.interaction(_("Mod ZIP File"), _("Please choose the mod file using the directory chooser.\n{b}The directory chooser may have opened behind this window.{/b}"),)
+
+            try:
+                path, is_default = choose_file(persistent.mzip_directory)
+            except TypeError:
+                interface.error(_("The operation has been cancelled."))
+                renpy.jump("front_page")
+
+            modzip_name = path
 
         modzip_name = modzip_name.strip()
         if not modzip_name:
@@ -264,14 +278,14 @@ label add_a_mod:
         if renpy.macintosh:
             if persistent.safari == False:
                 interface.interaction(_("Extracting Mod"), _("Extracting Mod ZIP, Please Wait..."),)
-                modzip_extract(modzip_name)
+                modzip_extract(project_dir, modzip_name)
             else:
                 interface.interaction(_("Copying Mod"), _("Copying Mod, Please Wait..."),)
-                modzip_copy(modzip_name)
+                modzip_copy(project_dir, modzip_name)
         else:
             # Extract Mod
             interface.interaction(_("Extracting"), _("Extracting Mod ZIP, Please Wait..."),)
-            modzip_extract(modzip_name)
+            modzip_extract(project_dir, modzip_name)
         # Search for if there is a folder in /temp that isn't mod related (Yuri-1.0)
         mzt = persistent.projects_directory + "/temp"
         mzte = [x[0] for x in os.walk(mzt)]
@@ -365,7 +379,8 @@ label add_a_mod:
         shutil.rmtree(persistent.projects_directory + '/temp')
         # Auto-Refresh
         project.manager.scan()
-    return
+        
+    jump front_page
 
 # Add-On Installation for some mods (BETA)
 label install_addon:
@@ -402,12 +417,30 @@ label install_addon:
         import glob
         import shutil
         # Asks ZIP name of add-on
-        modzip_name = interface.input(
-            _("Mod Add-On ZIP Name"),
-            _("Please enter the name of your Mod Add-On ZIP File. It is recommended to rename the ZIP for easy installation."),
-            filename=True,
-            cancel=Jump("front_page"))
+        if renpy.macintosh and persistent.safari == True:
+            interface.interaction(_("Mod to Install Folder"), _("Please choose the the mod to install folder."),)
+            try:
+                path, is_default = choose_directory(persistent.mzip_directory)
+            except TypeError: #JIC
+                interface.error(_("The operation has been cancelled."))
+                renpy.jump("front_page")
 
+            if is_default:
+                interface.error(_("The operation has been cancelled."))
+                renpy.jump("front_page")
+
+            modzip_name = path
+        else:
+            interface.interaction(_("Mod ZIP File"), _("Please choose the mod file using the directory chooser.\n{b}The directory chooser may have opened behind this window.{/b}"),)
+
+            try:
+                path, is_default = choose_file(persistent.mzip_directory)
+            except TypeError:
+                interface.error(_("The operation has been cancelled."))
+                renpy.jump("front_page")
+
+            modzip_name = path
+            
         modzip_name = modzip_name.strip()
         if not modzip_name:
             interface.error(_("The mod add-on zip name may not be empty."))
@@ -519,7 +552,7 @@ label install_addon:
 
         interface.info("Mod Add-on for " + project.current.name + " has been installed.")
 
-    return
+    jump front_page
 
 # Code to install DDLC only
 label add_base_game:
@@ -584,5 +617,5 @@ label add_base_game:
                 zip_extract(project_dir)
 
         project.manager.scan()
-
-    return
+    
+    jump front_page
