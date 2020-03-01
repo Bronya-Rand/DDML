@@ -1,0 +1,17 @@
+{
+  "releases": [
+    {
+      "description": "Main Github Stable Release.", 
+      "url": "https://raw.githubusercontent.com/GanstaKingofSA/DDML/updates/updates.json", 
+      "timestamp": 1571355893.3391662, 
+      "split_version": [
+        7, 
+        3, 
+        5, 
+        606
+      ], 
+      "pretty_version": "7.3.5.606", 
+      "channel": "Stable"
+    }
+  ]
+}
