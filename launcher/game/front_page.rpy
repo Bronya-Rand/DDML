@@ -139,6 +139,15 @@ screen front_page:
                         textbutton _("+ Add DDLC Only"):
                             left_margin (HALF_INDENT) 
                             action Jump("add_base_game")
+                    
+                    add HALF_SPACER
+                    add SEPARATOR
+                    add HALF_SPACER
+                    hbox:
+                        xfill True
+                        textbutton _("+ Browse for Mods"):
+                            left_margin (HALF_INDENT) 
+                            action Jump("update")
 
         # Project section - on right.
 

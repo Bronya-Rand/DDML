@@ -8,3 +8,4 @@ persistent
 launcher/game/saves
 tmp
 *.pyo
+ddmc.json

@@ -123,7 +123,7 @@ screen bottom_info:
                     xalign 1.0
 
                     #if ability.can_update:
-                        #textbutton _("Update") action Jump("update") style "l_link"
+                    #textbutton _("Update") action Jump("update") style "l_link"
 
                     textbutton _("Settings") style "l_link" action Jump("preferences")
                     textbutton _("Exit") style "l_link" action Quit(confirm=False)

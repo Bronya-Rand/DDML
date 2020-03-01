@@ -87,7 +87,7 @@ screen update_channel(channels):
 
             has vbox
 
-            label _("Select Update Channel")
+            label _("Doki Doki Mod Club Mod List")
 
             add HALF_SPACER
 
@@ -98,32 +98,32 @@ screen update_channel(channels):
 
                     has vbox
 
-                    text _("The update channel controls the version of Ren'Py the updater will download.")
+                    text _("Select the mod you will like to download. Afterwards return to the main menu and install it as normal.")
 
                     for c in channels:
 
-                        if  c["split_version"] != list(renpy.version_tuple):
-                            $ action = updater.Update(c["url"], simulate=UPDATE_SIMULATE, public_key=PUBLIC_KEY, confirm=False)
-                            $ current = ""
-                        else:
-                            $ action = None
-                            $ current = _("• This version is installed and up-to-date.")
+                        # if  c["split_version"] != list(renpy.version_tuple):
+                        #     $ action = updater.Update(c["url"], simulate=UPDATE_SIMULATE, public_key=PUBLIC_KEY, confirm=False)
+                        #     $ current = ""
+                        # else:
+                        #     $ action = None
+                        #     $ current = _("• This version is installed and up-to-date.")
 
                         add SPACER
 
-                        textbutton c["channel"] action action
+                        textbutton c["modName"] action OpenURL(c["modUploadURL"])
 
                         add HALF_SPACER
 
-                        $ date = _strftime(__("%B %d, %Y"), time.localtime(c["timestamp"]))
+                        #$$ date = _strftime(__("%B %d, %Y"), time.localtime(c["timestamp"]))
 
-                        text "[date] • [c[pretty_version]] [current!t]" style "l_small_text"
+                        #text "[date] • [c[pretty_version]] [current!t]" style "l_small_text"
 
                         add HALF_SPACER
 
-                        text c["description"] style "l_small_text"
+                        text c["modShortDescription"] style "l_small_text"
 
-    textbutton _("Cancel") action Jump("front_page") style "l_left_button"
+    textbutton _("Return") action Jump("front_page") style "l_left_button"
 
 
 screen updater:
@@ -185,19 +185,23 @@ screen updater:
 label update:
 
     python hide:
-        interface.processing(_("Fetching the list of update channels"))
+        interface.processing(_("Fetching the mod list..."))
 
         import urllib2
         import json
-        import ssl
+        with interface.error_handling(_("Downloading a updated mod list...")):
+            url = "https://www.dokidokimodclub.com/api/mod/"
+            headers = {'Authorization': 'Api-Key qR2Tjbe7.mEQ1w5atlsgSbnlsxilOe4GyRxwoy7As'}
 
-        with interface.error_handling(_("downloading the list of update channels")):
-            context = ssl._create_unverified_context()
-            channel_data = urllib2.urlopen(CHANNELS_URL, context=context)
-
-        with interface.error_handling(_("parsing the list of update channels")):
-            channels = json.load(channel_data)["releases"]
-
+            req = urllib2.Request(url=url, headers=headers)
+            response = urllib2.urlopen(req)
+            the_page = response.read()
+        with interface.error_handling(_("Decoding the mod list...")):
+            ddmc_data = config.basedir + '/ddmc.json'
+            with open(ddmc_data, 'w') as f:
+                f.write(the_page)
+            with open(ddmc_data, 'r') as f:
+                channels = json.load(f)
         renpy.call_screen("update_channel", channels)
 
     jump front_page
