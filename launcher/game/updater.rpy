@@ -189,12 +189,14 @@ label update:
 
         import urllib2
         import json
+        import ssl
+
         with interface.error_handling(_("Downloading a updated mod list...")):
             url = "https://www.dokidokimodclub.com/api/mod/"
             headers = {'Authorization': 'Api-Key qR2Tjbe7.mEQ1w5atlsgSbnlsxilOe4GyRxwoy7As'}
-
+            context = ssl._create_unverified_context()
             req = urllib2.Request(url=url, headers=headers)
-            response = urllib2.urlopen(req)
+            response = urllib2.urlopen(req, context=context)
             the_page = response.read()
         with interface.error_handling(_("Decoding the mod list...")):
             ddmc_data = config.basedir + '/ddmc.json'
