@@ -252,10 +252,12 @@ label add_a_mod:
             try:
                 path, is_default = choose_directory(persistent.mzip_directory)
             except TypeError: #JIC
+                shutil.rmtree(project_dir)
                 interface.error(_("The operation has been cancelled."))
                 renpy.jump("front_page")
 
             if is_default:
+                shutil.rmtree(project_dir)
                 interface.error(_("The operation has been cancelled."))
                 renpy.jump("front_page")
 
@@ -266,6 +268,7 @@ label add_a_mod:
             try:
                 path, is_default = choose_file(persistent.mzip_directory)
             except TypeError:
+                shutil.rmtree(project_dir)
                 interface.error(_("The operation has been cancelled."))
                 renpy.jump("front_page")
 
@@ -273,7 +276,7 @@ label add_a_mod:
 
         modzip_name = modzip_name.strip()
         if not modzip_name:
-            shutil.rmtree(persistent.projects_directory + '/' + project_dir)
+            shutil.rmtree(project_dir)
             interface.error(_("The mod zip name may not be empty."))
         if renpy.macintosh:
             if persistent.safari == False:
@@ -422,10 +425,12 @@ label install_addon:
             try:
                 path, is_default = choose_directory(persistent.mzip_directory)
             except TypeError: #JIC
+                shutil.rmtree(project_dir)
                 interface.error(_("The operation has been cancelled."))
                 renpy.jump("front_page")
 
             if is_default:
+                shutil.rmtree(project_dir)
                 interface.error(_("The operation has been cancelled."))
                 renpy.jump("front_page")
 
@@ -436,6 +441,7 @@ label install_addon:
             try:
                 path, is_default = choose_file(persistent.mzip_directory)
             except TypeError:
+                shutil.rmtree(project_dir)
                 interface.error(_("The operation has been cancelled."))
                 renpy.jump("front_page")
 

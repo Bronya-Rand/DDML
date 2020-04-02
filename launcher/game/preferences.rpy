@@ -138,55 +138,28 @@ screen preferences:
                                     action Jump("projects_directory_preference")
                                     alt _("Projects directory: [text]")
 
+                        add SPACER
 
-                    add SPACER
+                        # Text editor selection.
+                        add SEPARATOR2
 
-                    # Text editor selection.
-                    add SEPARATOR2
+                        frame:
+                            style "l_indent"
+                            yminimum 75
+                            has vbox
+                            text _("DDLC Copy Directory:")
 
-                    frame:
-                        style "l_indent"
-                        yminimum 75
-                        has vbox
+                            add HALF_SPACER
 
-                        text _("DDLC Copy Directory:")
-
-                        add HALF_SPACER
-
-                        frame style "l_indent":
-                            if persistent.zip_directory:
-                                textbutton _("[persistent.zip_directory!q]"):
-                                    action Jump("projects_zip_preference")
-                                    alt _("DDLC ZIP directory: [text]")
-                            else:
-                                textbutton _("Not Set"):
-                                    action Jump("projects_zip_preference")
-                                    alt _("DDLC ZIP directory: [text]")
-
-                    add SPACER
-
-                    # Mod ZIP
-                    add SEPARATOR2
-
-                    frame:
-                        style "l_indent"
-                        yminimum 75
-                        has vbox
-
-                        text _("Mod ZIP Directory:")
-
-                        add HALF_SPACER
-
-                        frame style "l_indent":
-                            if persistent.mzip_directory:
-                                textbutton _("[persistent.mzip_directory!q]"):
-                                    action Jump("projects_mzip_preference")
-                                    alt _("Mod ZIP directory: [text]")
-                            else:
-                                textbutton _("Not Set"):
-                                    action Jump("projects_mzip_preference")
-                                    alt _("Mod ZIP directory: [text]")
-
+                            frame style "l_indent":
+                                if persistent.zip_directory:
+                                    textbutton _("[persistent.zip_directory!q]"):
+                                        action Jump("projects_zip_preference")
+                                        alt _("DDLC ZIP directory: [text]")
+                                else:
+                                    textbutton _("Not Set"):
+                                        action Jump("projects_zip_preference")
+                                        alt _("DDLC ZIP directory: [text]")
 
                 frame:
                     style "l_indent"
@@ -267,14 +240,7 @@ label projects_directory_preference:
 
 # Setting Configuration Calls
 label projects_zip_preference:
-    if renpy.macintosh:
-        call choose_modzip_directory
-    else:
-        call ddlc_location
-    jump preferences
-
-label projects_mzip_preference:
-    call choose_modzip_directory
+    call ddlc_location
     jump preferences
 
 label preferences:

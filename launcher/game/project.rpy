@@ -834,15 +834,18 @@ label delete_images:
 label ddlc_location:
 
     python:
+        if renpy.windows:
+            release_kind = interface.choice(
+                _("Where did you download DDLC? If you downloaded DDLC from Steam, select Steam. If you downloaded DDLC from ddlc.moe or itch.io, select DDLC.moe."),
+                [ ( 'ddlc_steam_release', _("Steam") ), ( 'ddlc_moe_release', _("DDLC.moe")) ],
+                "ddlc_moe_release",
+                cancel=Jump("front_page"),
+                )
+            renpy.jump(release_kind)
+        else:
+            renpy.jump(ddlc_moe_release)
 
-        release_kind = interface.choice(
-            _("Where did you download DDLC? If you downloaded DDLC from Steam, select Steam. If you downloaded DDLC from ddlc.moe or itch.io, select DDLC.moe."),
-            [ ( 'ddlc_steam_release', _("Steam") ), ( 'ddlc_moe_release', _("DDLC.moe")) ],
-            "ddlc_steam_release",
-            cancel=Jump("front_page"),
-            )
-
-        renpy.jump(release_kind)
+    return
 
 # Asks User where ddlc-win.zip is
 label ddlc_moe_release:

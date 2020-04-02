@@ -20,7 +20,7 @@ if __name__ == "__main__":
     root = Tk()
     root.withdraw()
 
-    result = askopenfilename(initialdir=sys.argv[1], parent=root, title="Select ZIP File",filetypes = (("ZIP files","*.zip"),("all files","*.*")))
+    result = askopenfilename(initialdir=sys.argv[1], parent=root, title="Select ZIP File",filetypes=(("zip files", "*.zip"), ("all files", "*.*")))
 
     if result == ():
         result = ""
