@@ -771,6 +771,22 @@ label choose_projects_directory:
 
     return
 
+label choose_modzip_directory:
+
+    python hide:
+
+        interface.interaction(_("Mod ZIP Download Directory"), _("Please choose the folder your Mod ZIPs/Folders are downloaded to."), _("This will make DDML find the Mod ZIP/Folder in this folder."),)
+
+        path, is_default = choose_directory(persistent.mzip_directory)
+
+        if is_default:
+            interface.error(_("The operation has been cancelled."))
+            renpy.jump("front_page")
+
+        persistent.mzip_directory = path
+
+    return
+
 # Deletes scripts.rpa for some mods
 label scripts_rpa:
 

@@ -179,7 +179,10 @@ label add_a_mod:
     # Ren'Py Failsafe 2
     if persistent.zip_directory is None:
         $ interface.error(_("The DDLC Copy directory could not be set. Giving up."))
-
+    if renpy.macintosh and persistent.safari == True and persistent.mzip_directory is None:
+        call choose_modzip_directory
+    if renpy.macintosh and persistent.safari == True and persistent.mzip_directory is None:
+        $ interface.error(_("The Mod ZIP directory could not be set. Giving up."))
     python:
         import glob
         import shutil
@@ -242,7 +245,7 @@ label add_a_mod:
 
         # Asks User name of ZIP
         if renpy.macintosh and persistent.safari == True:
-            interface.interaction(_("Mod to Install Folder"), _("Please choose the the mod to install folder."),)
+            interface.interaction(_("Mod to Install Folder"), _("Please choose the the mod folder to install the mod."),)
             try:
                 path, is_default = choose_directory(persistent.mzip_directory)
             except TypeError: #JIC
@@ -402,6 +405,10 @@ label install_addon:
     # Ren'Py Failsafe 2
     if persistent.zip_directory is None:
         $ interface.error(_("The DDLC Copy directory could not be set. Giving up."))
+    if renpy.macintosh and persistent.safari == True and persistent.mzip_directory is None:
+        call choose_modzip_directory
+    if renpy.macintosh and persistent.safari == True and persistent.mzip_directory is None:
+        $ interface.error(_("The Mod ZIP directory could not be set. Giving up."))
 
     python:
         interface.info("Please note that the Add-On installer is in beta and may not work. \nContact the Mod Dev if you face any bugs.")
@@ -410,7 +417,7 @@ label install_addon:
         import shutil
         # Asks ZIP name of add-on
         if renpy.macintosh and persistent.safari == True:
-            interface.interaction(_("Mod to Install Folder"), _("Please choose the the mod to install folder."),)
+            interface.interaction(_("Mod to Install Folder"), _("Please choose the the mod folder to install the mod."),)
             try:
                 path, is_default = choose_directory(persistent.mzip_directory)
             except TypeError: #JIC
