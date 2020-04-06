@@ -179,12 +179,6 @@ label add_a_mod:
     # Ren'Py Failsafe 2
     if persistent.zip_directory is None:
         $ interface.error(_("The DDLC Copy directory could not be set. Giving up."))
-    # Checks if User set Mod ZIP Directory
-    if persistent.mzip_directory is None:
-        call choose_modzip_directory
-    # Ren'Py Failsafe 3
-    if persistent.mzip_directory is None:
-        $ interface.error(_("The Mod ZIP directory could not be set. Giving up."))
 
     python:
         import glob
@@ -408,12 +402,7 @@ label install_addon:
     # Ren'Py Failsafe 2
     if persistent.zip_directory is None:
         $ interface.error(_("The DDLC Copy directory could not be set. Giving up."))
-    # Checks if User set Mod ZIP Directory
-    if persistent.mzip_directory is None:
-        call choose_modzip_directory
-    # Ren'Py Failsafe 3
-    if persistent.mzip_directory is None:
-        $ interface.error(_("The Mod ZIP directory could not be set. Giving up."))
+
     python:
         interface.info("Please note that the Add-On installer is in beta and may not work. \nContact the Mod Dev if you face any bugs.")
         import os
