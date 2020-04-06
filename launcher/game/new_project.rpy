@@ -179,10 +179,11 @@ label add_a_mod:
     # Ren'Py Failsafe 2
     if persistent.zip_directory is None:
         $ interface.error(_("The DDLC Copy directory could not be set. Giving up."))
-    if renpy.macintosh and persistent.safari == True and persistent.mzip_directory is None:
+    if persistent.mzip_directory is None:
         call choose_modzip_directory
-    if renpy.macintosh and persistent.safari == True and persistent.mzip_directory is None:
+    if persistent.mzip_directory is None:
         $ interface.error(_("The Mod ZIP directory could not be set. Giving up."))
+
     python:
         import glob
         import shutil
@@ -405,9 +406,9 @@ label install_addon:
     # Ren'Py Failsafe 2
     if persistent.zip_directory is None:
         $ interface.error(_("The DDLC Copy directory could not be set. Giving up."))
-    if renpy.macintosh and persistent.safari == True and persistent.mzip_directory is None:
+    if persistent.mzip_directory is None:
         call choose_modzip_directory
-    if renpy.macintosh and persistent.safari == True and persistent.mzip_directory is None:
+    if persistent.mzip_directory is None:
         $ interface.error(_("The Mod ZIP directory could not be set. Giving up."))
 
     python:

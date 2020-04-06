@@ -161,34 +161,28 @@ screen preferences:
                                         action Jump("projects_zip_preference")
                                         alt _("DDLC ZIP directory: [text]")
                                         
-                        if renpy.macintosh:
-                            add SPACER
+                        add SPACER
 
-                            # Text editor selection.
-                            add SEPARATOR2
+                        # Text editor selection.
+                        add SEPARATOR2
                         
-                            frame:
-                                style "l_indent"
-                                yminimum 75
-                                has vbox
-                                text _("Mod Download Directory:")
+                        frame:
+                            style "l_indent"
+                            yminimum 75
+                            has vbox
+                            text _("Mod Download Folder:")
 
-                                add HALF_SPACER
+                            add HALF_SPACER
 
-                                frame style "l_indent":
-                                    if persistent.safari == True:
-                                        if persistent.mzip_directory:
-                                            textbutton _("[persistent.mzip_directory!q]"):
-                                                action Jump("projects_mzip_preference")
-                                                alt _("Mod Download Directory: [text]")
-                                        else:
-                                            textbutton _("Not Set"):
-                                                action Jump("projects_mzip_preference")
-                                                alt _("Mod Download Directory: [text]")
-                                    else:
-                                        textbutton _("Not Required due to Browser Settings"):
-                                            action NullAction()
-                                            alt _("Mod Download Directory: Not Required by Browser Settings")
+                            frame style "l_indent":
+                                if persistent.mzip_directory:
+                                    textbutton _("[persistent.mzip_directory!q]"):
+                                        action Jump("projects_mzip_preference")
+                                        alt _("Mod Download Directory: [text]")
+                                else:
+                                    textbutton _("Not Set"):
+                                        action Jump("projects_mzip_preference")
+                                        alt _("Mod Download Directory: [text]")
 
                 frame:
                     style "l_indent"
