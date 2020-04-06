@@ -102,12 +102,22 @@ init python:
             if os.path.exists(project + '/DDLC.app/Contents/Resources/autorun/game/python-packages'):
                 if os.path.exists(mzt + '/python-packages'):
                     shutil.rmtree(project + '/DDLC.app/Contents/Resources/autorun/game/python-packages')
-            shutil.move(mzt + ext, project + '/DDLC.app/Contents/Resources/autorun')
+            for file in os.listdir(mzt + '/game'):
+                print file
+                src_file = os.path.join(mzt + ext, file)
+                dst_file = os.path.join(project + '/DDLC.app/Contents/Resources/autorun/game', file)
+                shutil.move(src_file, dst_file)
+            #shutil.move(mzt + ext, project + '/DDLC.app/Contents/Resources/autorun')
         else:
             if os.path.exists(project + '/game/python-packages'):
                 if os.path.exists(mzt + '/python-packages'):
                     shutil.rmtree(project+ '/game/python-packages')
-            shutil.move(mzt + ext, project_dir)
+            for file in os.listdir(mzt + '/game'):
+                print file
+                src_file = os.path.join(mzt + ext, file)
+                dst_file = os.path.join(project + '/game', file)
+                shutil.move(src_file, dst_file)
+            #shutil.move(mzt + ext, project_dir)
 
     def zip_extract(project):
         if renpy.macintosh:
@@ -318,13 +328,13 @@ label add_a_mod:
                             shutil.rmtree(project_dir + '/DDLC.app/Contents/Resources/autorun/game/python-packages')
                         else:
                             pass
-                else:
                     # move mod files to the /game folder or mod folder
                     for file in os.listdir(mzt):
                         print file
                         src_file = os.path.join(mzt, file)
                         dst_file = os.path.join(project_dir + '/DDLC.app/Contents/Resources/autorun/game', file)
                         shutil.move(src_file, dst_file)
+                else:
                     if os.path.exists(project_dir + '/game/python-packages'):
                         if os.path.exists(mzt + '/python-packages'):
                             shutil.rmtree(project_dir + '/game/python-packages')
@@ -356,7 +366,6 @@ label add_a_mod:
                             shutil.rmtree(project_dir + '/DDLC.app/Contents/Resources/autorun/game/python-packages')
                         else:
                             pass
-                    import os
                     for file in os.listdir(str(mzte[1])):
                         print file
                         src_file = os.path.join(str(mzte[1]), file)
