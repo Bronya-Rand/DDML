@@ -1,4 +1,4 @@
-﻿# Copyright 2004-2019 Tom Rothamel <pytom@bishoujo.us>
+﻿# Copyright 2004-2020 Tom Rothamel <pytom@bishoujo.us>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -44,11 +44,11 @@ init -1 python hide:
     # This controls the title of the window, when Ren'Py is
     # running in a window.
 
-    config.window_title = u"Doki Doki Mod Launcher"
+    config.window_title = u"Ren'Py Launcher"
 
     # These control the name and version of the game, that are reported
     # with tracebacks and other debugging logs.
-    config.name = "DDML"
+    config.name = "Ren'Py Launcher"
     config.version = renpy.version().split()[1]
 
     #####################
@@ -160,7 +160,7 @@ init -1 python hide:
     # stored. (It needs to be set early, before any other init code
     # is run, so the persistent information can be found by the init code.)
 python early:
-    config.save_directory = "DDML"
+    config.save_directory = "launcher-4"
 
 init -1 python hide:
     #####################
@@ -183,9 +183,7 @@ init -1 python hide:
 
     config.sound = False
     config.quit_action = Quit(confirm=False)
-    config.gl_resize = False
     config.window_icon = "images/logo.png"
-    config.windows_icon = "images/logo32.png"
     config.has_autosave = False
     config.log_enable = False
     config.mouse_hide_time = None
@@ -228,9 +226,9 @@ init python:
     # directory 'mygame-1.0-win', in the 'mygame-1.0-win.zip' file.
 
     if 'RENPY_BUILD_VERSION' in os.environ:
-        build.directory_name = "DDML-" + os.environ['RENPY_BUILD_VERSION']
+        build.directory_name = "renpy-" + os.environ['RENPY_BUILD_VERSION']
     else:
-        build.directory_name = "DDML-" + config.version.rsplit('.', 1)[0]
+        build.directory_name = "renpy-" + config.version.rsplit('.', 1)[0]
 
     # The name that's uses for executables - the program that users will run
     # to start the game. For example, if this is 'mygame', then on Windows,
@@ -269,12 +267,36 @@ init python:
     build.classify_renpy("**/thumbs.db", None)
     build.classify_renpy("**/.*", None)
 
+    # Atom rules. These have to be very early, since Atom uses names like
+    # tmp for packages.
+    build.classify_renpy("atom/", "atom-all source_only")
+    build.classify_renpy("atom/Atom.edit.py", "atom-all source_only")
+    build.classify_renpy("atom/default-dot-atom/**", "atom-all")
+    build.classify_renpy("atom/atom-windows/**", "atom-windows")
+    build.classify_renpy("atom/Atom.app/**", "atom-mac")
+    build.classify_renpy("atom/atom-linux**", "atom-linux")
+
     try:
         with open(os.path.join(config.renpy_base, "atom", "executable.txt")) as f:
             for l in f:
                 build.executable(l.strip())
     except:
         pass
+
+    build.classify_renpy("rapt/**", "rapt")
+    build.executable("rapt/prototype/gradlew")
+
+    build.classify_renpy("renios/prototype/base/", None)
+    build.classify_renpy("renios/prototype/prototype.xcodeproj/*.xcworkspace/", None)
+    build.classify_renpy("renios/prototype/prototype.xcodeproj/xcuserdata/", None)
+    build.classify_renpy("renios/prototype/**", "renios")
+    build.classify_renpy("renios/buildlib/**", "renios")
+    build.classify_renpy("renios/ios.py", "renios")
+    build.classify_renpy("renios/version.txt", "renios")
+    build.classify_renpy("renios/", "renios")
+
+    build.classify_renpy("web/game.zip", None)
+    build.classify_renpy("web/**", "web")
 
     build.classify_renpy("**.old", None)
     build.classify_renpy("**.new", None)
@@ -286,6 +308,8 @@ init python:
     build.classify_renpy("**/errors.txt", None)
     build.classify_renpy("**/saves/", None)
     build.classify_renpy("**/tmp/", None)
+    build.classify_renpy("**/.Editra", None)
+
 
     # main source.
 
@@ -311,27 +335,71 @@ init python:
     build.classify_renpy("gui/game/gui/", None)
 
     source_and_binary("launcher")
+    source_and_binary("gui", binary=None)
+
+    source_and_binary("the_question")
+    source_and_binary("tutorial")
 
     # docs.
     build.classify_renpy("doc/", "source")
     build.classify_renpy("doc/.doctrees/", None)
     build.classify_renpy("doc/_sources/", None)
-    build.classify_renpy("doc/**", None)
+    build.classify_renpy("doc/**", "source")
     build.classify_renpy("LICENSE.txt", "source")
+
+    build.classify_renpy("sphinx/", "source_only")
+    build.classify_renpy("sphinx/build.sh", "source_only")
+    build.classify_renpy("sphinx/checks.py", "source_only")
+    build.classify_renpy("sphinx/game/**", "source_only")
+    build.classify_renpy("sphinx/source/inc/", None)
+    build.classify_renpy("sphinx/source/**", "source_only")
+
+
+    # module.
+    build.classify_renpy("module/", "source")
+    build.classify_renpy("module/*.c", "source")
+    build.classify_renpy("module/gen/", "source")
+    build.classify_renpy("module/gen/*.c", "source")
+    build.classify_renpy("module/*.h", "source")
+    build.classify_renpy("module/*.py*", "source")
+    build.classify_renpy("module/include/", "source")
+    build.classify_renpy("module/include/*.pxd", "source")
+    build.classify_renpy("module/include/*.pxi", "source")
+    build.classify_renpy("module/pysdlsound/", "source")
+    build.classify_renpy("module/pysdlsound/*.py", "source")
+    build.classify_renpy("module/pysdlsound/*.pyx", "source")
+    build.classify_renpy("module/fribidi-src/**", "source")
 
     # all-platforms binary.
     build.classify_renpy("lib/**/_renpysteam*", None)
+    build.classify_renpy("lib/**/*Live2D*", None)
     build.classify_renpy("lib/**/*steam_api*", None)
-    build.classify_renpy("lib/*/renpy", None)
-    build.classify_renpy("lib/*/renpy.exe", None)
+    build.classify_renpy("lib/linux-armv7l/", "raspi")
+    build.classify_renpy("lib/linux-armv7l/**", "raspi")
     build.classify_renpy("lib/**", "binary")
     build.classify_renpy("renpy.sh", "binary")
     # renpy.app is now built from scratch from distribute.rpy.
 
+    # jedit rules.
+    build.classify_renpy("jedit/**", "jedit")
+
     # Packages.
     build.packages = [ ]
 
-    build.package("all", "zip", "source binary")
+    build.package("sdk", "zip tar.bz2 dmg", "source binary")
+    build.package("source", "tar.bz2", "source source_only", update=False)
+    build.package("raspi", "tar.bz2", "raspi", dlc=True, update=False)
+
+    build.package("jedit", "zip", "jedit", dlc=True)
+
+    build.package("atom-linux", "tar.bz2", "atom-all atom-linux", dlc=True)
+    build.package("atom-mac", "zip", "atom-all atom-mac", dlc=True)
+    build.package("atom-windows", "zip", "atom-all atom-windows", dlc=True)
+
+    build.package("rapt", "zip", "rapt", dlc=True)
+    build.package("renios", "zip", "renios", dlc=True)
+    build.package("web", "zip", "web", dlc=True)
+
 
 # Enable the special launcher translation mode.
 define config.translate_launcher = True

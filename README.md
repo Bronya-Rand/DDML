@@ -1,9 +1,11 @@
-# Welcome to the Doki Doki Mod Launcher (DDML) Repository!
-Here contains all files for the current build of Doki Doki Mod Launcher. This tool adheres to the Team Salvato IP Guidelines and RenpyTom Guidelines for DDLC and Ren'Py SDK modding as listed in **README.md** and **LICENSE**.
+# Welcome to the Doki Doki Mod Launcher (DDML) Repository
+[![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/K3K22K8SU)
+
+Here contains all files for the current build of Doki Doki Mod Launcher. This tool adheres to the Team Salvato IP Guidelines and RenpyTom Guidelines for DDLC and Ren'Py SDK modding.
 
 **DISCLAIMER**
 
-Doki Doki Mod Launcher, is a Ren'Py 7.3.4 SDK Modification which is not affiliated or supported by RenpyTom. It is not supported by the official Ren'Py Build, or any Ren'Py channels. RenpyTom does not support game modding in general and will not provide support for this Ren'Py Modification or help with modding DDLC.
+Doki Doki Mod Launcher, is a Ren'Py 7.4.0 SDK Modification which is not affiliated or supported by RenpyTom. It is not supported by the official Ren'Py Build, or any Ren'Py channels. RenpyTom does not support game modding in general and will not provide support for this Ren'Py Modification or help with modding DDLC.
     
 Doki Doki Mod Launcher is a unofficial Doki Doki Literature Club Mod Launcher which is unaffiliated by Team Salvato. Dan Salvato or anyone in Team Salvato does not endorse Doki Doki Mod Launcher. This is a tool used to install mods.
 
@@ -15,9 +17,6 @@ on is located in one of the following repositories:
 * https://github.com/renpy/renpy (Ren'Py)
 * https://github.com/renpy/pygame_sdl2 (Pygame_SDL2)
 * https://github.com/renpy/renpy-deps (Desktop dependencies)
-* https://github.com/renpy/python-for-android (Android)
-* https://github.com/renpy/rapt (Android Build Tools)
-* https://github.com/renpy/renios (iOS)
 * https://github.com/GanstaKingofSA/DDML (Doki Doki Mod Launcher)
 
 This program contains free software licensed under a number of licenses, including the GNU Lesser General Public License. A complete list of software is available at http://www.renpy.org/doc/html/license.html.

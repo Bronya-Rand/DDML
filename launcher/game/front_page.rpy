@@ -1,4 +1,4 @@
-﻿# Copyright 2004-2019 Tom Rothamel <pytom@bishoujo.us>
+﻿# Copyright 2004-2020 Tom Rothamel <pytom@bishoujo.us>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -190,7 +190,6 @@ screen front_page_project_list:
 
             null height 12
 
-
 # This is used for the right side of the screen, which is where the project-specific
 # buttons are.
 screen front_page_project:
@@ -222,7 +221,7 @@ screen front_page_project:
                     textbutton _("Delete 'images.rpa'") action Jump("images_rpa")
                     textbutton _("Delete Saves") action Jump("rmpersistent")
 
-        add SPACER
+            add SPACER
 
         label _("DDML Options") style "l_label_small"
 
@@ -243,8 +242,6 @@ screen front_page_project:
                     else:
                         textbutton _("Browse Save Directory") action OpenDirectory(os.environ['HOME'] + "/.renpy")
                 textbutton _("Delete Mod") action Jump("delete_mod_folder")
-
-                # textbutton "Relaunch" action Relaunch
 
 label main_menu:
     return

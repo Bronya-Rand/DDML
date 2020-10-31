@@ -1,4 +1,4 @@
-﻿# Copyright 2004-2019 Tom Rothamel <pytom@bishoujo.us>
+﻿# Copyright 2004-2020 Tom Rothamel <pytom@bishoujo.us>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -20,12 +20,6 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 init python:
-    if persistent.gl_enable is None:
-        persistent.gl_enable = True
-
-    config.gl_enable = persistent.gl_enable
-    persistent.b_ddml = None
-
     if persistent.show_edit_funcs is None:
         persistent.show_edit_funcs = True
 
@@ -264,6 +258,7 @@ label projects_directory_preference:
 label projects_mzip_preference:
     call choose_modzip_directory
     jump preferences
+    
 # Setting Configuration Calls
 label projects_zip_preference:
     call ddlc_location
