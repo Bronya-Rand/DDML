@@ -138,51 +138,51 @@ screen preferences:
                                     action Jump("projects_directory_preference")
                                     alt _("Projects directory: [text]")
 
-                        add SPACER
+                    add SPACER
 
-                        # Text editor selection.
-                        add SEPARATOR2
+                    # Text editor selection.
+                    add SEPARATOR2
 
-                        frame:
-                            style "l_indent"
-                            yminimum 75
-                            has vbox
-                            text _("DDLC Copy Directory:")
+                    frame:
+                        style "l_indent"
+                        yminimum 75
+                        has vbox
+                        text _("DDLC Copy Directory:")
 
-                            add HALF_SPACER
+                        add HALF_SPACER
 
-                            frame style "l_indent":
-                                if persistent.zip_directory:
-                                    textbutton _("[persistent.zip_directory!q]"):
-                                        action Jump("projects_zip_preference")
-                                        alt _("DDLC ZIP directory: [text]")
-                                else:
-                                    textbutton _("Not Set"):
-                                        action Jump("projects_zip_preference")
-                                        alt _("DDLC ZIP directory: [text]")
+                        frame style "l_indent":
+                            if persistent.zip_directory:
+                                textbutton _("[persistent.zip_directory!q]"):
+                                    action Jump("projects_zip_preference")
+                                    alt _("DDLC ZIP directory: [text]")
+                            else:
+                                textbutton _("Not Set"):
+                                    action Jump("projects_zip_preference")
+                                    alt _("DDLC ZIP directory: [text]")
                                         
-                        add SPACER
+                    add SPACER
 
-                        # Text editor selection.
-                        add SEPARATOR2
+                    # Text editor selection.
+                    add SEPARATOR2
                         
-                        frame:
-                            style "l_indent"
-                            yminimum 75
-                            has vbox
-                            text _("Mod Download Folder:")
+                    frame:
+                        style "l_indent"
+                        yminimum 75
+                        has vbox
+                        text _("Mod Download Folder:")
 
-                            add HALF_SPACER
+                        add HALF_SPACER
 
-                            frame style "l_indent":
-                                if persistent.mzip_directory:
-                                    textbutton _("[persistent.mzip_directory!q]"):
-                                        action Jump("projects_mzip_preference")
-                                        alt _("Mod Download Directory: [text]")
-                                else:
-                                    textbutton _("Not Set"):
-                                        action Jump("projects_mzip_preference")
-                                        alt _("Mod Download Directory: [text]")
+                        frame style "l_indent":
+                            if persistent.mzip_directory:
+                                textbutton _("[persistent.mzip_directory!q]"):
+                                    action Jump("projects_mzip_preference")
+                                    alt _("Mod Download Directory: [text]")
+                            else:
+                                textbutton _("Not Set"):
+                                    action Jump("projects_mzip_preference")
+                                    alt _("Mod Download Directory: [text]")
 
                 frame:
                     style "l_indent"
@@ -196,8 +196,10 @@ screen preferences:
                         style "l_indent"
                         yminimum 75
                         has vbox
+
                         if renpy.macintosh:
                             text _("OS auto-extracts '.zip' files?")
+
                             add HALF_SPACER
 
                             frame style "l_indent":
@@ -208,8 +210,13 @@ screen preferences:
                                         text _("No")
                                 else:
                                     text _("None Selected")
+                            
+                            add HALF_SPACER
+
+                            textbutton _("Change Browser") action Jump("browser")
                         else:
                             text _("DDLC Copy:")
+
                             add HALF_SPACER
 
                             frame style "l_indent":
@@ -217,34 +224,74 @@ screen preferences:
                                     text _("Steam Copy")
                                 else:
                                     if persistent.steam_release == None:
-                                        text _("No DDLC Copy Selected")
+                                        text _("No DDLC Copy Detected")
                                     else:
                                         text _("DDLC.moe ZIP Copy")
+
                     add SPACER
-                    if renpy.macintosh:     
-                        textbutton _("Change Browser") action Jump("browser")
-                        add SPACER
+
                     #add SEPARATOR2
-                    if renpy.windows:
+
+                    if renpy.windows or renpy.linux:
                         frame:
                             style "l_indent"
                             yminimum 75
                             has vbox
 
                             text _("Customization:")
+
                             add HALF_SPACER
+
                             frame style "l_indent":
                                 textbutton _("Change Layout") action ImgDir("launcher/game/images")
+
                     add SPACER
+
                     frame:
                         style "l_indent"
                         yminimum 75
                         has vbox
 
                         add SPACER
+
                         textbutton _("Build Mode") style "l_checkbox" action ToggleField(persistent, "b_ddml")
                         if persistent.b_ddml:
+
+                            add HALF_SPACER
+
                             textbutton _("Build Distributions") action [project.Select("launcher"), Jump("build_distributions")]
+
+                frame:
+                    style "l_indent"
+                    xmaximum ONETHIRD
+                    xfill True
+
+                    has vbox
+                    add SEPARATOR2
+
+                    frame:
+                        style "l_indent"
+                        yminimum 75
+                        has vbox
+
+                        text _("Launcher Options:")
+
+                        add HALF_SPACER
+
+                        textbutton _("Reset window size") style "l_nonbox" action Preference("display", 1.0)
+                        
+                    add SEPARATOR2
+
+                    frame:
+                        style "l_indent"
+                        yminimum 75
+                        has vbox
+
+                        text _("Theme:")
+
+                        add HALF_SPACER
+
+                        textbutton _("One UI") style "l_checkbox" action [ToggleField(persistent, "oneui"), Jump("restart_ddmm")]
 
     textbutton _("Return") action Jump("front_page") style "l_left_button"
 
@@ -264,6 +311,7 @@ label projects_directory_preference:
 label projects_mzip_preference:
     call choose_modzip_directory
     jump preferences
+    
 # Setting Configuration Calls
 label projects_zip_preference:
     call ddlc_location
@@ -272,3 +320,8 @@ label projects_zip_preference:
 label preferences:
     call screen preferences
     jump preferences
+
+label restart_ddmm:
+    python:
+        renpy.quit(relaunch=True)
+    return 

@@ -311,7 +311,11 @@ label delete_mod_folder:
             interface.error(_("The operation has been cancelled."))
         elif mod_response == "Yes" or mod_response == "yes":
             deleted_mod_name = project.current.name
-            shutil.rmtree(persistent.projects_directory + '/' + project.current.name)
+            try:
+                shutil.rmtree(persistent.projects_directory + '/' + project.current.name)
+            except:
+                interface.info(deleted_mod_name + " was deleted improperly due to an error.\nMake sure the mod folder is deleted within the mod folder directory.")
+                renpy.jump("front_page")
         else:
             interface.error(_("Invalid Input."))
 

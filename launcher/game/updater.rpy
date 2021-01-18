@@ -1,4 +1,4 @@
-﻿# Copyright 2004-2019 Tom Rothamel <pytom@bishoujo.us>
+﻿# Copyright 2004-2020 Tom Rothamel <pytom@bishoujo.us>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -87,7 +87,7 @@ screen update_channel(channels):
 
             has vbox
 
-            label _("Doki Doki Mod Club Mod List")
+            label _("Select Update Channel")
 
             add HALF_SPACER
 
@@ -101,13 +101,6 @@ screen update_channel(channels):
                     text _("Select the mod you will like to download. Afterwards return to the main menu and install it as normal.")
 
                     for c in channels:
-
-                        # if  c["split_version"] != list(renpy.version_tuple):
-                        #     $ action = updater.Update(c["url"], simulate=UPDATE_SIMULATE, public_key=PUBLIC_KEY, confirm=False)
-                        #     $ current = ""
-                        # else:
-                        #     $ action = None
-                        #     $ current = _("• This version is installed and up-to-date.")
 
                         add SPACER
 
@@ -198,12 +191,14 @@ label update:
             req = urllib2.Request(url=url, headers=headers)
             response = urllib2.urlopen(req, context=context)
             the_page = response.read()
+
         with interface.error_handling(_("Decoding the mod list...")):
             ddmc_data = config.basedir + '/ddmc.json'
             with open(ddmc_data, 'w') as f:
                 f.write(the_page)
             with open(ddmc_data, 'r') as f:
                 channels = json.load(f)
+        
         renpy.call_screen("update_channel", channels)
 
     jump front_page

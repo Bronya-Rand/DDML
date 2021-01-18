@@ -1,4 +1,4 @@
-﻿# Copyright 2004-2019 Tom Rothamel <pytom@bishoujo.us>
+﻿# Copyright 2004-2020 Tom Rothamel <pytom@bishoujo.us>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -30,7 +30,7 @@ init python:
     import os
 
 init python in project:
-    from store import persistent, config, Action, renpy, _preferences
+    from store import persistent, config, Action, renpy, _preferences, MultiPersistent
     import store.util as util
     import store.interface as interface
 
@@ -41,13 +41,18 @@ init python in project:
     import re
     import tempfile
 
+    multipersistent = MultiPersistent("launcher.renpy.org")
+
     if persistent.blurb is None:
         persistent.blurb = 0
 
     project_filter = [ i.strip() for i in os.environ.get("RENPY_PROJECT_FILTER", "").split(":") if i.strip() ]
 
     LAUNCH_BLURBS = [
-        _("Launching. Please wait..."),
+        _("After making changes to the script, press shift+R to reload your game."),
+        _("Press shift+O (the letter) to access the console."),
+        _("Press shift+D to access the developer menu."),
+        _("Have you backed up your projects recently?"),
     ]
 
     class Project(object):
@@ -101,14 +106,12 @@ init python in project:
 
         def load_data(self):
             try:
-                f = open(os.path.join(self.path, "project.json"), "rb")
-                self.data = json.load(f)
-                f.close()
+                with open(os.path.join(self.path, "project.json"), "rb") as f:
+                    self.data = json.load(f)
             except:
                 self.data = { }
 
             self.update_data()
-
 
         def save_data(self):
             """
@@ -334,12 +337,14 @@ init python in project:
                 for l, line in enumerate(data):
                     l += 1
 
+                    line = line[:1024]
+
                     try:
                         line = line.decode("utf-8")
                     except:
                         continue
 
-                    m = re.search(ur".*#\s*TODO(\s*:\s*|\s+)(.*)", line, re.I)
+                    m = re.search(r"#\s*TODO(\s*:\s*|\s+)(.*)", line, re.I)
 
                     if m is None:
                         continue
@@ -360,6 +365,8 @@ init python in project:
             """
             Unelides the filename relative to the project base.
             """
+
+            fn = os.path.normpath(fn)
 
             fn1 = os.path.join(self.path, fn)
             if os.path.exists(fn1):
@@ -428,8 +435,17 @@ init python in project:
 
             global current
 
+            if persistent.projects_directory is None:
+                if multipersistent.projects_directory is not None:
+                    persistent.projects_directory = multipersistent.projects_directory
+
             if (persistent.projects_directory is not None) and not os.path.isdir(persistent.projects_directory):
                 persistent.projects_directory = None
+
+            if persistent.projects_directory is not None:
+                if multipersistent.projects_directory is None:
+                    multipersistent.projects_directory = persistent.projects_directory
+                    multipersistent.save()
 
             self.projects_directory = persistent.projects_directory
 
@@ -762,10 +778,11 @@ label choose_projects_directory:
         path, is_default = choose_directory(persistent.projects_directory)
 
         if is_default:
-            interface.error(_("The operation has been cancelled."))
-            renpy.jump("front_page")
+            interface.info(_("DDML has set the mod folder directory to:"), "[path!q]", path=path)
 
         persistent.projects_directory = path
+        project.multipersistent.projects_directory = path
+        project.multipersistent.save()
 
         project.manager.scan()
 
@@ -780,10 +797,13 @@ label choose_modzip_directory:
         path, is_default = choose_directory(persistent.mzip_directory)
 
         if is_default:
-            interface.error(_("The operation has been cancelled."))
-            renpy.jump("front_page")
+            interface.info(_("DDML has set the mod ZIP directory to:"), "[path!q]", path=path)
 
         persistent.mzip_directory = path
+        project.multipersistent.mzip_directory = path
+        project.multipersistent.save()
+
+        project.manager.scan()
 
     return
 
@@ -859,7 +879,7 @@ label ddlc_location:
                 )
             renpy.jump(release_kind)
         else:
-            renpy.jump(ddlc_moe_release)
+            renpy.jump('ddlc_moe_release')
 
     return
 
@@ -881,26 +901,19 @@ label ddlc_moe_release:
                 interface.error(_("The operation has been cancelled."))
                 renpy.jump("front_page")
 
-            if is_default:
-                interface.error(_("The operation has been cancelled."))
-                renpy.jump("front_page")
-
-            persistent.zip_directory = path
-
         else:
             interface.interaction(_("DDLC ZIP File"), _("Please choose the DDLC ZIP. It must be the original zip from DDLC.moe."),)
 
-            try:
-                path, is_default = choose_file(persistent.zip_directory)
-            except TypeError:
-                interface.error(_("The operation has been cancelled."))
-                renpy.jump("front_page")
+            path, is_default = choose_file(persistent.zip_directory)
 
-            if is_default:
-                interface.error(_("The operation has been cancelled."))
-                renpy.jump("front_page")
-        
-            persistent.zip_directory = path
+        if is_default:
+            interface.info(_("DDML has set the DDLC copy directory to:"), "[path!q]", path=path)
+
+        persistent.zip_directory = path
+        project.multipersistent.zip_directory = path
+        project.multipersistent.save()
+
+        project.manager.scan()
 
     # Returns False that this directory is Steam
     $ persistent.steam_release = False
@@ -916,10 +929,14 @@ label ddlc_steam_release:
         path, is_default = choose_directory(persistent.zip_directory)
 
         if is_default:
-            interface.error(_("The operation has been cancelled."))
-            renpy.jump("front_page")
+            interface.info(_("DDML has set the DDLC copy directory to:"), "[path!q]", path=path)
 
         persistent.zip_directory = path
+        project.multipersistent.zip_directory = path
+        project.multipersistent.save()
+
+        project.manager.scan()
+
     # Returns True that this directory is Steam
     $ persistent.steam_release = True
 
@@ -942,11 +959,13 @@ label browser:
 # Set Safari or Auto-Extract Browser to True
 label safari_download:
     $ persistent.safari = True
+    $ persistent.zip_directory = None
     return
 # Set Safaro to False for Third Party or Auto-Extract Off
 
 label regular_download:
     $ persistent.safari = False
+    $ persistent.zip_directory = None
     return
 
 init python:

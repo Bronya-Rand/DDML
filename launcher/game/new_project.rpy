@@ -161,7 +161,7 @@ init python:
     def modzip_copy(project, name):
         import shutil
         try:
-            shutil.copytree(persistent.mzip_directory, persistent.projects_directory + '/temp/' + name)
+            shutil.copytree(name, persistent.projects_directory + '/temp')
         except:
             shutil.rmtree(project)
             interface.error(_("Cannot find Folder in [persistent.mzip_directory!q]."), _("Check the name of your Mod Folder extracted by MacOS and try again."))
@@ -182,10 +182,7 @@ label add_a_mod:
         $ interface.error(_("The browser could not be set. Giving up."))
     # Checks if user set DDLC ZIP Location (All OS)
     if persistent.zip_directory is None:
-        if renpy.macintosh:
-            call choose_zip_directory
-        else:
-            call ddlc_location
+        call ddlc_location
     # Ren'Py Failsafe 2
     if persistent.zip_directory is None:
         $ interface.error(_("The DDLC Copy directory could not be set. Giving up."))
@@ -233,6 +230,7 @@ label add_a_mod:
             else:
                 # Extract DDLC (Moe Release)
                 zip_extract(project_dir)
+
         # RPA Download Install Check (for mods that aren't in ZIPs or downloaded as seperate .rpas)
         if glob.glob(persistent.mzip_directory + '/*.rpa'):
             if renpy.macintosh:
@@ -408,10 +406,7 @@ label install_addon:
         $ interface.error(_("The browser could not be set. Giving up."))
     # Checks if user set DDLC ZIP Location (All OS)
     if persistent.zip_directory is None:
-        if renpy.macintosh:
-            call choose_zip_directory
-        else:
-            call ddlc_location
+        call ddlc_location
     # Ren'Py Failsafe 2
     if persistent.zip_directory is None:
         $ interface.error(_("The DDLC Copy directory could not be set. Giving up."))
@@ -582,10 +577,7 @@ label add_base_game:
         $ interface.error(_("The browser could not be set. Giving up."))
     # Checks if user set DDLC ZIP Location (All OS)
     if persistent.zip_directory is None:
-        if renpy.macintosh:
-            call choose_zip_directory
-        else:
-            call ddlc_location
+        call ddlc_location
     # Ren'Py Failsafe 2
     if persistent.zip_directory is None:
         $ interface.error(_("The DDLC ZIP directory could not be set. Giving up."))
