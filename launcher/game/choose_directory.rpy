@@ -21,6 +21,20 @@
 
 init python:
 
+    if renpy.windows:
+        import EasyDialogsWin as EasyDialogs
+    else:
+        EasyDialogs = None
+
+    pyobjus = None
+
+    if renpy.macintosh:
+        try:
+            import pyobjus
+        except:
+            pass
+    
+    
     def directory_is_writable(path):
         test = os.path.join(path, "renpy test do not use")
 
@@ -67,14 +81,44 @@ init python:
             else:
                 path = None
 
+        elif pyobjus:
+
+            from pyobjus import autoclass
+            from pyobjus.dylib_manager import load_framework, INCLUDE
+
+            load_framework(INCLUDE.AppKit)
+            NSURL = autoclass('NSURL')
+            NSOpenPanel = autoclass('NSOpenPanel')
+
+            panel = NSOpenPanel.openPanel()
+            panel.setCanChooseDirectories_(True)
+            panel.setCanChooseFiles_(False)
+            panel.setCanCreateDirectories_(True)
+
+            if default_path:
+                url = NSURL.fileURLWithPath_(default_path)
+                panel.setDirectoryURL_(url)
+
+            if panel.runModal():
+                path = panel.filename().UTF8String().decode("utf-8")
+            else:
+                path = None
+
         else:
 
             try:
-                
-                if os.path.exists("/usr/bin/python3"):
-                    system_python = "/usr/bin/python3"
+
+                if renpy.macintosh:
+                    # tkinter is broken on Python 3, so use it as a last resort - maybe apple fixed it?
+                    system_pythons = [ "/usr/bin/python2", "/usr/bin/python", "/usr/bin/python3" ]
                 else:
-                    system_python = "/usr/bin/python"
+                    system_pythons = [ "/usr/bin/python3", "/usr/bin/python2", "/usr/bin/python" ]
+
+                for system_python in system_pythons:
+                    if os.path.exists(system_python):
+                        break
+                else:
+                    system_python = system_pythons[0]
 
                 cmd = [ system_python, os.path.join(config.gamedir, "tkaskdir.py"), renpy.fsencode(default_path) ]
 
@@ -90,10 +134,10 @@ init python:
                 choice = ""
                 path = None
 
-                interface.error(_("Ren'Py was unable to run python with tkinter to choose the directory. Please install the python-tk or tkinter package."), label=None)
+                interface.error(_("Ren'Py was unable to run python with tkinter to choose the directory. Please install the python3-tk or tkinter package."), label=None)
 
             if code:
-                interface.error(_("Ren'Py was unable to run python with tkinter to choose the directory. Please install the python-tk or tkinter package."), label=None)
+                interface.error(_("Ren'Py was unable to run python with tkinter to choose the directory. Please install the python3-tk or tkinter package."), label=None)
 
             elif choice:
                 path = choice.decode("utf-8")
@@ -148,14 +192,44 @@ init python:
             else:
                 path = None
 
+        elif pyobjus:
+
+            from pyobjus import autoclass
+            from pyobjus.dylib_manager import load_framework, INCLUDE
+
+            load_framework(INCLUDE.AppKit)
+            NSURL = autoclass('NSURL')
+            NSOpenPanel = autoclass('NSOpenPanel')
+
+            panel = NSOpenPanel.openPanel()
+            panel.setCanChooseDirectories_(False)
+            panel.setCanChooseFiles_(True)
+            panel.setCanCreateDirectories_(False)
+
+            if default_path:
+                url = NSURL.fileURLWithPath_(default_path)
+                panel.setDirectoryURL_(url)
+
+            if panel.runModal():
+                path = panel.filename().UTF8String().decode("utf-8")
+            else:
+                path = None
+
         else:
 
             try:
-                
-                if os.path.exists("/usr/bin/python3"):
-                    system_python = "/usr/bin/python3"
+
+                if renpy.macintosh:
+                    # tkinter is broken on Python 3, so use it as a last resort - maybe apple fixed it?
+                    system_pythons = [ "/usr/bin/python2", "/usr/bin/python", "/usr/bin/python3" ]
                 else:
-                    system_python = "/usr/bin/python"
+                    system_pythons = [ "/usr/bin/python3", "/usr/bin/python2", "/usr/bin/python" ]
+
+                for system_python in system_pythons:
+                    if os.path.exists(system_python):
+                        break
+                else:
+                    system_python = system_pythons[0]
 
                 cmd = [ system_python, os.path.join(config.gamedir, "tkaskfile.py"), renpy.fsencode(default_path) ]
 
@@ -171,10 +245,10 @@ init python:
                 choice = ""
                 path = None
 
-                interface.error(_("Ren'Py was unable to run python with tkinter to choose the directory. Please install the python-tk or tkinter package."), label=None)
+                interface.error(_("Ren'Py was unable to run python with tkinter to choose the directory. Please install the python3-tk or tkinter package."), label=None)
 
             if code:
-                interface.error(_("Ren'Py was unable to run python with tkinter to choose the directory. Please install the python-tk or tkinter package."), label=None)
+                interface.error(_("Ren'Py was unable to run python with tkinter to choose the directory. Please install the python3-tk or tkinter package."), label=None)
 
             elif choice:
                 path = choice.decode("utf-8")
