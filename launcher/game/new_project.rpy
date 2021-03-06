@@ -36,7 +36,8 @@ init python:
             base = [".exe", ".sh", ".py", ".txt", ".md", ".html", ".app"]
             if file.endswith(tuple(base)):
                 src = os.path.join(ext, file)
-                shutil.move(src, project)
+                dst = os.path.join(project, file)
+                shutil.move(src, dst)
 
     def lib_move(project, ext):
         for file in os.listdir(ext + '/lib'):
@@ -148,20 +149,20 @@ label add_a_mod:
 
             modinstall_foldername = modinstall_foldername.strip()
 
-            if not project_name:
+            if not modinstall_foldername:
                 interface.error(_("The mod name may not be empty."), label=None)
                 continue
-            if project_name == "launcher":
+            if modinstall_foldername == "launcher":
                 interface.error(_("'launcher' is a reserved mod name. Please choose a different mod name."), label=None)
                 continue
 
             project_dir = os.path.join(persistent.projects_directory, modinstall_foldername)
 
             if project.manager.get(modinstall_foldername) is not None:
-                interface.error(_("[modinstall_foldername!q] already exists. Please choose a different project name."), project_name=project_name, label=None)
+                interface.error(_("[modinstall_foldername!q] already exists. Please choose a different project name."), modinstall_foldername=modinstall_foldername, label=None)
                 continue
             if os.path.exists(project_dir):
-                interface.error(_("[project_dir!q] already exists. Please choose a different project name."), project_name=project_name, label=None)
+                interface.error(_("[project_dir!q] already exists. Please choose a different project name."), project_dir=project_dir, label=None)
                 continue
 
             if renpy.macintosh and persistent.safari == True:
@@ -218,7 +219,7 @@ label add_a_mod:
             else:
                 # Extract Mod
                 interface.interaction(_("Extracting"), _("Extracting Mod ZIP, Please Wait..."),)
-                modzip_extract(project_dir, modzip_name)
+                modzip_extract(project_dir, modzip_path)
 
             # Search for if there is a folder in /temp that isn't mod related (Yuri-1.0)
             mzt = persistent.projects_directory + "/temp"
@@ -327,10 +328,10 @@ label add_base_game:
             project_dir = os.path.join(persistent.projects_directory, modinstall_foldername)
 
             if project.manager.get(modinstall_foldername) is not None:
-                interface.error(_("[modinstall_foldername!q] already exists. Please choose a different project name."), modinstall_foldername=modinstall_foldername).
+                interface.error(_("[modinstall_foldername!q] already exists. Please choose a different project name."), modinstall_foldername=modinstall_foldername, label=None)
                 continue
             if os.path.exists(project_dir):
-                interface.error(_("[project_dir!q] already exists. Please choose a different project name."), project_dir=project_dir)
+                interface.error(_("[project_dir!q] already exists. Please choose a different project name."), project_dir=project_dir, label=None)
                 continue
 
             if renpy.macintosh and persistent.safari == True:
