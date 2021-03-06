@@ -50,7 +50,7 @@ init python:
     def rpy_move(project, ext):
         for file in os.listdir(ext + '/renpy'):
             src_file = os.path.join(ext + '/renpy', file)
-            if renpy.macintosh
+            if renpy.macintosh:
                 dst_file = os.path.join(project + '/DDLC.app/Contents/Resources/autorun/renpy', file)
             else:
                 dst_file = os.path.join(project + '/renpy', file)
@@ -158,10 +158,10 @@ label add_a_mod:
             project_dir = os.path.join(persistent.projects_directory, modinstall_foldername)
 
             if project.manager.get(modinstall_foldername) is not None:
-                interface.error(_("[modinstall_foldername!q] already exists. Please choose a different project name."), modinstall_foldername=modinstall_foldername).
+                interface.error(_("[modinstall_foldername!q] already exists. Please choose a different project name."), project_name=project_name, label=None)
                 continue
             if os.path.exists(project_dir):
-                interface.error(_("[project_dir!q] already exists. Please choose a different project name."), project_dir=project_dir)
+                interface.error(_("[project_dir!q] already exists. Please choose a different project name."), project_name=project_name, label=None)
                 continue
 
             if renpy.macintosh and persistent.safari == True:
