@@ -217,7 +217,6 @@ screen front_page_project:
                 frame style "l_indent":
                     has vbox
 
-                    textbutton _("Install Update, Patch or Add-On") action Jump("install_addon")
                     textbutton _("Delete 'scripts.rpa'") action Jump("scripts_rpa")
                     textbutton _("Delete 'images.rpa'") action Jump("images_rpa")
                     textbutton _("Delete Saves") action Jump("rmpersistent")

@@ -828,10 +828,10 @@ label delete_scripts:
         import os
         if renpy.macintosh:
             try: os.remove(persistent.projects_directory + "/" + project.current.name + "/DDLC.app/Contents/Resources/autorun/game/scripts.rpa")
-            except: interface.error(_("scripts.rpa already deleted or is missing."), _("Check the game directory and try again."))
+            except: interface.error(_("scripts.rpa is either already deleted or missing."), _("Check the game directory and try again."))
         else:
             try: os.remove(persistent.projects_directory + "/" + project.current.name + "/game/scripts.rpa")
-            except: interface.error(_("images.rpa already deleted or is missing."), _("Check the game directory and try again."))
+            except: interface.error(_("scripts.rpa is either already deleted or missing."), _("Check the game directory and try again."))
         
         interface.info("scripts.rpa has been deleted.")
 
@@ -857,10 +857,10 @@ label delete_images:
         import os
         if renpy.macintosh:
             try: os.remove(persistent.projects_directory + "/" + project.current.name + "/DDLC.app/Contents/Resources/autorun/game/images.rpa")
-            except: interface.error(_("images.rpa already deleted or is missing."), _("Check the game directory and try again."))
+            except: interface.error(_("images.rpa is either already deleted or missing."), _("Check the game directory and try again."))
         else:
             try: os.remove(persistent.projects_directory + "/" + project.current.name + "/game/images.rpa")
-            except: interface.error(_("images.rpa already deleted or is missing."), _("Check the game directory and try again."))
+            except: interface.error(_("images.rpa is either already deleted or missing."), _("Check the game directory and try again."))
         
         interface.info("images.rpa has been deleted.")
 
@@ -895,12 +895,8 @@ label ddlc_moe_release:
 
         if renpy.macintosh and persistent.safari == True:
             interface.interaction(_("DDLC Folder"), _("Please choose the DDLC folder. It must be the original zip folder from DDLC.moe."),)
-            try:
-                path, is_default = choose_directory(persistent.zip_directory)
-            except TypeError: #JIC
-                interface.error(_("The operation has been cancelled."))
-                renpy.jump("front_page")
 
+            path, is_default = choose_directory(persistent.zip_directory)
         else:
             interface.interaction(_("DDLC ZIP File"), _("Please choose the DDLC ZIP. It must be the original zip from DDLC.moe."),)
 
@@ -924,7 +920,7 @@ label ddlc_moe_release:
 label ddlc_steam_release:
 
     python hide:
-        interface.interaction(_("Steam Directory"), _("Please choose the 'common' folder inside of the Steam folder."), _("This will make DDML find DDLC and copy it to your Mod Folder for Mods."),)
+        interface.interaction(_("Steam Directory"), _("Please choose the 'common' folder inside of the Steam folder."),)
 
         path, is_default = choose_directory(persistent.zip_directory)
 
