@@ -21,7 +21,7 @@
 
 screen about:
 
-    $ version = renpy.version()
+    $ ren_version = renpy.version()
 
     frame:
         style_group "l"
@@ -32,11 +32,15 @@ screen about:
 
             has vbox xfill True
 
-            add "images/logo.png" xalign 0.5 yoffset -5
+            add "images/logo.png" xalign 0.5 yoffset 20 xsize 250 ysize 250
 
-            null height 15
+            null height 35
 
-            text _("[version!q]") xalign 0.5 bold True
+            text _("DDML [config.version!q]") xalign 0.5 bold True
+
+            null height 10
+
+            text _("Running [ren_version!q]") xalign 0.5 bold True
 
             null height 20
 
