@@ -87,7 +87,7 @@ screen update_channel(channels):
 
             has vbox
 
-            label _("Select Update Channel")
+            label _("DD Mod Club Mod List")
 
             add HALF_SPACER
 
@@ -98,7 +98,7 @@ screen update_channel(channels):
 
                     has vbox
 
-                    text _("Select the mod you will like to download. Afterwards return to the main menu and install it as normal.")
+                    text _("Select the mod you will like to download. Afterwards return to the main menu and install it like normal with DDML.")
 
                     for c in channels:
 
