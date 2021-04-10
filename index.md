@@ -1,37 +1,27 @@
-## Welcome to GitHub Pages
+# Welcome to the Doki Doki Mod Launcher (DDML) Repository
 
-You can use the [editor on GitHub](https://github.com/GanstaKingofSA/DDML/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
+[Download DDMMaker](https://github.com/GanstaKingofSA/DDML/releases/download/5.2.4/DDML-5.2-all.zip)
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+[![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/K3K22K8SU)
 
-### Markdown
+Here contains all files for the current build of Doki Doki Mod Launcher. This tool adheres to the Team Salvato IP Guidelines and RenpyTom Guidelines for DDLC and Ren'Py SDK modding as listed in **README.md** and **LICENSE**.
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+**DISCLAIMER**
 
-```markdown
-Syntax highlighted code block
+Doki Doki Mod Launcher, is a Ren'Py 7.4.4 SDK Modification which is not affiliated or supported by RenpyTom. It is not supported by the official Ren'Py Build, or any Ren'Py channels. RenpyTom does not support game modding in general and will not provide support for this Ren'Py Modification or help with modding DDLC.
+    
+Doki Doki Mod Launcher is a unofficial Doki Doki Literature Club Mod Launcher which is unaffiliated by Team Salvato. Dan Salvato or anyone in Team Salvato does not endorse Doki Doki Mod Launcher. This is a tool used to install mods.
 
-# Header 1
-## Header 2
-### Header 3
+Although Doki Doki Mod Launcher can be used to run any other Ren'Py made game or Ren'Py mods other than Doki Doki Literature Club or Doki Doki Literature Club mods, **do not attempt to modify Doki Doki Mod Launcher in a way that it can run other Ren'Py game mods without explicit permission by the developer of the game that it can be modded** as it can violate Intellectual Property Guidelines set by other developers for their game. Please note that RenpyTom, Team Salvato, or the developer that allows you to modify their game will not provide support for that modification in anyway or the creator of this tool outside of Doki Doki Literature Club.
 
-- Bulleted
-- List
+For the purposes of LGPL compliance, all source code that Doki Doki Mod Launcher and the Ren'Py SDK depends
+on is located in one of the following repositories:
 
-1. Numbered
-2. List
+* https://github.com/renpy/renpy (Ren'Py)
+* https://github.com/renpy/pygame_sdl2 (Pygame_SDL2)
+* https://github.com/renpy/renpy-deps (Desktop dependencies)
+* https://github.com/GanstaKingofSA/DDML (Doki Doki Mod Launcher)
 
-**Bold** and _Italic_ and `Code` text
+This program contains free software licensed under a number of licenses, including the GNU Lesser General Public License. A complete list of software is available at http://www.renpy.org/doc/html/license.html.
 
-[Link](url) and ![Image](src)
-```
-
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/GanstaKingofSA/DDML/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+Doki Doki Mod Launcher is distributed with many licenses apart from the one given. Read **LICENSE** for more details.
