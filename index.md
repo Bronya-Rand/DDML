@@ -1,6 +1,6 @@
 # Welcome to the Doki Doki Mod Launcher (DDML) Repository
 
-[Download DDMMaker](https://github.com/GanstaKingofSA/DDML/releases/download/5.2.4/DDML-5.2-all.zip)
+[Download DDML here!](https://github.com/GanstaKingofSA/DDML/releases/download/5.2.4/DDML-5.2-all.zip)
 
 [![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/K3K22K8SU)
 
