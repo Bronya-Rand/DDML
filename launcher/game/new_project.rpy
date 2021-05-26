@@ -121,7 +121,7 @@ label add_a_mod:
     # Browser Set?
     if renpy.macintosh:
         if persistent.safari is None:
-            call auto_extract
+            call browser
         if persistent.safari is None:
             $ interface.error(_("Couldn't check if OS auto-extracts ZIPs. Please reconfigure your settings."))
     # Checks if user set DDLC ZIP Location (All OS)
@@ -294,7 +294,7 @@ label add_base_game:
     # Browser Set?
     if renpy.macintosh:
         if persistent.safari is None:
-            call auto_extract
+            call browser
         if persistent.safari is None:
             $ interface.error(_("Couldn't check if OS auto-extracts ZIPs. Please reconfigure your settings."))
     # Checks if user set DDLC ZIP Location (All OS)

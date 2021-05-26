@@ -196,8 +196,6 @@ label update:
 
         with interface.error_handling(_("Decoding the mod list...")):
             ddmc_data = config.basedir + '/ddmc.json'
-            with open(ddmc_data, 'w') as f:
-                f.write(the_page)
             with open(ddmc_data, 'r') as f:
                 channels = json.load(f)
         
