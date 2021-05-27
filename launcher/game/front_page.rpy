@@ -317,7 +317,6 @@ label delete_mod_folder:
                 renpy.jump("front_page")
         else:
             interface.error(_("Invalid Input."))
-            continue
 
         interface.info(deleted_mod_name + " has been deleted.")
         deleted_mod_name = None
@@ -358,7 +357,7 @@ label move_mod_folder:
                 shutil.move(dst_file, src_file)
 
             interface.error(_("DDML encountered a error when transferring files.\nMake sure no mods or apps using mod files are open and try again."),)
-            
+
         project.manager.scan()
 
     return

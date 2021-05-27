@@ -209,15 +209,14 @@ label add_a_mod:
             if glob.glob(mzt + '/game'):
                 move_this(mzt, '/game')
             rpy_ext(mzt)
-            else:
-                # move mod files to the /game folder or mod folder
-                for file in os.listdir(mzt):
-                    src_file = os.path.join(mzt, file)
-                    if renpy.macintosh:
-                        dst_file = os.path.join(project_dir + '/DDLC.app/Contents/Resources/autorun/game', file)
-                    else:
-                        dst_file = os.path.join(project_dir + '/game', file)
-                    shutil.move(src_file, dst_file)
+            # move mod files to the /game folder or mod folder
+            for file in os.listdir(mzt):
+                src_file = os.path.join(mzt, file)
+                if renpy.macintosh:
+                    dst_file = os.path.join(project_dir + '/DDLC.app/Contents/Resources/autorun/game', file)
+                else:
+                    dst_file = os.path.join(project_dir + '/game', file)
+                shutil.move(src_file, dst_file)
 
             # Prevents copy of any other RPA or other mod files
             try: shutil.rmtree(persistent.projects_directory + '/temp')
