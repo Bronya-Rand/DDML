@@ -31,12 +31,12 @@ init python:
                 shutil.move(src, dst)
 
     def move_this(mzt, ext):
-        for file in os.listdir(mzt + '/' + ext):
-            src_file = os.path.join(mzt + '/' ext, file)
+        for file in os.listdir(mzt + ext):
+            src_file = os.path.join(mzt + ext, file)
             if renpy.macintosh:
-                dst_file = os.path.join(project_dir + '/DDLC.app/Contents/Resources/autorun/' + ext, file)
+                dst_file = os.path.join(project_dir + '/DDLC.app/Contents/Resources/autorun' + ext, file)
             else:
-                dst_file = os.path.join(project_dir + '/' + ext, file)
+                dst_file = os.path.join(project_dir + ext, file)
             shutil.move(src_file, dst_file)
 
     def zip_extract():
@@ -193,7 +193,7 @@ label add_a_mod:
             mzte = [x[0] for x in os.walk(mzt)]
             try:
                 mzte[1]
-                mzt = mzte[1]
+                mzt = str(mzte[1])
             # if there is no folders in there
             except IndexError:
                 pass
@@ -204,9 +204,9 @@ label add_a_mod:
                 move_this(mzt, '/lib')
             if glob.glob(mzt + '/renpy'):
                 move_this(mzt, '/renpy')
-                rpy_ext(mzt)
             if glob.glob(mzt + '/game'):
                 move_this(mzt, '/game')
+            rpy_ext(mzt)
             else:
                 # move mod files to the /game folder or mod folder
                 for file in os.listdir(mzt):
