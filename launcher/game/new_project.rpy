@@ -150,6 +150,7 @@ label add_a_mod:
 
             # RPA Download Install Check (for mods that aren't in ZIPs or downloaded as seperate .rpas)
             if glob.glob(persistent.mzip_directory + '/*.rpa'):
+                interface.info(_("DDML has detected RPA files in the Mod ZIP Directory.\n DDML will copy these files to the mod folder."))
                 interface.interaction(_("Copying"), _("Copying Mod Files from Mod ZIP Directory, Please Wait..."),)
                 for file in os.listdir(persistent.mzip_directory):
                     if file.endswith('.rpa'):
@@ -159,6 +160,7 @@ label add_a_mod:
                         else:
                             shutil.move(src, project_dir + '/game')
                 # Auto-Refresh
+                interface.info(_("DDML has installed [modinstall_foldername!q] to the mod folder."), modinstall_foldername=modinstall_foldername)
                 project.manager.scan()
                 renpy.jump("front_page")
 
@@ -220,6 +222,7 @@ label add_a_mod:
             # Prevents copy of any other RPA or other mod files
             try: shutil.rmtree(persistent.projects_directory + '/temp')
             except: pass
+            interface.info(_("DDML has installed [modinstall_foldername!q] to the mod folder."), modinstall_foldername=modinstall_foldername)
             # Auto-Refresh
             project.manager.scan()
             break
@@ -296,6 +299,8 @@ label add_base_game:
             # Prevents copy of any other RPA or other mod files
             try: shutil.rmtree(persistent.projects_directory + '/temp')
             except: pass
+            interface.info(_("DDML has installed DDLC to the mod folder under the [modinstall_foldername!q] folder."), modinstall_foldername=modinstall_foldername)
             project.manager.scan()
             break
+
     jump front_page

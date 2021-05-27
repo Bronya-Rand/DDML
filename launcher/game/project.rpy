@@ -920,6 +920,8 @@ label ddlc_moe_release:
 label ddlc_steam_release:
 
     python hide:
+        interface.info(_("Please note that DDML assumes your DDLC Steam Copy hasn't been modified.\nMake sure your DDLC copy is clean before proceeding."),)
+        
         interface.interaction(_("Steam Directory"), _("Please choose the 'common' folder inside of the Steam folder."),)
 
         path, is_default = choose_directory(persistent.zip_directory)

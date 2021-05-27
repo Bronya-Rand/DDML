@@ -313,10 +313,11 @@ label delete_mod_folder:
             try:
                 shutil.rmtree(persistent.projects_directory + '/' + project.current.name)
             except:
-                interface.info(deleted_mod_name + " was deleted improperly due to an error.\nMake sure the mod folder is deleted within the mod folder directory.")
+                interface.info(deleted_mod_name + " was deleted improperly as some files have been in use.\nClose any apps using the mod files and delete the folder manually.")
                 renpy.jump("front_page")
         else:
             interface.error(_("Invalid Input."))
+            continue
 
         interface.info(deleted_mod_name + " has been deleted.")
         deleted_mod_name = None
@@ -345,12 +346,19 @@ label move_mod_folder:
         persistent.projects_directory = pathnew
 
         # Moves Mods from old folder to new folder
-        for file in os.listdir(oldmod_dir):
-            print file
-            src_file = os.path.join(oldmod_dir, file)
-            dst_file = os.path.join(persistent.projects_directory, file)
-            shutil.move(src_file, dst_file)
+        try:
+            for file in os.listdir(oldmod_dir):
+                src_file = os.path.join(oldmod_dir, file)
+                dst_file = os.path.join(persistent.projects_directory, file)
+                shutil.move(src_file, dst_file)
+        except:
+            for file in os.listdir(persistent.projects_directory):
+                src_file = os.path.join(oldmod_dir, file)
+                dst_file = os.path.join(persistent.projects_directory, file)
+                shutil.move(dst_file, src_file)
 
+            interface.error(_("DDML encountered a error when transferring files.\nMake sure no mods or apps using mod files are open and try again."),)
+            
         project.manager.scan()
 
     return
