@@ -22,15 +22,6 @@
 init python:
     import os, shutil, zipfile, glob, hashlib
 
-    def ext_move(ext, path):
-        for file in os.listdir(ext + path):
-            src_file = os.path.join(ext + path, file)
-            if renpy.macintosh:
-                dst_file = os.path.join(project_dir + '/DDLC.app/Contents/Resources/autorun/' + path, file)
-            else:
-                dst_file = os.path.join(project_dir + path, file)
-            shutil.move(src_file, dst_file)
-
     def rpy_ext(ext):
         for file in os.listdir(ext):
             base = [".exe", ".sh", ".py", ".txt", ".md", ".html", ".app"]
@@ -39,31 +30,13 @@ init python:
                 dst = os.path.join(project_dir, file)
                 shutil.move(src, dst)
 
-    def lib_move(ext):
-        for file in os.listdir(ext + '/lib'):
-            src_file = os.path.join(ext + '/lib', file)
+    def move_this(mzt, ext):
+        for file in os.listdir(mzt + '/' + ext):
+            src_file = os.path.join(mzt + '/' ext, file)
             if renpy.macintosh:
-                dst_file = os.path.join(project_dir + '/DDLC.app/Contents/MacOS/lib', file)
+                dst_file = os.path.join(project_dir + '/DDLC.app/Contents/Resources/autorun/' + ext, file)
             else:
-                dst_file = os.path.join(project_dir + '/lib', file)
-            shutil.move(src_file, dst_file)     
-
-    def rpy_move(ext):
-        for file in os.listdir(ext + '/renpy'):
-            src_file = os.path.join(ext + '/renpy', file)
-            if renpy.macintosh:
-                dst_file = os.path.join(project_dir + '/DDLC.app/Contents/Resources/autorun/renpy', file)
-            else:
-                dst_file = os.path.join(project_dir + '/renpy', file)
-            shutil.move(src_file, dst_file)
-
-    def reg_move(mzt, ext):
-        for file in os.listdir(mzt + '/game'):
-            src_file = os.path.join(mzt + ext, file)
-            if renpy.macintosh:
-                dst_file = os.path.join(project_dir + '/DDLC.app/Contents/Resources/autorun/game', file)
-            else:
-                dst_file = os.path.join(project_dir + '/game', file)
+                dst_file = os.path.join(project_dir + '/' + ext, file)
             shutil.move(src_file, dst_file)
 
     def zip_extract():
@@ -89,17 +62,11 @@ init python:
         try:
             shutil.copytree(persistent.zip_directory + "/Doki Doki Literature Club", project_dir)
         except:
-            interface.error(_("Cannot Locate your Doki Doki Literature Club Folder"), _("Make sure it is set to your 'Steam\steamapps\common' folder."),)
+            interface.error(_("Cannot Locate your Doki Doki Literature Club Folder."), _("Make sure it is set to your 'Steam\steamapps\common' folder."),)
 
     def ddlc_copy():
-        if not glob.glob(persistent.zip_directory + "/ddlc-mac/DDLC.app"):
+        if not glob.glob(persistent.zip_directory + "/DDLC.app"):
             interface.error(_("Cannot find DDLC.app."), _("Please make sure that your OS and ZIP Directory settings are set correctly."))
-        
-        # sha = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
-        # path = open(persistent.zip_directory + "/ddlc-mac/DDLC.app", 'rb')
-        # if hashlib.sha256(path.read()).hexdigest() != sha:
-        #     interface.error(_("The DDLC.app file downloaded is not official. Download a official DDLC ZIP file from {a=https://ddlc.moe}DDLC's website{/a} and try again."))
-        # path.close()
 
         shutil.copytree(persistent.zip_directory, project_dir)
     
@@ -167,7 +134,7 @@ label add_a_mod:
 
             if renpy.macintosh and persistent.safari == True:
                 interface.interaction(_("Making a Mod Folder"), _("Copying DDLC, Please Wait..."),)
-                ddlc_copy(project_dir)
+                ddlc_copy()
             else:
                 interface.interaction(_("Making a Mod Folder"), _("Extracting DDLC, Please Wait..."),)
                 if not renpy.macintosh:
@@ -226,57 +193,33 @@ label add_a_mod:
             mzte = [x[0] for x in os.walk(mzt)]
             try:
                 mzte[1]
-                if str(mzte[1]).endswith('-Mod') or str(mzte[1]).endswith('-pc') or str(mzte[1]).endswith('-mac') or str(mzte[1]).endswith('-Renpy7Mod'):
-                    mztex = True
-                else:
-                    mztex = False
+                mzt = mzte[1]
             # if there is no folders in there
             except IndexError:
-                # return false for advanced scan
-                mztex = False
-            if mztex == False:
-                # if folder inside is /game to move to mod folder
-                if glob.glob(mzt + '/characters'):
-                    reg_move(mzt, '/characters')
-                if glob.glob(mzt + '/lib'):
-                    lib_move('/lib')
-                if glob.glob(mzt + '/renpy'):
-                    rpy_move('/renpy')
-                    rpy_ext(mzt)
-                if glob.glob(mzt + '/game'):
-                    reg_move(mzt, '/game')
-                else:
-                    # move mod files to the /game folder or mod folder
-                    for file in os.listdir(mzt):
-                        src_file = os.path.join(mzt, file)
-                        if renpy.macintosh:
-                            dst_file = os.path.join(project_dir + '/DDLC.app/Contents/Resources/autorun/game', file)
-                        else:
-                            dst_file = os.path.join(project_dir + '/game', file)
-                        shutil.move(src_file, dst_file)
+                pass
+            # if folder inside is /game to move to mod folder
+            if glob.glob(mzt + '/characters'):
+                move_this(mzt, '/characters')
+            if glob.glob(mzt + '/lib'):
+                move_this(mzt, '/lib')
+            if glob.glob(mzt + '/renpy'):
+                move_this(mzt, '/renpy')
+                rpy_ext(mzt)
+            if glob.glob(mzt + '/game'):
+                move_this(mzt, '/game')
             else:
-                #Extended Scanning (If Contents during extract are inside another folder (Yuri-1.0/script-ch1.rpyc))
-                # if folder inside is /game to move to mod folder
-                if glob.glob(str(mzte[1]) + '/characters'):
-                    ext_move(str(mzte[1]), '/characters')
-                if glob.glob(str(mzte[1]) + '/lib'):
-                    lib_move(str(mzte[1]))
-                if glob.glob(str(mzte[1]) + '/renpy'):
-                    rpy_move(str(mzte[1]))
-                    rpy_ext(str(mzte[1]))
-                if glob.glob(str(mzte[1]) + '/game'):
-                    ext_move(str(mzte[1]),'/game')
-                else:
-                    for file in os.listdir(str(mzte[1])):
-                        src_file = os.path.join(str(mzte[1]), file)
-                        if renpy.macintosh:
-                            dst_file = os.path.join(project_dir + '/DDLC.app/Contents/Resources/autorun/game', file)
-                        else:
-                            dst_file = os.path.join(project_dir + '/game', file)
-                        shutil.move(src_file, dst_file)
+                # move mod files to the /game folder or mod folder
+                for file in os.listdir(mzt):
+                    src_file = os.path.join(mzt, file)
+                    if renpy.macintosh:
+                        dst_file = os.path.join(project_dir + '/DDLC.app/Contents/Resources/autorun/game', file)
+                    else:
+                        dst_file = os.path.join(project_dir + '/game', file)
+                    shutil.move(src_file, dst_file)
 
             # Prevents copy of any other RPA or other mod files
-            shutil.rmtree(persistent.projects_directory + '/temp')
+            try: shutil.rmtree(persistent.projects_directory + '/temp')
+            except: pass
             # Auto-Refresh
             project.manager.scan()
             break
@@ -336,7 +279,7 @@ label add_base_game:
 
             if renpy.macintosh and persistent.safari == True:
                 interface.interaction(_("Making a Mod Folder"), _("Copying DDLC, Please Wait..."),)
-                ddlc_copy(project_dir)
+                ddlc_copy()
             else:
                 interface.interaction(_("Making a Mod Folder"), _("Extracting DDLC, Please Wait..."),)
                 if not renpy.macintosh:
@@ -351,7 +294,8 @@ label add_base_game:
                     zip_extract()
             
             # Prevents copy of any other RPA or other mod files
-            shutil.rmtree(persistent.projects_directory + '/temp')
+            try: shutil.rmtree(persistent.projects_directory + '/temp')
+            except: pass
             project.manager.scan()
             break
     jump front_page

@@ -104,7 +104,7 @@ screen update_channel(channels):
 
                         add SPACER
 
-                        textbutton c["modName"] action OpenURL(c["modUploadURL"])
+                        textbutton c["modName"].replace("[", "").replace("]", "") action OpenURL(c["modUploadURL"])
 
                         add HALF_SPACER
 
