@@ -295,7 +295,7 @@ label delete_mod_folder:
         import shutil
         mod_delete_response = interface.input(
             _("Deleting a Mod"),
-            _("Are you sure you want to delete this mod? Type either Yes or No."),
+            _("Are you sure you want to delete [project.current.name]? Type either Yes or No."),
             filename=False,
             cancel=Jump("front_page"))
 
@@ -309,18 +309,15 @@ label delete_mod_folder:
         if mod_response == "No" or mod_response == "no":
             interface.error(_("The operation has been cancelled."))
         elif mod_response == "Yes" or mod_response == "yes":
-            deleted_mod_name = project.current.name
             try:
                 shutil.rmtree(persistent.projects_directory + '/' + project.current.name)
             except:
-                interface.info(deleted_mod_name + " was deleted improperly as some files have been in use.\nClose any apps using the mod files and delete the folder manually.")
+                interface.info("[project.current.name] was deleted improperly as some files have been in use.\nClose any apps using the mod files and delete the folder manually.")
                 renpy.jump("front_page")
         else:
             interface.error(_("Invalid Input."))
 
-        interface.info(deleted_mod_name + " has been deleted.")
-        deleted_mod_name = None
-
+        interface.info("[project.current.name] has been deleted from the mod folder.")
         project.manager.scan()
 
     jump front_page

@@ -24,11 +24,12 @@ init python:
 
     def rpy_ext(ext):
         for file in os.listdir(ext):
-            base = [".exe", ".sh", ".py", ".txt", ".md", ".html", ".app"]
-            if file.endswith(tuple(base)):
-                src = os.path.join(ext, file)
+            src = os.path.join(ext, file)
+            if file.endswith(("rpy", "rpyc", "txt", "chr")):
+                dst = os.path.join(project_dir + "/game", file)
+            else:
                 dst = os.path.join(project_dir, file)
-                shutil.move(src, dst)
+            shutil.move(src, dst)
 
     def move_this(mzt, ext):
         for file in os.listdir(mzt + ext):
@@ -38,6 +39,7 @@ init python:
             else:
                 dst_file = os.path.join(project_dir + ext, file)
             shutil.move(src_file, dst_file)
+        shutil.rmtree(mzt + ext) # clean the folder after it to avoid copying a double folder
 
     def zip_extract():
         if renpy.macintosh:
@@ -169,7 +171,6 @@ label add_a_mod:
                 interface.interaction(_("Mod to Install Folder"), _("Please choose the the mod folder you wish to install."),)
                 
                 path, is_default = choose_directory(persistent.mzip_directory)
-
             else:
                 interface.interaction(_("Mod ZIP File"), _("Please choose the mod ZIP file you wish to install."),)
 
@@ -192,14 +193,10 @@ label add_a_mod:
 
             # Search for if there is a folder in /temp that isn't mod related (Yuri-1.0)
             mzt = persistent.projects_directory + "/temp"
-            mzte = [x[0] for x in os.walk(mzt)]
-            try:
-                mzte[1]
-                mzt = str(mzte[1])
-            # if there is no folders in there
-            except IndexError:
-                pass
-            # if folder inside is /game to move to mod folder
+            mzte = [x for x in os.listdir(mzt)]
+            if mzte[0].endswith(("Mod", "Renpy7Mod", "pc", "mac")):
+                mzt = os.path.join(mzt, str(mzte[0]))
+
             if glob.glob(mzt + '/characters'):
                 move_this(mzt, '/characters')
             if glob.glob(mzt + '/lib'):
@@ -209,20 +206,11 @@ label add_a_mod:
             if glob.glob(mzt + '/game'):
                 move_this(mzt, '/game')
             rpy_ext(mzt)
-            # move mod files to the /game folder or mod folder
-            for file in os.listdir(mzt):
-                src_file = os.path.join(mzt, file)
-                if renpy.macintosh:
-                    dst_file = os.path.join(project_dir + '/DDLC.app/Contents/Resources/autorun/game', file)
-                else:
-                    dst_file = os.path.join(project_dir + '/game', file)
-                shutil.move(src_file, dst_file)
 
             # Prevents copy of any other RPA or other mod files
             try: shutil.rmtree(persistent.projects_directory + '/temp')
             except: pass
             interface.info(_("DDML has installed [modinstall_foldername!q] to the mod folder."), modinstall_foldername=modinstall_foldername)
-            # Auto-Refresh
             project.manager.scan()
             break
         
