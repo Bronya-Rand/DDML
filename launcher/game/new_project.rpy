@@ -26,9 +26,15 @@ init python:
         for file in os.listdir(ext):
             src = os.path.join(ext, file)
             if file.endswith(("rpy", "rpyc", "txt", "chr")):
-                dst = os.path.join(project_dir + "/game", file)
+                if renpy.macintosh:
+                    dst = os.path.join(project_dir + "/DDLC.app/Contents/Resources/autorun/game", file)
+                else:
+                    dst = os.path.join(project_dir + "/game", file)
             else:
-                dst = os.path.join(project_dir, file)
+                if renpy.macintosh:
+                    dst = os.path.join(project_dir + "/DDLC.app/Contents/Resources/autorun", file)
+                else:
+                    dst = os.path.join(project_dir, file)
             shutil.move(src, dst)
 
     def move_this(mzt, ext):
