@@ -388,7 +388,7 @@ init python:
     # Packages.
     build.packages = [ ]
 
-    build.package("all", "zip tar.bz2 dmg", "source binary")
+    build.package("all", "zip", "source binary")
     build.package("source", "tar.bz2", "source source_only", update=False)
     build.package("raspi", "tar.bz2", "raspi", dlc=True, update=False)
     build.package("steam", "zip", "steam", dlc=True)
