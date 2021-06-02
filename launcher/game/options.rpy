@@ -1,4 +1,4 @@
-﻿# Copyright 2004-2019 Tom Rothamel <pytom@bishoujo.us>
+﻿# Copyright 2004-2021 Tom Rothamel <pytom@bishoujo.us>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -183,9 +183,7 @@ init -1 python hide:
 
     config.sound = False
     config.quit_action = Quit(confirm=False)
-    config.gl_resize = False
     config.window_icon = "images/logo.png"
-    config.windows_icon = "images/logo32.png"
     config.has_autosave = False
     config.log_enable = False
     config.mouse_hide_time = None
@@ -248,8 +246,8 @@ init python:
     # Mac signing options.
     import os
     build.mac_identity = os.environ.get("RENPY_MAC_IDENTITY", None)
-    build.mac_codesign_command = [ "/home/tom/ab/renpy-deps/mac/mac_sign_client.sh", "{identity}", "{app}" ]
-    build.mac_create_dmg_command = [ "/home/tom/ab/renpy-deps/mac/mac_dmg_client.sh", "{identity}", "{volname}", "{sourcedir}", "{dmg}" ]
+    build.mac_codesign_command = [ config.renpy_base + "/scripts/mac/mac_sign_client.sh", "{identity}", "{app}" ]
+    build.mac_create_dmg_command = [ config.renpy_base + "/scripts/mac/mac_dmg_client.sh", "{identity}", "{volname}", "{sourcedir}", "{dmg}" ]
     build.mac_codesign_dmg_command = [ "/bin/true" ]
 
 
@@ -269,12 +267,37 @@ init python:
     build.classify_renpy("**/thumbs.db", None)
     build.classify_renpy("**/.*", None)
 
+    # Atom rules. These have to be very early, since Atom uses names like
+    # tmp for packages.
+    build.classify_renpy("atom/", "atom-all source_only")
+    build.classify_renpy("atom/Atom.edit.py", "atom-all source_only")
+    build.classify_renpy("atom/default-dot-atom/**", "atom-all")
+    build.classify_renpy("atom/atom-windows/**", "atom-windows")
+    build.classify_renpy("atom/Atom.app/**", "atom-mac")
+    build.classify_renpy("atom/atom-linux**", "atom-linux")
+
     try:
         with open(os.path.join(config.renpy_base, "atom", "executable.txt")) as f:
             for l in f:
                 build.executable(l.strip())
     except:
         pass
+
+    build.classify_renpy("rapt/**/libLive2DCubismCore.so", None)
+    build.classify_renpy("rapt/**", "rapt")
+    build.executable("rapt/prototype/gradlew")
+
+    build.classify_renpy("renios/prototype/base/", None)
+    build.classify_renpy("renios/prototype/prototype.xcodeproj/*.xcworkspace/", None)
+    build.classify_renpy("renios/prototype/prototype.xcodeproj/xcuserdata/", None)
+    build.classify_renpy("renios/prototype/**", "renios")
+    build.classify_renpy("renios/buildlib/**", "renios")
+    build.classify_renpy("renios/ios.py", "renios")
+    build.classify_renpy("renios/version.txt", "renios")
+    build.classify_renpy("renios/", "renios")
+
+    build.classify_renpy("web/game.zip", None)
+    build.classify_renpy("web/**", "web")
 
     build.classify_renpy("**.old", None)
     build.classify_renpy("**.new", None)
@@ -284,8 +307,11 @@ init python:
     build.classify_renpy("**/log.txt", None)
     build.classify_renpy("**/traceback.txt", None)
     build.classify_renpy("**/errors.txt", None)
+    build.classify_renpy("**/steam_appid.txt", None)
     build.classify_renpy("**/saves/", None)
     build.classify_renpy("**/tmp/", None)
+    build.classify_renpy("**/.Editra", None)
+
 
     # main source.
 
@@ -311,30 +337,79 @@ init python:
     build.classify_renpy("gui/game/gui/", None)
 
     source_and_binary("launcher")
+    source_and_binary("gui", binary=None)
+
+    source_and_binary("the_question")
+    source_and_binary("tutorial")
 
     # docs.
     build.classify_renpy("doc/", "source")
     build.classify_renpy("doc/.doctrees/", None)
     build.classify_renpy("doc/_sources/", None)
-    build.classify_renpy("doc/**", None)
+    build.classify_renpy("doc/**", "source")
     build.classify_renpy("LICENSE.txt", "source")
 
+    build.classify_renpy("sphinx/", "source_only")
+    build.classify_renpy("sphinx/build.sh", "source_only")
+    build.classify_renpy("sphinx/checks.py", "source_only")
+    build.classify_renpy("sphinx/game/**", "source_only")
+    build.classify_renpy("sphinx/source/inc/", None)
+    build.classify_renpy("sphinx/source/**", "source_only")
+
+
+    # module.
+    build.classify_renpy("module/", "source")
+    build.classify_renpy("module/*.c", "source")
+    build.classify_renpy("module/gen/", "source")
+    build.classify_renpy("module/gen/*.c", "source")
+    build.classify_renpy("module/*.h", "source")
+    build.classify_renpy("module/*.py*", "source")
+    build.classify_renpy("module/include/", "source")
+    build.classify_renpy("module/include/*.pxd", "source")
+    build.classify_renpy("module/include/*.pxi", "source")
+    build.classify_renpy("module/pysdlsound/", "source")
+    build.classify_renpy("module/pysdlsound/*.py", "source")
+    build.classify_renpy("module/pysdlsound/*.pyx", "source")
+    build.classify_renpy("module/fribidi-src/**", "source")
+
     # all-platforms binary.
-    build.classify_renpy("lib/**/_renpysteam*", None)
-    build.classify_renpy("lib/**/*steam_api*", None)
-    build.classify_renpy("lib/*/renpy", None)
-    build.classify_renpy("lib/*/renpy.exe", None)
+    build.classify_renpy("lib/**/_renpysteam*", "steam")
+    build.classify_renpy("lib/**/*steam_api*", "steam")
+    build.classify_renpy("lib/**/*Live2D*", None)
+    build.classify_renpy("lib/linux-armv7l/", "raspi")
+    build.classify_renpy("lib/linux-armv7l/**", "raspi")
     build.classify_renpy("lib/**", "binary")
     build.classify_renpy("renpy.sh", "binary")
     # renpy.app is now built from scratch from distribute.rpy.
 
+    # jedit rules.
+    build.classify_renpy("jedit/**", "jedit")
+
     # Packages.
     build.packages = [ ]
 
-    build.package("all", "zip", "source binary")
+    build.package("all", "zip tar.bz2 dmg", "source binary")
+    build.package("source", "tar.bz2", "source source_only", update=False)
+    build.package("raspi", "tar.bz2", "raspi", dlc=True, update=False)
+    build.package("steam", "zip", "steam", dlc=True)
+
+    build.package("jedit", "zip", "jedit", dlc=True)
+
+    build.package("atom-linux", "tar.bz2", "atom-all atom-linux", dlc=True)
+    build.package("atom-mac", "zip", "atom-all atom-mac", dlc=True)
+    build.package("atom-windows", "zip", "atom-all atom-windows", dlc=True)
+
+    build.package("rapt", "zip", "rapt", dlc=True)
+    build.package("renios", "zip", "renios", dlc=True)
+    build.package("web", "zip", "web", dlc=True)
+
 
 # Enable the special launcher translation mode.
 define config.translate_launcher = True
 
 # Reduce the rate of screen updates.
 default preferences.gl_powersave = True
+
+# Disable steam.
+python early:
+    config.enable_steam = False

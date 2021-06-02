@@ -20,12 +20,8 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 init python:
-    if persistent.gl_enable is None:
-        persistent.gl_enable = True
-
-    config.gl_enable = persistent.gl_enable
     persistent.b_ddml = None
-
+    
     if persistent.show_edit_funcs is None:
         persistent.show_edit_funcs = True
 
@@ -42,7 +38,12 @@ init python:
         rv = [ ( "English", None) ]
 
         for i in languages:
-            rv.append((i.replace("_", " ").title(), i))
+            rv.append((i.title(), i))
+
+        for i in (("Schinese", "schinese"), ("Tchinese", "tchinese")):
+            if i in rv:
+                rv.remove(i)
+                rv.append(({"schinese": "Simplified Chinese", "tchinese": "Traditional Chinese"}.get(i[1]), i[1]))
 
         rv.sort()
 
@@ -53,37 +54,6 @@ init python:
         return rv
 
     show_legacy = os.path.exists(os.path.join(config.renpy_base, "templates", "english", "game", "script.rpy"))
-
-    class ImgDir(Action):
-        """
-        Opens `images` in a file browser.
-        """
-
-        alt = _("Open [text] directory.")
-
-        def __init__(self, directory, absolute=False):
-            if absolute:
-                self.directory = directory
-            else:
-                self.directory = os.path.join(os.getcwd(), directory)
-
-        def get_sensitive(self):
-            return os.path.exists(self.directory)
-
-        def __call__(self):
-
-            try:
-                directory = renpy.fsencode(self.directory)
-
-                if renpy.windows:
-                    os.startfile(directory)
-                elif renpy.macintosh:
-                    subprocess.Popen([ "open", directory ])
-                else:
-                    subprocess.Popen([ "xdg-open", directory ])
-
-            except:
-                pass
 
 default persistent.legacy = False
 default persistent.force_new_tutorial = False
@@ -227,23 +197,6 @@ screen preferences:
                                         text _("No DDLC Copy Detected")
                                     else:
                                         text _("DDLC.moe ZIP Copy")
-
-                    add SPACER
-
-                    #add SEPARATOR2
-
-                    if renpy.windows or renpy.linux:
-                        frame:
-                            style "l_indent"
-                            yminimum 75
-                            has vbox
-
-                            text _("Customization:")
-
-                            add HALF_SPACER
-
-                            frame style "l_indent":
-                                textbutton _("Change Layout") action ImgDir("launcher/game/images")
 
                     add SPACER
 
