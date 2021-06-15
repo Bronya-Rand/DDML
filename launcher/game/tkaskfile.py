@@ -1,6 +1,5 @@
 import sys
 
-
 # Gtk generally has better support than TKinter on various Linux distributions
 def gtk_select_file(title):
     dialog = Gtk.FileChooserNative(title=title,
@@ -10,14 +9,12 @@ def gtk_select_file(title):
 
     return dialog.get_filename()
 
-
 # Fall back to TKinter if Gtk isn't available
 def tk_select_file(initialdir, title):
     root = Tk()
     root.withdraw()
 
-    return askopenfilename(initialdir=initialdir, parent=root, title=title, filetypes=[("DDLC ZIP File", "ddlc-win.zip")])
-
+    return askopenfilename(initialdir=initialdir, parent=root, title=title, filetypes=(("DDLC ZIP File", "ddlc-win.zip")))
 
 try:
     import gi

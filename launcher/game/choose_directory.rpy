@@ -1,4 +1,4 @@
-﻿# Copyright 2004-2019 Tom Rothamel <pytom@bishoujo.us>
+﻿# Copyright 2004-2021 Tom Rothamel <pytom@bishoujo.us>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -19,6 +19,9 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+
+
+
 init python:
 
     if renpy.windows:
@@ -33,8 +36,8 @@ init python:
             import pyobjus
         except:
             pass
-    
-    
+
+
     def directory_is_writable(path):
         test = os.path.join(path, "renpy test do not use")
 
@@ -185,7 +188,10 @@ init python:
 
         if EasyDialogs:
 
-            choice = EasyDialogs.AskFileForOpen(defaultLocation=default_path, wanted=unicode)
+            if renpy.macintosh:
+                choice = EasyDialogs.AskFileForOpen(typeList=[('DDLC ZIP File (ddlc-mac.zip)', 'ddlc-mac.zip')], defaultLocation=default_path, windowTitle="Select DDLC ZIP File", wanted=unicode)
+            else:
+                choice = EasyDialogs.AskFileForOpen(typeList=[('DDLC ZIP File (ddlc-win.zip)', 'ddlc-win.zip')], defaultLocation=default_path, windowTitle="Select DDLC ZIP File", wanted=unicode)
 
             if choice is not None:
                 path = choice
@@ -270,4 +276,3 @@ init python:
             interface.error(_("Unknown File Type. Please select a '.zip' file."),)
 
         return path, is_default
-       
