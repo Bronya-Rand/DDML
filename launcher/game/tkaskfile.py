@@ -2,7 +2,7 @@ import sys
 
 
 # Gtk generally has better support than TKinter on various Linux distributions
-def gtk_select_directory(title):
+def gtk_select_file(title):
     dialog = Gtk.FileChooserNative(title=title,
                                    action=Gtk.FileChooserAction.OPEN)
 
@@ -12,11 +12,11 @@ def gtk_select_directory(title):
 
 
 # Fall back to TKinter if Gtk isn't available
-def tk_select_directory(initialdir, title):
+def tk_select_file(initialdir, title):
     root = Tk()
     root.withdraw()
 
-    return askopenfilename(initialdir=initialdir, parent=root, title=title)
+    return askopenfilename(initialdir=initialdir, parent=root, title=title, filetypes=[("DDLC ZIP File", "ddlc-win.zip")])
 
 
 try:
@@ -24,8 +24,8 @@ try:
     gi.require_version('Gtk', '3.0')
     from gi.repository import Gtk
 
-    def select_directory(title):
-        result = gtk_select_directory(title)
+    def select_file(title):
+        result = gtk_select_file(title)
 
         return result if result else ''
 
@@ -38,10 +38,10 @@ except:
         from Tkinter import Tk
         from tkFileDialog import askopenfilename
 
-    def select_directory(title):
-        return tk_select_directory(title, sys.argv[1])
+    def select_file(title):
+        return tk_select_file(title, sys.argv[1])
 
 if __name__ == '__main__':
-    directory = select_directory('Select File')
+    directory = select_file('Select File')
 
     sys.stdout.write(directory)
