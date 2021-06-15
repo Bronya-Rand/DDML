@@ -331,6 +331,7 @@ init python:
 
     build.classify_renpy("renpy.py", "binary")
     source_and_binary("renpy")
+    source_and_binary("ddmc.json")
 
     # games.
     build.classify_renpy("launcher/game/theme/", None)
