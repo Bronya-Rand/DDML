@@ -86,37 +86,30 @@ init python:
         shutil.copytree(path, persistent.projects_directory + '/temp')
 
 # Code to add a mod
+# Code to add a mod
 label add_a_mod:
-    # Checks if user set Mod Install Folder
     if persistent.projects_directory is None:
         call choose_projects_directory
-    # Ren'Py Failsafe
     if persistent.projects_directory is None:
-        $ interface.error(_("The Mod directory could not be set. Giving up."))
-    # Browser Set?
+        $ interface.error(_("The mod folder path could not be set. Please try again."))
     if renpy.macintosh:
         if persistent.safari is None:
             call browser
         if persistent.safari is None:
-            $ interface.error(_("Couldn't check if OS auto-extracts ZIPs. Please reconfigure your settings."))
-    # Checks if user set DDLC ZIP Location (All OS)
+            $ interface.error(_("Couldn't check if the OS auto-extracts ZIPs. Please try again."))
     if persistent.zip_directory is None:
         call ddlc_location
-    # Ren'Py Failsafe 2
     if persistent.zip_directory is None:
-        $ interface.error(_("The DDLC copy directory could not be set. Giving up."))
-    if persistent.mzip_directory is None:
-        call choose_modzip_directory
-    if persistent.mzip_directory is None:
-        $ interface.error(_("The Mod ZIP directory could not be set. Giving up."))
+        $ interface.error(_("The DDLC path could not be set. Giving up."))
 
     python:
+        extract = Extractor()
         modinstall_foldername = ""
         while True:
             # Asks User the name of the folder they want their mod folder to be
             modinstall_foldername = interface.input(
                 _("Mod Folder Name"),
-                _("Please enter the name of the mod you are installing:"),
+                _("Please type in the name of the mod that you are installing."),
                 allow=interface.PROJECT_LETTERS,
                 cancel=Jump("front_page"),
                 default=modinstall_foldername,
@@ -154,7 +147,12 @@ label add_a_mod:
                         # Extract DDLC (Moe Release)
                         zip_extract()
                 else:
-                    zip_extract()
+                    if persistent.safari == True:
+                        # Copy DDLC (Steam Release) (Assuming Steam Copy is Unmodded)
+                        ddlc_copy()
+                    else:
+                        # Extract DDLC (Moe Release)
+                        zip_extract()
 
             # RPA Download Install Check (for mods that aren't in ZIPs or downloaded as seperate .rpas)
             if glob.glob(persistent.mzip_directory + '/*.rpa'):
@@ -167,6 +165,7 @@ label add_a_mod:
                             shutil.move(src, project_dir + '/DDLC.app/Contents/Resources/autorun/game')
                         else:
                             shutil.move(src, project_dir + '/game')
+
                 # Auto-Refresh
                 interface.info(_("DDML has installed [modinstall_foldername!q] to the mod folder."), modinstall_foldername=modinstall_foldername)
                 project.manager.scan()
@@ -287,7 +286,12 @@ label add_base_game:
                         # Extract DDLC (Moe Release)
                         zip_extract()
                 else:
-                    zip_extract()
+                    if persistent.safari == True:
+                        # Copy DDLC (Steam Release) (Assuming Steam Copy is Unmodded)
+                        ddlc_copy()
+                    else:
+                        # Extract DDLC (Moe Release)
+                        zip_extract()
             
             # Prevents copy of any other RPA or other mod files
             try: shutil.rmtree(persistent.projects_directory + '/temp')

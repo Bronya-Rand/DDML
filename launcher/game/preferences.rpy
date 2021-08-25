@@ -93,7 +93,7 @@ screen preferences:
                         yminimum 75
                         has vbox
 
-                        text _("Mod Folder Directory:")
+                        text _("Mod Folder Path")
 
                         add HALF_SPACER
 
@@ -102,11 +102,11 @@ screen preferences:
                             if persistent.projects_directory:
                                 textbutton _("[persistent.projects_directory!q]"):
                                     action Jump("projects_directory_preference")
-                                    alt _("Projects directory: [text]")
+                                    alt _("Mod Folder Path [text]")
                             else:
                                 textbutton _("Not Set"):
                                     action Jump("projects_directory_preference")
-                                    alt _("Projects directory: [text]")
+                                    alt _("Mod Folder Path [text]")
 
                     add SPACER
 
@@ -117,7 +117,7 @@ screen preferences:
                         style "l_indent"
                         yminimum 75
                         has vbox
-                        text _("DDLC Copy Directory:")
+                        text _("DDLC Copy Directory")
 
                         add HALF_SPACER
 
@@ -125,34 +125,11 @@ screen preferences:
                             if persistent.zip_directory:
                                 textbutton _("[persistent.zip_directory!q]"):
                                     action Jump("projects_zip_preference")
-                                    alt _("DDLC ZIP directory: [text]")
+                                    alt _("DDLC ZIP Path [text]")
                             else:
                                 textbutton _("Not Set"):
                                     action Jump("projects_zip_preference")
-                                    alt _("DDLC ZIP directory: [text]")
-                                        
-                    add SPACER
-
-                    # Text editor selection.
-                    add SEPARATOR2
-                        
-                    frame:
-                        style "l_indent"
-                        yminimum 75
-                        has vbox
-                        text _("Mod Download Folder:")
-
-                        add HALF_SPACER
-
-                        frame style "l_indent":
-                            if persistent.mzip_directory:
-                                textbutton _("[persistent.mzip_directory!q]"):
-                                    action Jump("projects_mzip_preference")
-                                    alt _("Mod Download Directory: [text]")
-                            else:
-                                textbutton _("Not Set"):
-                                    action Jump("projects_mzip_preference")
-                                    alt _("Mod Download Directory: [text]")
+                                    alt _("DDLC ZIP Path [text]")
 
                 frame:
                     style "l_indent"
@@ -168,7 +145,7 @@ screen preferences:
                         has vbox
 
                         if renpy.macintosh:
-                            text _("OS auto-extracts '.zip' files?")
+                            text _("ZIP Auto-Extracts?")
 
                             add HALF_SPACER
 
@@ -179,24 +156,24 @@ screen preferences:
                                     else:
                                         text _("No")
                                 else:
-                                    text _("None Selected")
+                                    text _("Unknown")
                             
                             add HALF_SPACER
 
-                            textbutton _("Change Browser") action Jump("browser")
+                            textbutton _("Change Auto-Extract Setting") action Jump("browser")
                         else:
-                            text _("DDLC Copy:")
+                            text _("DDLC Version")
 
                             add HALF_SPACER
 
                             frame style "l_indent":
                                 if persistent.steam_release == True:
-                                    text _("Steam Copy")
+                                    text _("Steam Version")
                                 else:
                                     if persistent.steam_release == None:
-                                        text _("No DDLC Copy Detected")
+                                        text _("Unknown")
                                     else:
-                                        text _("DDLC.moe ZIP Copy")
+                                        text _("DDLC.moe Version")
 
                     add SPACER
 
@@ -207,12 +184,12 @@ screen preferences:
 
                         add SPACER
 
-                        textbutton _("Build Mode") style "l_checkbox" action ToggleField(persistent, "b_ddml")
+                        textbutton _("Dev Options") style "l_checkbox" action ToggleField(persistent, "b_ddml")
                         if persistent.b_ddml:
 
                             add HALF_SPACER
 
-                            textbutton _("Build Distributions") action [project.Select("launcher"), Jump("build_distributions")]
+                            textbutton _("Build") action [project.Select("launcher"), Jump("build_distributions")]
 
                 frame:
                     style "l_indent"
@@ -251,8 +228,8 @@ screen preferences:
 label projects_directory_preference:
     python:
         release_kind = interface.choice(
-            _("Are you wanting to move your existing mod folder to a new folder or set a new one?"),
-            [ ( 'move_mod_folder', _("Move Existing Mod Folder to a New Folder") ), ( 'choose_projects_directory', _("Setup a New One")) ],
+            _("Are you wanting to move your mods to a new folder path or set a new path?"),
+            [ ( 'move_mod_folder', _("Move Mods to a New Folder Path") ), ( 'choose_projects_directory', _("Setup a New Mod Path")) ],
             "choose_projects_directory",
             cancel=Jump("preferences"),
             )
@@ -261,11 +238,6 @@ label projects_directory_preference:
 
     jump preferences
 
-label projects_mzip_preference:
-    call choose_modzip_directory
-    jump preferences
-    
-# Setting Configuration Calls
 label projects_zip_preference:
     call ddlc_location
     jump preferences
