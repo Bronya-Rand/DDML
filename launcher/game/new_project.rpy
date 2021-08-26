@@ -92,11 +92,11 @@ label add_a_mod:
             if renpy.macintosh and persistent.safari == True:
                 interface.interaction(_("Mod Files"), _("Please select the the mod folder you wish to install."),)
                 
-                path, is_default = choose_directory(None, True)
+                path, is_default = choose_directory(None)
             else:
                 interface.interaction(_("Mod Files"), _("Please select the mod ZIP file you wish to install."),)
 
-                path, is_default = choose_file(None, True)
+                path, is_default = choose_file(None)
 
             if path is None:
                 shutil.rmtree(project_dir)
