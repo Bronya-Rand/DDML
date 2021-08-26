@@ -3,6 +3,7 @@ from zipfile import ZipFile
 import tempfile
 import os
 import shutil
+import sys
 
 class Extractor:
     '''
@@ -42,6 +43,9 @@ class Extractor:
         modFolder - The mod folder inside the mod install folder.\n
         copy - Makes sure this is a copy or a ZIP we are working with.
         '''
+
+        os.makedirs(modFolder)
+
         if not copy:
             td = tempfile.mkdtemp(prefix="NewDDML_",suffix="_TempGame")
 
@@ -105,10 +109,12 @@ class Extractor:
                         else:
                             shutil.move(os.path.join(td, x), os.path.join(td, "ImproperMod", x))
 
-        if not copy:
-            mod_dir = os.path.join(td, os.listdir(td)[-1])
-        else:
-            mod_dir = td
+        mod_dir = os.path.join(td, os.listdir(td)[-1])
+
+        if sys.platform == "darwin":
+            for x in os.listdir(modFolder):
+                if x.endswith(".app"):
+                    modFolder = os.path.join(modFolder, x, "Contents/Resources/autorun")
 
         for contents in os.listdir(mod_dir):
 
