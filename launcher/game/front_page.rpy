@@ -25,6 +25,9 @@ init python:
 
     import os
     import subprocess
+    from modmanagement import ModManagement
+
+    modman = ModManagement()
 
     class OpenDirectory(Action):
         """
@@ -256,6 +259,21 @@ label front_page:
     call screen front_page
     jump front_page
 
+label scripts_rpa:
+
+    python:
+        interface.processing(_("Deleting scripts.rpa..."))
+        modman.delete_rpa(os.path.join(persistent.projects_directory, "/game"), "scripts.rpa")
+
+    jump front_page
+
+label images_rpa:
+
+    python:
+        interface.processing(_("Deleting scripts.rpa..."))
+        modman.delete_rpa(os.path.join(persistent.projects_directory, "/game"), "images.rpa")
+
+    jump front_page
 
 label lint:
     python hide:
@@ -292,32 +310,31 @@ label force_recompile:
 label delete_mod_folder:
 
     python hide:
-        import shutil
         mod_delete_response = interface.input(
             _("Deleting a Mod"),
             _("Are you sure you want to delete [project.current.name]? Type either Yes or No."),
             filename=False,
             cancel=Jump("front_page"))
-
         mod_delete_response = mod_delete_response.strip()
 
         if not mod_delete_response:
             interface.error(_("The operation has been cancelled."))
+            return
 
-        mod_response = mod_delete_response
-
-        if mod_response == "No" or mod_response == "no":
+        if mod_delete_response.lower() == "no":
             interface.error(_("The operation has been cancelled."))
-        elif mod_response == "Yes" or mod_response == "yes":
+            return
+        elif mod_delete_response.lower() == "yes":
             try:
-                shutil.rmtree(persistent.projects_directory + '/' + project.current.name)
+                modman.delete_mod(persistent.projects_directory, project.current.name)
+                interface.info("[project.current.name] has been deleted from the mod folder.")
             except:
-                interface.info("[project.current.name] was deleted improperly as some files have been in use.\nClose any apps using the mod files and delete the folder manually.")
+                interface.info("DDML was unable to delete [project.current.name] properly.\nMake sure the mod is not running and delete the mod from the folder manually.")
                 renpy.jump("front_page")
         else:
-            interface.error(_("Invalid Input."))
+            interface.error(_("Invalid Input. Expected either a Yes or No response."))
+            return
 
-        interface.info("[project.current.name] has been deleted from the mod folder.")
         project.manager.scan()
 
     jump front_page
@@ -327,33 +344,23 @@ label move_mod_folder:
 
     python hide:
 
-        import os
-        import shutil
-
-        oldmod_dir = persistent.projects_directory
-
         interface.interaction(_("New Mod Directory"), _("Please choose the new mod folder using the directory chooser.\n{b}The directory chooser may have opened behind this window.{/b}"), _("DDML will create new mods in this folder, and place old and new mods into this folder."),)
 
-        pathnew, is_default = choose_directory(persistent.projects_directory)
+        path, is_default = choose_directory(None)
 
         if is_default:
             interface.error(_("The operation has been cancelled."))
-
-        persistent.projects_directory = pathnew
+            renpy.jump("front_page")
 
         # Moves Mods from old folder to new folder
         try:
-            for file in os.listdir(oldmod_dir):
-                src_file = os.path.join(oldmod_dir, file)
-                dst_file = os.path.join(persistent.projects_directory, file)
-                shutil.move(src_file, dst_file)
+            modman.move_mod_folder(persistent.projects_directory, path)
+            persistent.projects_directory = path
+            interface.information(_("DDML transferred all your mods to the new mod folder with no errors."),)
         except:
-            for file in os.listdir(persistent.projects_directory):
-                src_file = os.path.join(oldmod_dir, file)
-                dst_file = os.path.join(persistent.projects_directory, file)
-                shutil.move(dst_file, src_file)
+            modman.move_mod_folder(path, persistent.projects_directory)
 
-            interface.error(_("DDML encountered a error when transferring files.\nMake sure no mods or apps using mod files are open and try again."),)
+            interface.error(_("DDML was unable to move your mods to the new mod folder due to a error.\nMake sure no mods are running and try again."),)
 
         project.manager.scan()
 

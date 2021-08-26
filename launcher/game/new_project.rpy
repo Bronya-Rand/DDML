@@ -20,73 +20,12 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 init python:
-    import os, shutil, zipfile, glob, hashlib
+    import os
+    import glob
+    from extractor import Extractor
 
-    def rpy_ext(ext):
-        for file in os.listdir(ext):
-            src = os.path.join(ext, file)
-            if file.endswith(("rpy", "rpyc", "txt", "chr")):
-                if renpy.macintosh:
-                    dst = os.path.join(project_dir + "/DDLC.app/Contents/Resources/autorun/game", file)
-                else:
-                    dst = os.path.join(project_dir + "/game", file)
-            else:
-                if renpy.macintosh:
-                    dst = os.path.join(project_dir + "/DDLC.app/Contents/Resources/autorun", file)
-                else:
-                    dst = os.path.join(project_dir, file)
-            shutil.move(src, dst)
+    extract = Extractor()
 
-    def move_this(mzt, ext):
-        for file in os.listdir(mzt + ext):
-            src_file = os.path.join(mzt + ext, file)
-            if renpy.macintosh:
-                dst_file = os.path.join(project_dir + '/DDLC.app/Contents/Resources/autorun' + ext, file)
-            else:
-                dst_file = os.path.join(project_dir + ext, file)
-            shutil.move(src_file, dst_file)
-        shutil.rmtree(mzt + ext) # clean the folder after it to avoid copying a double folder
-
-    def zip_extract():
-        if renpy.macintosh:
-            sha = 'abc3d2fee9433ad454decd15d6cfd75634283c17aa3a6ac321952c601f7700ec'
-        else:
-            sha = '2a3dd7969a06729a32ace0a6ece5f2327e29bdf460b8b39e6a8b0875e545632e'
-        
-        path = open(persistent.zip_directory, 'rb')
-        if hashlib.sha256(path.read()).hexdigest() != sha:
-            interface.error(_("The DDLC ZIP file chosen is not official. Download a official DDLC ZIP file from {a=https://ddlc.moe}DDLC's website{/a}, select it in Settings, and try again."))
-        path.close() # JIC
-        
-        with zipfile.ZipFile(persistent.zip_directory, "r") as z:
-            z.extractall(persistent.projects_directory + "/temp")
-            if renpy.macintosh:
-                ddlc = persistent.projects_directory + '/temp'
-            else:
-                ddlc = persistent.projects_directory + '/temp/DDLC-1.1.1-pc'
-        shutil.move(ddlc, project_dir)
-    
-    def steam_copy():
-        try:
-            shutil.copytree(persistent.zip_directory + "/Doki Doki Literature Club", project_dir)
-        except:
-            interface.error(_("Cannot Locate your Doki Doki Literature Club Folder."), _("Make sure it is set to your 'Steam\steamapps\common' folder."),)
-
-    def ddlc_copy():
-        if not glob.glob(persistent.zip_directory + "/DDLC.app"):
-            interface.error(_("Cannot find DDLC.app."), _("Please make sure that your OS and ZIP Directory settings are set correctly."))
-
-        shutil.copytree(persistent.zip_directory, project_dir)
-    
-    def modzip_extract(path):
-        with zipfile.ZipFile(path, "r") as z:
-            z.extractall(persistent.projects_directory + "/temp")
-
-    def modzip_copy(path):
-        shutil.copytree(path, persistent.projects_directory + '/temp')
-
-# Code to add a mod
-# Code to add a mod
 label add_a_mod:
     if persistent.projects_directory is None:
         call choose_projects_directory
@@ -101,202 +40,169 @@ label add_a_mod:
         call ddlc_location
     if persistent.zip_directory is None:
         $ interface.error(_("The DDLC path could not be set. Giving up."))
+    if persistent.zip_directory is None:
+        call ddlc_location
+    if persistent.zip_directory is None:
+        $ interface.error(_("The DDLC path could not be set. Giving up."))
 
     python:
-        extract = Extractor()
         modinstall_foldername = ""
         while True:
-            # Asks User the name of the folder they want their mod folder to be
             modinstall_foldername = interface.input(
-                _("Mod Folder Name"),
+                _("Mod Name"),
                 _("Please type in the name of the mod that you are installing."),
                 allow=interface.PROJECT_LETTERS,
                 cancel=Jump("front_page"),
                 default=modinstall_foldername,
             )
-
             modinstall_foldername = modinstall_foldername.strip()
 
             if not modinstall_foldername:
                 interface.error(_("The mod name may not be empty."), label=None)
                 continue
             if modinstall_foldername == "launcher":
-                interface.error(_("'launcher' is a reserved mod name. Please choose a different mod name."), label=None)
+                interface.error(_("'launcher' is a reserved folder name. Please choose a different mod name."), label=None)
                 continue
 
             project_dir = os.path.join(persistent.projects_directory, modinstall_foldername)
 
             if project.manager.get(modinstall_foldername) is not None:
-                interface.error(_("[modinstall_foldername!q] already exists. Please choose a different project name."), modinstall_foldername=modinstall_foldername, label=None)
+                interface.error(_("[modinstall_foldername!q] already exists. Please choose a different mod name."), modinstall_foldername=modinstall_foldername, label=None)
                 continue
             if os.path.exists(project_dir):
-                interface.error(_("[project_dir!q] already exists. Please choose a different project name."), project_dir=project_dir, label=None)
+                interface.error(_("[project_dir!q] already exists. Please choose a different mod name."), project_dir=project_dir, label=None)
                 continue
 
             if renpy.macintosh and persistent.safari == True:
-                interface.interaction(_("Making a Mod Folder"), _("Copying DDLC, Please Wait..."),)
-                ddlc_copy()
+                interface.interaction(_("Making the Mod Folder"), _("Copying DDLC, Please Wait..."),)
+                extract.game_installation(persistent.zip_directory, project_dir, True)
             else:
-                interface.interaction(_("Making a Mod Folder"), _("Extracting DDLC, Please Wait..."),)
+                interface.interaction(_("Making the Mod Folder"), _("Extracting DDLC, Please Wait..."),)
                 if not renpy.macintosh:
-                    # Asks if the copy is Steam
                     if persistent.steam_release == True:
-                        # Copy DDLC (Steam Release) (Assuming Steam Copy is Unmodded)
-                        steam_copy()
+                        extract.game_installation(persistent.zip_directory, project_dir, True)
                     else:
-                        # Extract DDLC (Moe Release)
-                        zip_extract()
+                        extract.game_installation(persistent.zip_directory, project_dir)
                 else:
                     if persistent.safari == True:
-                        # Copy DDLC (Steam Release) (Assuming Steam Copy is Unmodded)
-                        ddlc_copy()
+                        extract.game_installation(persistent.zip_directory, project_dir, True)
                     else:
-                        # Extract DDLC (Moe Release)
-                        zip_extract()
+                        extract.game_installation(persistent.zip_directory, project_dir)
 
-            # RPA Download Install Check (for mods that aren't in ZIPs or downloaded as seperate .rpas)
-            if glob.glob(persistent.mzip_directory + '/*.rpa'):
-                interface.info(_("DDML has detected RPA files in the Mod ZIP Directory.\n DDML will copy these files to the mod folder."))
-                interface.interaction(_("Copying"), _("Copying Mod Files from Mod ZIP Directory, Please Wait..."),)
-                for file in os.listdir(persistent.mzip_directory):
-                    if file.endswith('.rpa'):
-                        src = os.path.join(persistent.mzip_directory, file)
-                        if renpy.macintosh:
-                            shutil.move(src, project_dir + '/DDLC.app/Contents/Resources/autorun/game')
-                        else:
-                            shutil.move(src, project_dir + '/game')
-
-                # Auto-Refresh
-                interface.info(_("DDML has installed [modinstall_foldername!q] to the mod folder."), modinstall_foldername=modinstall_foldername)
-                project.manager.scan()
-                renpy.jump("front_page")
-
-            # Asks User name of ZIP
             if renpy.macintosh and persistent.safari == True:
-                interface.interaction(_("Mod to Install Folder"), _("Please choose the the mod folder you wish to install."),)
+                interface.interaction(_("Mod Files"), _("Please select the the mod folder you wish to install."),)
                 
-                path, is_default = choose_directory(persistent.mzip_directory)
+                path, is_default = choose_directory(None, True)
             else:
-                interface.interaction(_("Mod ZIP File"), _("Please choose the mod ZIP file you wish to install."),)
+                interface.interaction(_("Mod Files"), _("Please select the mod ZIP file you wish to install."),)
 
-                path, is_default = choose_file(persistent.mzip_directory)
+                path, is_default = choose_file(None, True)
 
-            if is_default:
+            if path is None:
                 shutil.rmtree(project_dir)
                 interface.error(_("The operation has been cancelled."))
                 renpy.jump("front_page")
 
-            modzip_path = path
-
-            if renpy.macintosh and persistent.safari:
-                interface.interaction(_("Copying"), _("Copying Mod Files, Please Wait..."),)
-                modzip_copy(modzip_path)
+            if path.endswith('.zip'):
+                valid = extract.valid_zip(path)
+                if valid:
+                    pass
+                else:
+                    shutil.rmtree(project_dir)
+                    inteface.error(_("The mod ZIP you selected is not a valid DDLC mod archive.\nSelect a different mod ZIP and try again."),)
+                    renpy.jump("front_page")
+            elif path.endswith('.rar'):
+                shutil.rmtree(project_dir)
+                inteface.error(_("RAR files cannot be unzipped or unrarred by DDML.\nConvert the file to a ZIP file and try again."),)
+                renpy.jump("front_page")
             else:
-                # Extract Mod
-                interface.interaction(_("Extracting"), _("Extracting Mod ZIP, Please Wait..."),)
-                modzip_extract(modzip_path)
+                shutil.rmtree(project_dir)
+                inteface.error(_("Unknown file type.\nSelect a DDMC mod ZIP file and try again."),)
+                renpy.jump("front_page")
 
-            # Search for if there is a folder in /temp that isn't mod related (Yuri-1.0)
-            mzt = persistent.projects_directory + "/temp"
-            mzte = [x for x in os.listdir(mzt)]
-            if mzte[0].endswith(("Mod", "Renpy7Mod", "pc", "mac")):
-                mzt = os.path.join(mzt, str(mzte[0]))
+            interface.interaction(_("Installing the Mod"), _("This process may take some time. Please wait."),)
 
-            if glob.glob(mzt + '/characters'):
-                move_this(mzt, '/characters')
-            if glob.glob(mzt + '/lib'):
-                move_this(mzt, '/lib')
-            if glob.glob(mzt + '/renpy'):
-                move_this(mzt, '/renpy')
-            if glob.glob(mzt + '/game'):
-                move_this(mzt, '/game')
-            rpy_ext(mzt)
+            if not renpy.macintosh:
+                if persistent.steam_release == True:
+                    extract.installation(path, project_dir, True)
+                else:
+                    extract.installation(path, project_dir)
+            else:
+                if persistent.safari == True:
+                    extract.installation(path, project_dir, True)
+                else:
+                    extract.installation(path, project_dir)
 
-            # Prevents copy of any other RPA or other mod files
-            try: shutil.rmtree(persistent.projects_directory + '/temp')
-            except: pass
             interface.info(_("DDML has installed [modinstall_foldername!q] to the mod folder."), modinstall_foldername=modinstall_foldername)
             project.manager.scan()
             break
         
     jump front_page
 
-# Code to install DDLC only
 label add_base_game:
-    # Checks if user set Mod Install Folder
     if persistent.projects_directory is None:
         call choose_projects_directory
-    # Ren'Py Failsafe
     if persistent.projects_directory is None:
-        $ interface.error(_("The Mod directory could not be set. Giving up."))
-    # Browser Set?
+        $ interface.error(_("The mod folder path could not be set. Please try again."))
     if renpy.macintosh:
         if persistent.safari is None:
             call browser
         if persistent.safari is None:
-            $ interface.error(_("Couldn't check if OS auto-extracts ZIPs. Please reconfigure your settings."))
-    # Checks if user set DDLC ZIP Location (All OS)
+            $ interface.error(_("Couldn't check if the OS auto-extracts ZIPs. Please try again."))
     if persistent.zip_directory is None:
         call ddlc_location
-    # Ren'Py Failsafe 2
     if persistent.zip_directory is None:
-        $ interface.error(_("The DDLC copy directory could not be set. Giving up."))
+        $ interface.error(_("The DDLC path could not be set. Giving up."))
+    if persistent.zip_directory is None:
+        call ddlc_location
+    if persistent.zip_directory is None:
+        $ interface.error(_("The DDLC path could not be set. Giving up."))
 
     python:
         modinstall_foldername = ""
         while True:
-            # Asks User the name of the folder they want their mod folder to be
             modinstall_foldername = interface.input(
-                _("Mod Folder Name"),
-                _("Please enter the name of the mod you are installing:"),
+                _("DDLC Name"),
+                _("Please type in the name of the folder you want to install DDLC onto."),
                 allow=interface.PROJECT_LETTERS,
                 cancel=Jump("front_page"),
                 default=modinstall_foldername,
             )
-
             modinstall_foldername = modinstall_foldername.strip()
 
             if not modinstall_foldername:
-                interface.error(_("The mod name may not be empty."), label=None)
+                interface.error(_("The DDLC folder name may not be empty."), label=None)
                 continue
             if modinstall_foldername == "launcher":
-                interface.error(_("'launcher' is a reserved mod name. Please choose a different mod name."), label=None)
+                interface.error(_("'launcher' is a reserved folder name. Please choose a different folder name."), label=None)
                 continue
 
             project_dir = os.path.join(persistent.projects_directory, modinstall_foldername)
 
             if project.manager.get(modinstall_foldername) is not None:
-                interface.error(_("[modinstall_foldername!q] already exists. Please choose a different project name."), modinstall_foldername=modinstall_foldername, label=None)
+                interface.error(_("[modinstall_foldername!q] already exists. Please choose a different folder name."), modinstall_foldername=modinstall_foldername, label=None)
                 continue
             if os.path.exists(project_dir):
-                interface.error(_("[project_dir!q] already exists. Please choose a different project name."), project_dir=project_dir, label=None)
+                interface.error(_("[project_dir!q] already exists. Please choose a different folder name."), project_dir=project_dir, label=None)
                 continue
 
             if renpy.macintosh and persistent.safari == True:
-                interface.interaction(_("Making a Mod Folder"), _("Copying DDLC, Please Wait..."),)
-                ddlc_copy()
+                interface.interaction(_("Making the DDLC Folder"), _("Copying DDLC, Please Wait..."),)
+                extract.game_installation(persistent.zip_directory, project_dir, True)
             else:
-                interface.interaction(_("Making a Mod Folder"), _("Extracting DDLC, Please Wait..."),)
+                interface.interaction(_("Making the DDLC Folder"), _("Extracting DDLC, Please Wait..."),)
                 if not renpy.macintosh:
-                    # Asks if the copy is Steam
                     if persistent.steam_release == True:
-                        # Copy DDLC (Steam Release) (Assuming Steam Copy is Unmodded)
-                        steam_copy()
+                        extract.game_installation(persistent.zip_directory, project_dir, True)
                     else:
-                        # Extract DDLC (Moe Release)
-                        zip_extract()
+                        extract.game_installation(persistent.zip_directory, project_dir)
                 else:
                     if persistent.safari == True:
-                        # Copy DDLC (Steam Release) (Assuming Steam Copy is Unmodded)
-                        ddlc_copy()
+                        extract.game_installation(persistent.zip_directory, project_dir, True)
                     else:
-                        # Extract DDLC (Moe Release)
-                        zip_extract()
+                        extract.game_installation(persistent.zip_directory, project_dir)
             
-            # Prevents copy of any other RPA or other mod files
-            try: shutil.rmtree(persistent.projects_directory + '/temp')
-            except: pass
-            interface.info(_("DDML has installed DDLC to the mod folder under the [modinstall_foldername!q] folder."), modinstall_foldername=modinstall_foldername)
+            interface.info(_("DDML has installed DDLC to the [modinstall_foldername!q] folder."), modinstall_foldername=modinstall_foldername)
             project.manager.scan()
             break
 

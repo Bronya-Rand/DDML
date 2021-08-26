@@ -775,95 +775,16 @@ label choose_projects_directory:
         path, is_default = choose_directory(persistent.projects_directory)
 
         if is_default:
-            interface.info(_("DDML has set the mod folder directory to:"), "[path!q]", path=path)
+            interface.error(_("The operation has been cancelled."))
+            renpy.jump("front_page")
 
         persistent.projects_directory = path
         project.multipersistent.projects_directory = path
         project.multipersistent.save()
-
         project.manager.scan()
 
     return
 
-label choose_modzip_directory:
-
-    python hide:
-
-        interface.interaction(_("Mod ZIP Download Directory"), _("Please choose the folder your Mod ZIPs/Folders are downloaded to."), _("This will make DDML find the Mod ZIP/Folder in this folder."),)
-
-        path, is_default = choose_directory(persistent.mzip_directory)
-
-        if is_default:
-            interface.info(_("DDML has set the mod ZIP directory to:"), "[path!q]", path=path)
-
-        persistent.mzip_directory = path
-        project.multipersistent.mzip_directory = path
-        project.multipersistent.save()
-
-        project.manager.scan()
-
-    return
-
-# Deletes scripts.rpa for some mods
-label scripts_rpa:
-
-    python hide:
-        script_choice = interface.choice(
-                _("Some mods may require scripts.rpa to be removed in order to run. Are you sure you want to continue?"),
-                [ ( 'delete_scripts', _("Yes") ), ( 'front_page', _("No")) ],
-                "front_page",
-                cancel=Jump("front_page"),
-                )
-
-        renpy.jump(script_choice)
-
-label delete_scripts:
-
-    python hide:
-        interface.interaction(_("Deleting scripts.rpa"), _("Please wait..."),)
-
-        import os
-        if renpy.macintosh:
-            try: os.remove(persistent.projects_directory + "/" + project.current.name + "/DDLC.app/Contents/Resources/autorun/game/scripts.rpa")
-            except: interface.error(_("scripts.rpa is either already deleted or missing."), _("Check the game directory and try again."))
-        else:
-            try: os.remove(persistent.projects_directory + "/" + project.current.name + "/game/scripts.rpa")
-            except: interface.error(_("scripts.rpa is either already deleted or missing."), _("Check the game directory and try again."))
-        
-        interface.info("scripts.rpa has been deleted.")
-
-    jump front_page
-
-# Deletes images.rpa for some mods
-label images_rpa:
-    python hide:
-        image_choice = interface.choice(
-                _("Some mods may require images.rpa to be removed in order to run. Are you sure you want to continue?"),
-                [ ( 'delete_images', _("Yes") ), ( 'front_page', _("No")) ],
-                "front_page",
-                cancel=Jump("front_page"),
-                )
-
-        renpy.jump(image_choice)
-
-label delete_images:
-
-    python hide:
-        interface.interaction(_("Deleting images.rpa"), _("Please wait..."),)
-
-        import os
-        if renpy.macintosh:
-            try: os.remove(persistent.projects_directory + "/" + project.current.name + "/DDLC.app/Contents/Resources/autorun/game/images.rpa")
-            except: interface.error(_("images.rpa is either already deleted or missing."), _("Check the game directory and try again."))
-        else:
-            try: os.remove(persistent.projects_directory + "/" + project.current.name + "/game/images.rpa")
-            except: interface.error(_("images.rpa is either already deleted or missing."), _("Check the game directory and try again."))
-        
-        interface.info("images.rpa has been deleted.")
-
-    jump front_page
-
-# Asks whether they downloaded DDLC from Steam or DDLC.moe/Itch.io
 label ddlc_location:
 
     python:
@@ -881,61 +802,47 @@ label ddlc_location:
     return
 
 # Asks User where ddlc-win.zip is
-label ddlc_moe_release:
+label ddlc_path:
     if renpy.macintosh:
         if persistent.safari is None:
             call browser
         if persistent.safari is None:
             $ interface.error(_("The browser could not be set. Giving up."))
 
-    python hide:
+    python:
 
-        if renpy.macintosh and persistent.safari == True:
-            interface.interaction(_("DDLC Folder"), _("Please choose the DDLC folder. It must be the original zip folder from DDLC.moe."),)
+        if renpy.macintosh and persistent.safari:
+            interface.interaction(_("DDLC Folder"), _("Please select the DDLC folder you downloaded from DDLC.moe."),)
 
-            path, is_default = choose_directory(persistent.zip_directory)
+            path, is_default = choose_directory(None)
+        elif persistent.steam_release:
+            interface.interaction(_("DDLC Folder"), _("Please select the \"common\" folder in Steam\steamapps."),)
+
+            path, is_default = choose_directory(None)
         else:
-            interface.interaction(_("DDLC ZIP File"), _("Please choose the DDLC ZIP. It must be the original zip from DDLC.moe."),)
+            interface.interaction(_("DDLC ZIP File"), _("Please select the DDLC ZIP file you downloaded from DDLC.moe."),)
 
-            path, is_default = choose_file(persistent.zip_directory)
+            path, is_default = choose_file(None)
 
         if is_default:
-            interface.info(_("DDML has set the DDLC copy directory to:"), "[path!q]", path=path)
+            interface.error(_("The operation has been cancelled."))
+            renpy.jump("front_page")
+        else:
+            persistent.zip_directory = path
+            persistent.steam_release = False
+            project.multipersistent.zip_directory = path
+            project.multipersistent.save()
+            project.manager.scan()
 
-        persistent.zip_directory = path
-        project.multipersistent.zip_directory = path
-        project.multipersistent.save()
+    return
 
-        project.manager.scan()
-
-    # Returns False that this directory is Steam
+label ddlc_moe_release:
     $ persistent.steam_release = False
+    jump ddlc_path
 
-    return
-
-# Asks User where Steam/SteamApps/Common is
 label ddlc_steam_release:
-
-    python hide:
-        interface.info(_("Please note that DDML assumes your DDLC Steam Copy hasn't been modified.\nMake sure your DDLC copy is clean before proceeding."),)
-        
-        interface.interaction(_("Steam Directory"), _("Please choose the 'common' folder inside of the Steam folder."),)
-
-        path, is_default = choose_directory(persistent.zip_directory)
-
-        if is_default:
-            interface.info(_("DDML has set the DDLC copy directory to:"), "[path!q]", path=path)
-
-        persistent.zip_directory = path
-        project.multipersistent.zip_directory = path
-        project.multipersistent.save()
-
-        project.manager.scan()
-
-    # Returns True that this directory is Steam
     $ persistent.steam_release = True
-
-    return
+    jump ddlc_path
 
 # Browser Prompt
 label browser:
@@ -951,16 +858,16 @@ label browser:
 
         renpy.jump(browser_kind)
 
-# Set Safari or Auto-Extract Browser to True
 label safari_download:
     $ persistent.safari = True
     $ persistent.zip_directory = None
+    $ interface.info(_("Enabled Auto-Extraction Detection for DDML."),)
     return
-# Set Safaro to False for Third Party or Auto-Extract Off
 
 label regular_download:
     $ persistent.safari = False
     $ persistent.zip_directory = None
+    $ interface.info(_("Disabled Auto-Extraction Detection for DDML."),)
     return
 
 init python:

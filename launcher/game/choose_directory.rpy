@@ -164,7 +164,7 @@ init python:
 
         return path, is_default
 
-    def choose_file(path):
+    def choose_file(path, mod = False):
         """
         Pops up a file chooser.
 
@@ -188,10 +188,10 @@ init python:
 
         if EasyDialogs:
 
-            if renpy.macintosh:
-                choice = EasyDialogs.AskFileForOpen(typeList=[('DDLC ZIP File (ddlc-mac.zip)', 'ddlc-mac.zip')], defaultLocation=default_path, windowTitle="Select DDLC ZIP File", wanted=unicode)
+            if not mod:
+                choice = EasyDialogs.AskFileForOpen(typeList=[('DDLC ZIP File', '*.zip')], defaultLocation=default_path, windowTitle="Select DDLC ZIP File", wanted=unicode)
             else:
-                choice = EasyDialogs.AskFileForOpen(typeList=[('DDLC ZIP File (ddlc-win.zip)', 'ddlc-win.zip')], defaultLocation=default_path, windowTitle="Select DDLC ZIP File", wanted=unicode)
+                choice = EasyDialogs.AskFileForOpen(typeList=[('DDLC Mod File', '*.zip')], defaultLocation=default_path, windowTitle="Select Mod ZIP File", wanted=unicode)
 
             if choice is not None:
                 path = choice
@@ -267,12 +267,5 @@ init python:
             is_default = True
 
         path = renpy.fsdecode(path)
-
-        if path.endswith(".zip"):
-            return path, is_default
-        elif path.endswith(".rar"):
-            interface.error(_(".RAR files cannot be unzipped. Please convert the file to a ZIP and try again."),)
-        else:
-            interface.error(_("Unknown File Type. Please select a '.zip' file."),)
 
         return path, is_default
