@@ -1,4 +1,4 @@
-﻿# Copyright 2004-2020 Tom Rothamel <pytom@bishoujo.us>
+# Copyright 2004-2020 Tom Rothamel <pytom@bishoujo.us>
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -71,9 +71,29 @@ init python:
     _("Nightly")
     _("The bleeding edge of Ren'Py development. This may have the latest features, or might not run at all.")
 
+    # Newly added functions. Signed, MPDS
+    # Update: GET OUT OF MY HEAD
+
+    filter_keywords=set()
+    
+    def display_keywords():
+        return "Search phrases:\n"+"\n".join(filter_keywords)
+
+    def add_keyword(temp='monika'):
+        if temp!="":
+            filter_keywords.add(temp)
+        return
+
+    def remove_keyword(temp="monika"):
+        if temp!="":
+            if temp in filter_keywords:
+                filter_keywords.remove(temp)
+        return
 
 
-screen update_channel(channels):
+
+
+screen update_channel(channels, criteria):
 
     frame:
         style_group "l"
@@ -99,9 +119,29 @@ screen update_channel(channels):
                     has vbox
 
                     text _("Select the mod you will like to download. Afterwards return to the main menu and install it like normal with DDML.")
+                    if len(criteria)!=0:
+                        python:
+                            filter_keywords.clear()
+                            filter_keywords|=set(criteria.split(','))
+                            dsply_kwds=display_keywords()
+                            good_marker=True
+                        text _(dsply_kwds) style "l_small_text"
 
+                        add SPACER
+                        python:
+                            chosen_channels=list()
+                            for c in channels:
+                                good_marker=True
+                                search_kwds=c["modSearch"]
+                                for eee in filter_keywords:
+                                    if eee not in search_kwds:
+                                        good_marker=False
+                                        break
+                                if good_marker:
+                                    chosen_channels.append(c)
+                            channels=chosen_channels
+                        text "Found {} mods that are tagged with all search phrases:".format(len(chosen_channels)) style "l_small_text"
                     for c in channels:
-
                         add SPACER
 
                         textbutton c["modName"].replace("[", "").replace("]", "") action OpenURL(c["modUploadURL"])
@@ -178,6 +218,20 @@ screen updater:
 label update:
 
     python hide:
+        criteria = ""
+        criteria = interface.input(
+            _("Mod search phrases"),
+            _("""Please insert search phrases separated by commas.
+Spaces placed before and after search phrases will be included in them.
+Place ' on start of phrase to search by prefix.
+Place ' on end of phrase to search by suffix.
+Place ' on both to search full phrase only.
+
+Leave blank for the full list."""),
+            allow=interface.TRANSLATE_LETTERS+"' ,",
+            cancel=Jump("front_page"),
+            default="",
+        )
         interface.processing(_("Fetching the mod list..."))
 
         import urllib2
@@ -199,7 +253,7 @@ label update:
             with open(ddmc_data, 'r') as f:
                 channels = json.load(f)
         
-        renpy.call_screen("update_channel", channels)
+        renpy.call_screen("update_channel", channels, criteria)
 
     jump front_page
 
