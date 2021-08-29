@@ -870,30 +870,3 @@ label regular_download:
     $ interface.info(_("Disabled Auto-Extraction Detection for DDML."),)
     return
 
-init python:
-
-    def set_projects_directory_command():
-        ap = renpy.arguments.ArgumentParser()
-        ap.add_argument("projects", help="The path to the projects directory.")
-
-        args = ap.parse_args()
-
-        persistent.projects_directory = renpy.fsdecode(args.projects)
-        project.multipersistent.projects_directory = persistent.projects_directory
-        project.multipersistent.save()
-        renpy.save_persistent()
-
-        return False
-
-    renpy.arguments.register_command("set_projects_directory", set_projects_directory_command)
-
-    def get_projects_directory_command():
-        ap = renpy.arguments.ArgumentParser()
-        args = ap.parse_args()
-
-        if persistent.projects_directory is not None:
-            print(persistent.projects_directory)
-
-        return False
-
-    renpy.arguments.register_command("get_projects_directory", get_projects_directory_command)

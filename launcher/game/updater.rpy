@@ -20,58 +20,15 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 init python:
-    # This can be one of None, "available", "not-available", or "error".
-    #
-    # It must be None for a release.
-    UPDATE_SIMULATE = os.environ.get("RENPY_UPDATE_SIMULATE", None)
+    import urllib2
+    import ssl
+    import json
 
-    PUBLIC_KEY = "renpy_public.pem"
-
-    CHANNELS_URL = "https://www.renpy.org/channels.json"
-
-    version_tuple = renpy.version(tuple=True)
-
-    def check_dlc(name):
-        """
-        Returns true if the named dlc package is present.
-        """
-
-        return name in updater.get_installed_packages()
-
-    def add_dlc(name, restart=False):
-        """
-        Adds the DLC package, if it doesn't already exist.
-
-        Returns True if the DLC is installed, False otherwise.
-        """
-
-        dlc_url = "http://update.renpy.org/{}/updates.json".format(".".join(str(i) for i in version_tuple[:-1]))
-
-        state = updater.get_installed_state()
-
-        if state is not None:
-            base_name = state.get("sdk", {}).get('base_name', '')
-
-            if base_name.startswith("renpy-nightly-"):
-                dlc_url = "http://nightly.renpy.org/{}/updates.json".format(base_name[6:])
-
-        return renpy.invoke_in_new_context(updater.update, dlc_url, add=[name], public_key=PUBLIC_KEY, simulate=UPDATE_SIMULATE, restart=restart)
-
-    # Strings so they can be translated.
-
-    _("Release")
-    _("{b}Recommended.{/b} The version of Ren'Py that should be used in all newly-released games.")
-
-    _("Prerelease")
-    _("A preview of the next version of Ren'Py that can be used for testing and taking advantage of new features, but not for final releases of games.")
-
-    _("Experimental")
-    _("Experimental versions of Ren'Py. You shouldn't select this channel unless asked by a Ren'Py developer.")
-
-    _("Nightly")
-    _("The bleeding edge of Ren'Py development. This may have the latest features, or might not run at all.")
-
-
+    def decode_list():
+        with interface.error_handling(_("Decoding the mod list...")):
+            ddmc_data = config.basedir + '/ddmc.json'
+            with open(ddmc_data, 'r') as f:
+                return json.load(f)
 
 screen update_channel(channels):
 
@@ -98,107 +55,40 @@ screen update_channel(channels):
 
                     has vbox
 
-                    text _("Select the mod you will like to download. Afterwards return to the main menu and install it like normal with DDML.")
+                    text _("Select the mod you will like to download, download it, then return to the home menu and install it with DDML.")
 
                     for c in channels:
+                        
+                        if c['modShow']:
+                            add SPACER
 
-                        add SPACER
+                            textbutton c["modName"].replace("[", "").replace("]", "") action OpenURL(c["modUploadURL"])
 
-                        textbutton c["modName"].replace("[", "").replace("]", "") action OpenURL(c["modUploadURL"])
+                            add HALF_SPACER
 
-                        add HALF_SPACER
-
-                        #$$ date = _strftime(__("%B %d, %Y"), time.localtime(c["timestamp"]))
-
-                        #text "[date] • [c[pretty_version]] [current!t]" style "l_small_text"
-
-                        add HALF_SPACER
-
-                        text c["modShortDescription"] style "l_small_text"
+                            text c["modShortDescription"] style "l_small_text"
 
     textbutton _("Return") action Jump("front_page") style "l_left_button"
-
-
-screen updater:
-
-    frame:
-        style "l_root"
-
-        frame:
-            style_group "l_info"
-
-            has vbox
-
-            if u.state == u.ERROR:
-                text _("An error has occured:")
-            elif u.state == u.CHECKING:
-                text _("Checking for updates.")
-            elif u.state == u.UPDATE_NOT_AVAILABLE:
-                text _("Ren'Py is up to date.")
-            elif u.state == u.UPDATE_AVAILABLE:
-                text _("[u.version] is now available. Do you want to install it?")
-            elif u.state == u.PREPARING:
-                text _("Preparing to download the update.")
-            elif u.state == u.DOWNLOADING:
-                text _("Downloading the update.")
-            elif u.state == u.UNPACKING:
-                text _("Unpacking the update.")
-            elif u.state == u.FINISHING:
-                text _("Finishing up.")
-            elif u.state == u.DONE:
-                text _("The update has been installed. Ren'Py will restart.")
-            elif u.state == u.DONE_NO_RESTART:
-                text _("The update has been installed.")
-            elif u.state == u.CANCELLED:
-                text _("The update was cancelled.")
-
-            if u.message is not None:
-                add SPACER
-                text "[u.message!q]"
-
-            if u.progress is not None:
-                add SPACER
-
-                frame:
-                    style "l_progress_frame"
-
-                    bar:
-                        range 1.0
-                        value u.progress
-                        style "l_progress_bar"
-
-        label _("Ren'Py Update") style "l_info_label"
-
-    if u.can_cancel:
-        textbutton _("Cancel") action u.cancel style "l_left_button"
-
-    if u.can_proceed:
-        textbutton _("Proceed") action u.proceed style "l_right_button"
 
 label update:
 
     python hide:
         interface.processing(_("Fetching the mod list..."))
 
-        import urllib2
-        import json
-        import ssl
-
         # Disabled due to obsoleteness but it may be useful in code someday
         
         # with interface.error_handling(_("Downloading a updated mod list...")):
         #     url = "https://www.dokidokimodclub.com/api/mod/"
-        #     headers = {'Authorization': 'Api-Key qR2Tjbe7.mEQ1w5atlsgSbnlsxilOe4GyRxwoy7As'}
+        #     headers = {'Authorization': 'Api-Key [REDACTED]'}
         #     context = ssl._create_unverified_context()
         #     req = urllib2.Request(url=url, headers=headers)
         #     response = urllib2.urlopen(req, context=context)
         #     the_page = response.read()
 
-        with interface.error_handling(_("Decoding the mod list...")):
-            ddmc_data = config.basedir + '/ddmc.json'
-            with open(ddmc_data, 'r') as f:
-                channels = json.load(f)
-        
+        channels = decode_list()
+        if channels is None:
+            interface.error(_("DDML was unable to find any mods from the mod list.\nCheck if 'ddmc.json' exists, then try again."))
+            
         renpy.call_screen("update_channel", channels)
 
     jump front_page
