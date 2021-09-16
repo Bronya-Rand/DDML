@@ -21,7 +21,6 @@
 
 init python:
     import os
-    import glob
     from extractor import Extractor
 
     extract = Extractor()
