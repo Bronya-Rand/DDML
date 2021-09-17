@@ -33,13 +33,13 @@ label transfer:
                 try:
                     mm_compat.ddmm_folder_setup(persistent.projects_directory, x)
                 except:
-                    mm_compat.ddmm_traceback()
+                    mm_compat.ddmm_traceback(x)
                     mm_compat.ddmm_revert_folder_setup(persistent.projects_directory, x)
                     failed_mods = 1
         
         if failed_mods != 0:
             interface.info(_("DDML encountered some errors with transferring some mods."),
-            _("See {i}ddmm_transfer_traceback.txt{/i} for more information."),
+            _("See {i}transfer_log.txt{/i} for more information."),
             _("If the issue persists, contact the developer on Github and provide this file when issuing the issue."))
         else:
             interface.info(_("DDML transferred all your mods from DDMM with no issues."))

@@ -3,6 +3,7 @@ import shutil
 import os
 from modmanagement import ModManagement
 import sys
+import logging
 from renpy import config
 
 class DDMM_Compatibility:
@@ -17,6 +18,9 @@ class DDMM_Compatibility:
         self.traceback_file = os.path.join(config.basedir, 
                             "ddmm_transfer_traceback.txt")
         self.modman = ModManagement()
+        self.log_file = os.path.join(config.basedir, "transfer_log.txt")
+
+        logging.basicConfig(filename=self.log_file, level=logging.DEBUG)
 
         if os.path.exists(self.traceback_file):
             os.remove(self.traceback_file)
@@ -44,10 +48,14 @@ class DDMM_Compatibility:
         Launcher compliant.
         '''
 
+        logging.debug(f'Making {x} DDML Compliant.')
+
         main_path = os.path.join(project_dir, x, "install")
             
         self.modman.move_mod_folder(main_path, os.path.join(project_dir, x))
         shutil.rmtree(main_path)
+
+        logging.debug(f"{x} is now DDML Compliant.")
 
     def ddmm_revert_folder_setup(self, project_dir, x):
         '''
@@ -63,10 +71,12 @@ class DDMM_Compatibility:
                     shutil.move(os.path.join(main_path, y), os.path.join(main_path, "install"))
                 else:
                     shutil.copy2(os.path.join(main_path, y), os.path.join(main_path, "install"))
+
+        logging.debug(f"Reverted changes made to {x}.")
     
-    def ddmm_traceback(self):
+    def ddmm_traceback(self, x):
         '''
         This define makes a custom traceback file for the DDMM transfer tool.
         '''
-        with open(self.traceback_file, "a") as t:
-            t.write(sys.stdout + "\n\n")
+
+        logging.exception(f"Error occured with transferring {x} to DDML.")
