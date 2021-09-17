@@ -40,6 +40,7 @@ class DDMM_Compatibility:
         This define checks if the mod in the DDMM has not been setup already
         by DDML if transfer is started again.
         '''
+
         return os.path.exists(os.path.join(project_dir, x, "install"))
 
     def ddmm_folder_setup(self, project_dir, x):
@@ -48,14 +49,14 @@ class DDMM_Compatibility:
         Launcher compliant.
         '''
 
-        logging.debug(f'Making {x} DDML Compliant.')
+        logging.debug("Making " + x + " DDML Compliant.")
 
         main_path = os.path.join(project_dir, x, "install")
             
         self.modman.move_mod_folder(main_path, os.path.join(project_dir, x))
         shutil.rmtree(main_path)
 
-        logging.debug(f"{x} is now DDML Compliant.")
+        logging.debug(x + " is now DDML Compliant.")
 
     def ddmm_revert_folder_setup(self, project_dir, x):
         '''
@@ -72,11 +73,11 @@ class DDMM_Compatibility:
                 else:
                     shutil.copy2(os.path.join(main_path, y), os.path.join(main_path, "install"))
 
-        logging.debug(f"Reverted changes made to {x}.")
+        logging.debug("Reverted changes made to " + x + ".")
     
     def ddmm_traceback(self, x):
         '''
         This define makes a custom traceback file for the DDMM transfer tool.
         '''
 
-        logging.exception(f"Error occured with transferring {x} to DDML.")
+        logging.exception("Error occured with transferring " + x + " to DDML.")
