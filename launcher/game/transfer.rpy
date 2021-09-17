@@ -1,7 +1,6 @@
 
 init python:
     from ddmm_compatibility import DDMM_Compatibility
-    
     mm_compat = DDMM_Compatibility()
 
 label transfer:
@@ -29,13 +28,13 @@ label transfer:
         _("Make sure no mods or DDMM are running on your computer before proceeding."))
 
         for x in os.listdir(persistent.projects_directory):
-            if mm_compat.ddmm_folder_not_compliant():
-                interface.interaction(_("Setting up " + x + " for DDML."))
+            if mm_compat.ddmm_folder_not_compliant(persistent.projects_directory, x):
+                interface.interaction(_("Setting Up Mods"), _("Setting up " + x + " for DDML. Please wait..."))
                 try:
-                    mm_compat.ddmm_folder_setup(persistent.projects_directory)
+                    mm_compat.ddmm_folder_setup(persistent.projects_directory, x)
                 except:
                     mm_compat.ddmm_traceback()
-                    mm_compat.ddmm_revert_folder_setup(persistent.projects_directory)
+                    mm_compat.ddmm_revert_folder_setup(persistent.projects_directory, x)
                     failed_mods = 1
         
         if failed_mods != 0:
@@ -43,6 +42,6 @@ label transfer:
             _("See {i}ddmm_transfer_traceback.txt{/i} for more information."),
             _("If the issue persists, contact the developer on Github and provide this file when issuing the issue."))
         else:
-            interface.information(_("DDML transferred all your mods from DDMM with no issues."))
+            interface.info(_("DDML transferred all your mods from DDMM with no issues."))
 
-    renpy.jump("preferences")
+    jump preferences

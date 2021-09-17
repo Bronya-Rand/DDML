@@ -1,7 +1,7 @@
 
 import shutil
 import os
-from launcher.game.modmanagement import ModManagement
+from modmanagement import ModManagement
 import sys
 from renpy import config
 
@@ -10,7 +10,7 @@ class DDMM_Compatibility:
     This class adds DDMM (Mod Manager) compatibility features to DDML.
     '''
 
-    def __init__(self) -> None:
+    def __init__(self):
         # The DDMM directory in Windows
         self.ddmm_gamedir = os.path.join(os.getenv("APPDATA"), 
                             "DokiDokiModManager/GameData/installs")
