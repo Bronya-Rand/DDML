@@ -15,15 +15,13 @@ class DDMM_Compatibility:
         # The DDMM directory in Windows
         self.ddmm_gamedir = os.path.join(os.getenv("APPDATA"), 
                             "DokiDokiModManager/GameData/installs")
-        self.traceback_file = os.path.join(config.basedir, 
-                            "ddmm_transfer_traceback.txt")
         self.modman = ModManagement()
         self.log_file = os.path.join(config.basedir, "transfer_log.txt")
 
-        logging.basicConfig(filename=self.log_file, level=logging.DEBUG)
+        if os.path.exists(self.log_file):
+            os.remove(self.log_file)
 
-        if os.path.exists(self.traceback_file):
-            os.remove(self.traceback_file)
+        logging.basicConfig(filename=self.log_file, level=logging.DEBUG)
 
     def ddmm_detection(self):
         return os.path.exists(self.ddmm_gamedir)

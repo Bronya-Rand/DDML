@@ -15,12 +15,13 @@ label transfer:
         interface.info(_("First we will try to see where DDMM stores your mods in."),
         _("This will help detect what mods you have in DDMM for DDML to use."))
 
+        interface.interaction( _("Finding DDMM Directory"), _("Finding your DDMM directory. Please wait..."))
+
         if not mm_compat.ddmm_detection():
 
             interface.error(_("The transfer tool was unable to find your DDMM directory."),
-            _("If you believe this message was made in error, contact the developer on Github."),
-            label=preferences)
-        
+            _("If you believe this message was made in error, contact the developer on Github."))
+
         persistent.projects_directory = mm_compat.ddmm_path_setup()
 
         interface.info(_("Your DDMM directory was found successfully."), 
@@ -39,8 +40,7 @@ label transfer:
         
         if failed_mods != 0:
             interface.info(_("DDML encountered some errors with transferring some mods."),
-            _("See {i}transfer_log.txt{/i} for more information."),
-            _("If the issue persists, contact the developer on Github and provide this file when issuing the issue."))
+            _("See {i}transfer_log.txt{/i} for more information. If the issue persists, contact the developer on Github."))
         else:
             interface.info(_("DDML transferred all your mods from DDMM with no issues."))
 
