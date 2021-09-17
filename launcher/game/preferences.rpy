@@ -209,7 +209,7 @@ screen preferences:
                         add HALF_SPACER
 
                         textbutton _("Reset Window Size") style "l_nonbox" action Preference("display", 1.0)
-                        textbutton _("Transfer DDMM Data") action Jump("transfer")
+                        textbutton _("Transfer DDMM Data") style "l_nonbox" action Jump("transfer")
                         
                     add SEPARATOR2
 
