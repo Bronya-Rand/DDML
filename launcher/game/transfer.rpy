@@ -41,7 +41,7 @@ label transfer:
                     failed_mods = 1
         
         if failed_mods != 0:
-            interface.info(_("DDML encountered some errors with transferring some mods."),
+            interface.error(_("DDML encountered some errors with transferring some mods."),
             _("See {i}transfer_log.txt{/i} for more information. If the issue persists, contact the developer on Github."))
         else:
             interface.info(_("DDML transferred all your mods from DDMM with no issues."))
