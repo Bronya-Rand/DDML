@@ -313,7 +313,7 @@ label delete_mod_folder:
 
             elif mod_delete_response.lower() == "yes":
 
-                with interface.error_handling(_("Deleting [project.current.name]. Please wait...")):
+                with interface.error_handling(_("deleting mod.")):
                     modman.delete_mod(persistent.projects_directory, project.current.name)
 
                 interface.info("[project.current.name] has been deleted from the mod folder.")
