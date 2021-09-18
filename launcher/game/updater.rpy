@@ -24,6 +24,43 @@ init python:
     import ssl
     import json
 
+    # This can be one of None, "available", "not-available", or "error".
+    #
+    # It must be None for a release.
+    UPDATE_SIMULATE = os.environ.get("RENPY_UPDATE_SIMULATE", None)
+
+    PUBLIC_KEY = "renpy_public.pem"
+
+    CHANNELS_URL = "https://www.renpy.org/channels.json"
+
+    version_tuple = renpy.version(tuple=True)
+
+    def check_dlc(name):
+        """
+        Returns true if the named dlc package is present.
+        """
+
+        return name in updater.get_installed_packages()
+
+    def add_dlc(name, restart=False):
+        """
+        Adds the DLC package, if it doesn't already exist.
+
+        Returns True if the DLC is installed, False otherwise.
+        """
+
+        dlc_url = "http://update.renpy.org/{}/updates.json".format(".".join(str(i) for i in version_tuple[:-1]))
+
+        state = updater.get_installed_state()
+
+        if state is not None:
+            base_name = state.get("sdk", {}).get('base_name', '')
+
+            if base_name.startswith("renpy-nightly-"):
+                dlc_url = "http://nightly.renpy.org/{}/updates.json".format(base_name[6:])
+
+        return renpy.invoke_in_new_context(updater.update, dlc_url, add=[name], public_key=PUBLIC_KEY, simulate=UPDATE_SIMULATE, restart=restart)
+
     filter_keywords = []
 
     def decode_list():
