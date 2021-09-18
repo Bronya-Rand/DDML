@@ -201,7 +201,7 @@ label add_base_game:
                     else:
                         extract.game_installation(persistent.zip_directory, project_dir)
             
-            interface.info(_("DDML has installed DDLC to the [modinstall_foldername!q] folder."), modinstall_foldername=modinstall_foldername)
+            interface.info(_("DDML has installed DDLC to the mod folder."), modinstall_foldername=modinstall_foldername)
             project.manager.scan()
             break
 
