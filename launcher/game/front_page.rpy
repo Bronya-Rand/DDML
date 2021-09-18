@@ -26,8 +26,10 @@ init python:
     import os
     import subprocess
     from modmanagement import ModManagement
+    from ddmm_compatibility import DDMM_Compatibility
 
     modman = ModManagement()
+    mm_compat = DDMM_Compatibility()
 
     class OpenDirectory(Action):
         """
@@ -116,39 +118,26 @@ screen front_page:
                     add HALF_SPACER
                     add SEPARATOR
                     add HALF_SPACER
-
-                    hbox:
+                
+                    vbox:
                         xfill True
 
                         textbutton _("+ Change Mod Folder"):
                             left_margin (HALF_INDENT) 
                             action Jump("move_mod_folder")
 
-                    add HALF_SPACER
-                    add SEPARATOR
-                    add HALF_SPACER
-
-                    hbox:
-                        xfill True
+                        add HALF_SPACER
                         textbutton _("+ Add a Mod"):
                             left_margin (HALF_INDENT) 
                             action Jump("add_a_mod")
 
-                    add HALF_SPACER
-                    add SEPARATOR
-                    add HALF_SPACER
-                    hbox:
-                        xfill True
-                        textbutton _("+ Add DDLC Only"):
+                        add HALF_SPACER
+                        textbutton _("+ Add DDLC"):
                             left_margin (HALF_INDENT) 
                             action Jump("add_base_game")
                     
-                    add HALF_SPACER
-                    add SEPARATOR
-                    add HALF_SPACER
-                    hbox:
-                        xfill True
-                        textbutton _("+ Browse for Mods"):
+                        add HALF_SPACER
+                        textbutton _("+ Search for Mods"):
                             left_margin (HALF_INDENT) 
                             action Jump("update")
 
@@ -310,6 +299,7 @@ label force_recompile:
 label delete_mod_folder:
 
     python hide:
+
         mod_delete_response = interface.input(
             _("Deleting a Mod"),
             _("Are you sure you want to delete [project.current.name]? Type either Yes or No."),
@@ -317,23 +307,19 @@ label delete_mod_folder:
             cancel=Jump("front_page"))
         mod_delete_response = mod_delete_response.strip()
 
-        if not mod_delete_response:
+        if not mod_delete_response or mod_delete_response.lower() == "no":
             interface.error(_("The operation has been cancelled."))
             return
 
-        if mod_delete_response.lower() == "no":
-            interface.error(_("The operation has been cancelled."))
-            return
         elif mod_delete_response.lower() == "yes":
-            try:
+
+            with interface.error_handling(_("Deleting [project.current.name]. Please wait...")):
                 modman.delete_mod(persistent.projects_directory, project.current.name)
-                interface.info("[project.current.name] has been deleted from the mod folder.")
-            except:
-                interface.info("DDML was unable to delete [project.current.name] properly.\nMake sure the mod is not running and delete the mod from the folder manually.")
-                renpy.jump("front_page")
+
+            interface.info("[project.current.name] has been deleted from the mod folder.")
         else:
             interface.error(_("Invalid Input. Expected either a Yes or No response."))
-            return
+            continue
 
         project.manager.scan()
 
@@ -344,7 +330,7 @@ label move_mod_folder:
 
     python hide:
 
-        interface.interaction(_("New Mod Directory"), _("Please choose the new mod folder using the directory chooser.\n{b}The directory chooser may have opened behind this window.{/b}"), _("DDML will create new mods in this folder, and place old and new mods into this folder."),)
+        interface.interaction(_("New Mod Directory"), _("Please choose the new mod folder using the directory chooser.\n{b}The directory chooser may have opened behind this window.{/b}"), _("DDML will create new mods in this folder, and place your existing mods in here."),)
 
         path, is_default = choose_directory(None)
 
@@ -353,15 +339,19 @@ label move_mod_folder:
             renpy.jump("front_page")
 
         # Moves Mods from old folder to new folder
+        mm_compat.ddmm_traceback_start()
+        interface.processing(_("Moving your existing mods to [path]. Please wait..."))
         try:
             modman.move_mod_folder(persistent.projects_directory, path)
             persistent.projects_directory = path
             interface.information(_("DDML transferred all your mods to the new mod folder with no errors."),)
         except:
+            mm_compat.ddmm_traceback()
             modman.move_mod_folder(path, persistent.projects_directory)
-
-            interface.error(_("DDML was unable to move your mods to the new mod folder due to a error.\nMake sure no mods are running and try again."),)
+            interface.error(_("DDML was unable to move your mods to the new mod folder due to a error."),
+            _("See {i}transfer_log.txt{/i} for more information. If the issue persists, contact the developer on Github."))
 
         project.manager.scan()
+        mm_compat.ddmm_traceback_shutdown()
 
     return
