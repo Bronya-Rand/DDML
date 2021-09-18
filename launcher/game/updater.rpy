@@ -80,16 +80,18 @@ screen update_channel(channels, criteria=None):
                         
                         python:
                             filter_keywords.clear()
-                            if criteria != " ":
+
+                            if criteria != " " and not "," in criteria:
                                 filter_keywords.append(criteria)
                             else:
-                                filter_keywords.append(criteria.split(","))
+                                cs = criteria.split(",")
+                                for k in cs:
+                                    filter_keywords.append(k.replace(" ", ""))
 
                         python:
                             chosen_channels = []
                             
                             for c in channels:
-                                good_marker=True
                                 category_kwds = c["modSearch"]
                                 name_kwds = c["modName"]
                                 
