@@ -265,13 +265,6 @@ init python:
     build.classify_renpy("**/thumbs.db", None)
     build.classify_renpy("**/.*", None)
 
-    build.classify_renpy("renios/prototype/base/", None)
-    build.classify_renpy("renios/prototype/prototype.xcodeproj/*.xcworkspace/", None)
-    build.classify_renpy("renios/prototype/prototype.xcodeproj/xcuserdata/", None)
-
-    build.classify_renpy("web/game.zip", None)
-    build.classify_renpy("web/**", "web")
-
     build.classify_renpy("**.old", None)
     build.classify_renpy("**.new", None)
     build.classify_renpy("**.bak", None)
