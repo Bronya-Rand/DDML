@@ -117,7 +117,7 @@ screen preferences:
                         style "l_indent"
                         yminimum 75
                         has vbox
-                        text _("DDLC Copy Directory")
+                        text _("DDLC Copy Path")
 
                         add HALF_SPACER
 
@@ -131,26 +131,16 @@ screen preferences:
                                     action Jump("projects_zip_preference")
                                     alt _("DDLC ZIP Path [text]")
 
-                    add SPACER
-                    
-                    add SEPARATOR2
-
-                    frame:
-                        style "l_indent"
-                        yminimum 75
-                        has vbox
-                        text _("DDLC Version")
-
                         add HALF_SPACER
-
+                        
                         frame style "l_indent":
                             if persistent.steam_release:
-                                text _("Steam Version")
+                                text _("Version: Steam")
                             else:
                                 if persistent.steam_release is None:
-                                    text _("Unknown")
+                                    text _("Version: Unknown")
                                 else:
-                                    text _("DDLC.moe Version")
+                                    text _("Version: DDLC.moe")
 
                 if renpy.macintosh:
                     frame:
