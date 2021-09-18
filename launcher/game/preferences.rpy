@@ -199,12 +199,12 @@ screen preferences:
                         add HALF_SPACER
 
                         textbutton _("Reset Window Size") style "l_nonbox" action Preference("display", 1.0)
-                        textbutton _("Transfer DDMM Data") style "l_nonbox" action Jump("transfer")
+                        if persistent.b_ddml:
+                            textbutton _("Build DDML") style "l_nonbox" action [project.Select("launcher"), Jump("build_distributions")]
+                        if renpy.windows:
+                            textbutton _("Transfer DDMM Data") style "l_nonbox" action Jump("transfer")
                         textbutton _("One UI Dark Mode") style "l_checkbox" action [ToggleField(persistent, "oneui"), Jump("restart_ddmm")]
                         textbutton _("Show NSFW Mods In Search") style "l_checkbox" action [ToggleField(persistent, "nsfw")]
-                        if persistent.b_ddml:
-
-                            textbutton _("Build DDML") style "l_nonbox" action [project.Select("launcher"), Jump("build_distributions")]
                         
                     if not renpy.windows:
                         textbutton _("Developer Options") style "l_checkbox" action ToggleField(persistent, "b_ddml")
