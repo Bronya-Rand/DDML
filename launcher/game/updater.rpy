@@ -24,7 +24,7 @@ init python:
     import ssl
     import json
 
-    filter_keywords=set()
+    filter_keywords = []
 
     def decode_list():
         with interface.error_handling(_("Decoding the mod list...")):
@@ -34,7 +34,9 @@ init python:
 
     def nsfw_tag(modList):
         for c in modList:
-            if c['modNSFW']:
+            if c['modNSFW'] and not persistent.nsfw:
+                modList.remove(c)
+            elif c['modNSFW'] and persistent.nsfw:
                 c["modName"] = "{b}(NSFW){/b} " + c["modName"]
 
 screen update_channel(channels, criteria=None):
@@ -53,7 +55,7 @@ screen update_channel(channels, criteria=None):
 
             frame style "l_label":
                 has hbox xfill True
-                text _("DD Mod Club Mod List") style "l_label_text"
+                text _("Mod List") style "l_label_text"
                 
                 frame:
                     style "l_alternate"
@@ -72,36 +74,43 @@ screen update_channel(channels, criteria=None):
 
                     has vbox
 
-                    text _("Select the mod you will like to download. Afterwards return to the main menu and install it like normal with DDML.")
+                    text _("Select the mod you will like to download. Afterwards return to the home menu and install it with DDML.")
 
                     if criteria is not None:
-
+                        
                         python:
                             filter_keywords.clear()
-                            filter_keywords|=set(criteria.split(','))
+                            if criteria != " ":
+                                filter_keywords.append(criteria)
+                            else:
+                                filter_keywords.append(criteria.split(","))
 
                         python:
-                            chosen_channels=list()
+                            chosen_channels = []
                             
                             for c in channels:
                                 good_marker=True
-                                category_kwds=c["modSearch"]
+                                category_kwds = c["modSearch"]
                                 name_kwds = c["modName"]
                                 
                                 for e in filter_keywords:
-                                    
-                                    if e in category_kwds or e in name_kwds:
+                                    e = e.lower()
 
-                                        chosen_channels.append(c)
+                                    if e in category_kwds or e in name_kwds.lower():
+                                        
+                                        if c not in chosen_channels:
+
+                                            chosen_channels.append(c)
                             
-                            channels=chosen_channels
+                            channels = chosen_channels
                         
                         text "Found {} mods that are tagged with the following search phrases: ".format(
-                            len(chosen_channels)) + "".join(filter_keywords) + "." style "l_small_text"
+                            len(chosen_channels)) + ", ".join(filter_keywords) + "." style "l_small_text"
 
                     for c in channels:
                         
                         if c['modShow']:
+                            
                             add SPACER
 
                             textbutton c["modName"].replace("[", "").replace("]", "") action OpenURL(c["modUploadURL"])
@@ -174,8 +183,6 @@ label search:
             if criteria == "":
                 interface.error(_("Your search cannot be left empty. Please try again."), label=None)
                 continue
-
-            criteria = criteria.lower()
 
             channels = decode_list()
             nsfw_tag(channels)
