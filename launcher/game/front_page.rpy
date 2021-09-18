@@ -299,29 +299,30 @@ label force_recompile:
 label delete_mod_folder:
 
     python hide:
+        while True:
+            mod_delete_response = interface.input(
+                _("Deleting a Mod"),
+                _("Are you sure you want to delete [project.current.name]? Type either Yes or No."),
+                filename=False,
+                cancel=Jump("front_page"))
+            mod_delete_response = mod_delete_response.strip()
 
-        mod_delete_response = interface.input(
-            _("Deleting a Mod"),
-            _("Are you sure you want to delete [project.current.name]? Type either Yes or No."),
-            filename=False,
-            cancel=Jump("front_page"))
-        mod_delete_response = mod_delete_response.strip()
+            if not mod_delete_response or mod_delete_response.lower() == "no":
+                interface.error(_("The operation has been cancelled."))
+                return
 
-        if not mod_delete_response or mod_delete_response.lower() == "no":
-            interface.error(_("The operation has been cancelled."))
-            return
+            elif mod_delete_response.lower() == "yes":
 
-        elif mod_delete_response.lower() == "yes":
+                with interface.error_handling(_("Deleting [project.current.name]. Please wait...")):
+                    modman.delete_mod(persistent.projects_directory, project.current.name)
 
-            with interface.error_handling(_("Deleting [project.current.name]. Please wait...")):
-                modman.delete_mod(persistent.projects_directory, project.current.name)
+                interface.info("[project.current.name] has been deleted from the mod folder.")
+            else:
+                interface.error(_("Invalid Input. Expected either a Yes or No response."))
+                continue
 
-            interface.info("[project.current.name] has been deleted from the mod folder.")
-        else:
-            interface.error(_("Invalid Input. Expected either a Yes or No response."))
-            continue
-
-        project.manager.scan()
+            project.manager.scan()
+            break
 
     jump front_page
 
