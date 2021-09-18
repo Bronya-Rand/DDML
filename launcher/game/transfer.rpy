@@ -1,16 +1,21 @@
 
 init python:
     from ddmm_compatibility import DDMM_Compatibility
+    import sys
     mm_compat = DDMM_Compatibility()
 
 label transfer:
 
     python hide:
-
+        
         failed_mods = 0
 
         interface.info(_("Ready to transfer your DDMM (Doki Doki Mod Manager) data to DDML?"),
         _("This transfer tool with help you setup your mods made in DDMM to work DDML."))
+
+        if sys.platform != "windows":
+            interface.error(_("This transfer tool only works on Windows as DDMM was only designed for Windows operating systems."),
+            _("Run DDML in a Windows OS and try again."))
 
         mm_compat.ddmm_traceback_start()
 

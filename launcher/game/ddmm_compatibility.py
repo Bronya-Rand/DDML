@@ -13,8 +13,11 @@ class DDMM_Compatibility:
 
     def __init__(self):
         # The DDMM directory in Windows
-        self.ddmm_gamedir = os.path.join(os.getenv("APPDATA"), 
-                            "DokiDokiModManager/GameData/installs")
+        if sys.platform == "windows":
+            self.ddmm_gamedir = os.path.join(os.getenv("APPDATA"), 
+                                "DokiDokiModManager/GameData/installs")
+        else:
+            self.ddmm_gamedir = None
         self.modman = ModManagement()
         self.log_file = os.path.join(config.basedir, "transfer_log.txt")
 
@@ -26,6 +29,10 @@ class DDMM_Compatibility:
         This define returns True if the DDMM directory in %APPDATA% is present.
         '''
         logging.debug("Locating DDMM directory in %APPDATA%.")
+
+        if sys.platform != "windows":
+            logging.exception("OS is not Windows! Exiting execution.")
+            return False
 
         return os.path.exists(self.ddmm_gamedir)
     
