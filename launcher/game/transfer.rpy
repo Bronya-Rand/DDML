@@ -12,6 +12,8 @@ label transfer:
         interface.info(_("Ready to transfer your DDMM (Doki Doki Mod Manager) data to DDML?"),
         _("This transfer tool with help you setup your mods made in DDMM to work DDML."))
 
+        mm_compat = ddmm_traceback_start()
+
         interface.info(_("First we will try to see where DDMM stores your mods in."),
         _("This will help detect what mods you have in DDMM for DDML to use."))
 
@@ -43,5 +45,8 @@ label transfer:
             _("See {i}transfer_log.txt{/i} for more information. If the issue persists, contact the developer on Github."))
         else:
             interface.info(_("DDML transferred all your mods from DDMM with no issues."))
+
+        mm_compat.ddmm_traceback_shutdown()
+        project.manager.scan()
 
     jump preferences

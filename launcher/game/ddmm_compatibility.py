@@ -21,8 +21,6 @@ class DDMM_Compatibility:
         if os.path.exists(self.log_file):
             os.remove(self.log_file)
 
-        logging.basicConfig(filename=self.log_file, level=logging.DEBUG)
-
     def ddmm_detection(self):
         return os.path.exists(self.ddmm_gamedir)
     
@@ -79,3 +77,18 @@ class DDMM_Compatibility:
         '''
 
         logging.exception("Error occured with transferring " + x + " to DDML.")
+    
+    def ddmm_traceback_start(self):
+        '''
+        This define starts the transfer traceback when the transfer tool is
+        running.
+        '''
+
+        logging.basicConfig(filename=self.log_file, level=logging.DEBUG)
+
+    def ddmm_traceback_shutdown(self):
+        '''
+        This define stops the transfer traceback when the transfer tool is not
+        running.
+        '''
+        logging.shutdown()
