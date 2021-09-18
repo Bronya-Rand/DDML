@@ -12,7 +12,7 @@ label transfer:
         interface.info(_("Ready to transfer your DDMM (Doki Doki Mod Manager) data to DDML?"),
         _("This transfer tool with help you setup your mods made in DDMM to work DDML."))
 
-        mm_compat = ddmm_traceback_start()
+        mm_compat.ddmm_traceback_start()
 
         interface.info(_("First we will try to see where DDMM stores your mods in."),
         _("This will help detect what mods you have in DDMM for DDML to use."))

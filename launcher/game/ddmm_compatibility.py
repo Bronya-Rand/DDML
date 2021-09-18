@@ -22,12 +22,19 @@ class DDMM_Compatibility:
             os.remove(self.log_file)
 
     def ddmm_detection(self):
+        '''
+        This define returns True if the DDMM directory in %APPDATA% is present.
+        '''
+        logging.debug("Locating DDMM directory in %APPDATA%.")
+
         return os.path.exists(self.ddmm_gamedir)
     
     def ddmm_path_setup(self):
         '''
         This define sets the project directory in DDML to the one in DDMM.
         '''
+
+        logging.debug("Located DDMM directory. Setting it to persistent.projects_directory.")
 
         return self.ddmm_gamedir
 
@@ -36,6 +43,7 @@ class DDMM_Compatibility:
         This define checks if the mod in the DDMM has not been setup already
         by DDML if transfer is started again.
         '''
+        logging.debug("Checking if " + x + " is DDML compliant.")
 
         return os.path.exists(os.path.join(project_dir, x, "install"))
 
@@ -91,4 +99,6 @@ class DDMM_Compatibility:
         This define stops the transfer traceback when the transfer tool is not
         running.
         '''
+        logging.debug("Stopped logging for this session.")
+
         logging.shutdown()
