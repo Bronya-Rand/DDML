@@ -139,6 +139,10 @@ screen update_channel(channels, criteria=None):
 
                                     if c["modPlayTimeMinutes"] > 1:
                                         playTime += "s"
+                                
+                                if not c["modPlayTimeHours"] and c["modPlayTimeMinutes"] == 0:
+
+                                    playTime += "Unknown"
 
                             text playTime style "l_small_text"
 
