@@ -341,13 +341,13 @@ label move_mod_folder:
 
         # Moves Mods from old folder to new folder
         mm_compat.ddmm_traceback_start()
-        interface.processing(_("Moving your existing mods to [path]. Please wait..."))
+        interface.processing(_("Moving your existing mods to the new mod folder. Please wait..."))
         try:
             modman.move_mod_folder(persistent.projects_directory, path)
             persistent.projects_directory = path
-            interface.information(_("DDML transferred all your mods to the new mod folder with no errors."),)
+            interface.info(_("DDML transferred all your mods to the new mod folder with no errors."),)
         except:
-            mm_compat.ddmm_traceback()
+            mm_compat.ddmm_traceback("new mod folder")
             modman.move_mod_folder(path, persistent.projects_directory)
             interface.error(_("DDML was unable to move your mods to the new mod folder due to a error."),
             _("See {i}transfer_log.txt{/i} for more information. If the issue persists, contact the developer on Github."))
