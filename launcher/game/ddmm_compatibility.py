@@ -76,7 +76,7 @@ class DDMM_Compatibility:
         This define makes a custom traceback file for the DDMM transfer tool.
         '''
 
-        logging.exception("Error occured with transferring " + x + " to DDML.")
+        logging.exception("Error occured when transferring " + x + ".")
     
     def ddmm_traceback_start(self):
         '''
