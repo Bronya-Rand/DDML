@@ -58,6 +58,7 @@ init python:
 default persistent.legacy = False
 default persistent.force_new_tutorial = False
 default persistent.sponsor_message = True
+default persistent.nsfw = False
 
 screen preferences:
 
@@ -110,14 +111,13 @@ screen preferences:
 
                     add SPACER
 
-                    # Text editor selection.
                     add SEPARATOR2
 
                     frame:
                         style "l_indent"
                         yminimum 75
                         has vbox
-                        text _("DDLC Copy Directory")
+                        text _("DDLC Copy Path")
 
                         add HALF_SPACER
 
@@ -131,73 +131,61 @@ screen preferences:
                                     action Jump("projects_zip_preference")
                                     alt _("DDLC ZIP Path [text]")
 
-                frame:
-                    style "l_indent"
-                    xmaximum ONETHIRD
-                    xfill True
+                        add HALF_SPACER
+                        
+                        frame style "l_indent":
+                            if persistent.steam_release:
+                                text _("Version: Steam")
+                            else:
+                                if persistent.steam_release is None:
+                                    text _("Version: Unknown")
+                                else:
+                                    text _("Version: DDLC.moe")
 
-                    has vbox
-                    add SEPARATOR2
-
+                if renpy.macintosh:
                     frame:
                         style "l_indent"
-                        yminimum 75
-                        has vbox
+                        xmaximum ONETHIRD
+                        xfill True
 
-                        if renpy.macintosh:
+                        has vbox
+                        add SEPARATOR2
+
+                        frame:
+                            style "l_indent"
+                            yminimum 75
+                            has vbox
+
                             text _("ZIP Auto-Extracts?")
 
                             add HALF_SPACER
 
                             frame style "l_indent":
-                                if persistent.safari != None:
-                                    if persistent.safari == True:
+                                if persistent.safari is not None:
+                                    if persistent.safari:
                                         text _("Yes")
                                     else:
                                         text _("No")
                                 else:
                                     text _("Unknown")
-                            
+                                
                             add HALF_SPACER
 
                             textbutton _("Change Auto-Extract Setting") action Jump("browser")
-                        else:
-                            text _("DDLC Version")
-
-                            add HALF_SPACER
-
-                            frame style "l_indent":
-                                if persistent.steam_release == True:
-                                    text _("Steam Version")
-                                else:
-                                    if persistent.steam_release == None:
-                                        text _("Unknown")
-                                    else:
-                                        text _("DDLC.moe Version")
-
-                    add SPACER
-
-                    frame:
-                        style "l_indent"
-                        yminimum 75
-                        has vbox
 
                         add SPACER
 
-                        textbutton _("Dev Options") style "l_checkbox" action ToggleField(persistent, "b_ddml")
-                        if persistent.b_ddml:
-
-                            add HALF_SPACER
-
-                            textbutton _("Build") action [project.Select("launcher"), Jump("build_distributions")]
-
                 frame:
                     style "l_indent"
-                    xmaximum ONETHIRD
-                    xfill True
+                    if not renpy.macintosh:
+                        xmaximum ONETHIRD
+                        xfill True
+                    else:
+                        yminimum 75
 
                     has vbox
                     add SEPARATOR2
+                    add SPACER
 
                     frame:
                         style "l_indent"
@@ -208,28 +196,24 @@ screen preferences:
 
                         add HALF_SPACER
 
-                        textbutton _("Reset window size") style "l_nonbox" action Preference("display", 1.0)
+                        textbutton _("Reset Window Size") style "l_nonbox" action Preference("display", 1.0)
+                        if persistent.b_ddml:
+                            textbutton _("Build DDML") style "l_nonbox" action [project.Select("launcher"), Jump("build_distributions")]
+                        if renpy.windows:
+                            textbutton _("Transfer DDMM Data") style "l_nonbox" action Jump("transfer")
+                        textbutton _("One UI Dark Mode") style "l_checkbox" action [ToggleField(persistent, "oneui"), Jump("restart_ddmm")]
+                        textbutton _("Show NSFW Mods In Search") style "l_checkbox" action [ToggleField(persistent, "nsfw")]
                         
-                    add SEPARATOR2
-
-                    frame:
-                        style "l_indent"
-                        yminimum 75
-                        has vbox
-
-                        text _("Theme:")
-
-                        add HALF_SPACER
-
-                        textbutton _("One UI") style "l_checkbox" action [ToggleField(persistent, "oneui"), Jump("restart_ddmm")]
+                    if not renpy.windows:
+                        textbutton _("Developer Options") style "l_checkbox" action ToggleField(persistent, "b_ddml")
 
     textbutton _("Return") action Jump("front_page") style "l_left_button"
 
 label projects_directory_preference:
     python:
         release_kind = interface.choice(
-            _("Are you wanting to move your mods to a new folder path or set a new path?"),
-            [ ( 'move_mod_folder', _("Move Mods to a New Folder Path") ), ( 'choose_projects_directory', _("Setup a New Mod Path")) ],
+            _("Are you wanting to move your mods to a new folder or setup a new mod folder?"),
+            [ ( 'move_mod_folder', _("Move Mods to a New Folder") ), ( 'choose_projects_directory', _("Setup a New Mod Folder")) ],
             "choose_projects_directory",
             cancel=Jump("preferences"),
             )
