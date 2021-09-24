@@ -16,6 +16,9 @@ Doki Doki Mod Launcher (DDML) is a mod launcher for Doki Doki Literature Club (D
 6. Ability to reset the save file of mods.
 7. MacOS and Linux Support!
     > While MacOS support is available, I cannot guarantee that the same code for Windows and Linux will translate well to the Mac OS version of DDML from `renpy.app`. Please report these issues when you get a error.
+8. Mod Search Support!
+    > Please be advised this is the last JSON cache from Doki Doki Mod Club. Newer mods released after the site shutdown will not show up in this mod list search.
+9. Compatibility with DDMM! Transfer your mods easily to DDML using the built-in transfer tool.
 
 **DISCLAIMER**
 
