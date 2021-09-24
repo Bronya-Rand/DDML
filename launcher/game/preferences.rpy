@@ -184,10 +184,8 @@ screen preferences:
                         yminimum 75
 
                     has vbox
-                    if not renpy.macintosh:
-                        add SEPARATOR2
-                    else:
-                        add SPACER
+                    add SEPARATOR2
+                    add SPACER
 
                     frame:
                         style "l_indent"
