@@ -2,8 +2,8 @@
 import shutil
 import os
 from modmanagement import ModManagement
-import sys
 import logging
+import renpy
 from renpy import config
 
 class DDMM_Compatibility:
@@ -13,7 +13,7 @@ class DDMM_Compatibility:
 
     def __init__(self):
         # The DDMM directory in Windows
-        if sys.platform == "windows":
+        if renpy.windows:
             self.ddmm_gamedir = os.path.join(os.getenv("APPDATA"), 
                                 "DokiDokiModManager/GameData/installs")
         else:
@@ -30,7 +30,7 @@ class DDMM_Compatibility:
         '''
         logging.debug("Locating DDMM directory in %APPDATA%.")
 
-        if sys.platform != "windows":
+        if not renpy.windows:
             logging.exception("OS is not Windows! Exiting execution.")
             return False
 
