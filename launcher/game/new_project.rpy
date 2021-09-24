@@ -110,15 +110,15 @@ label add_a_mod:
                         pass
                     else:
                         shutil.rmtree(project_dir)
-                        inteface.error(_("The mod ZIP you selected is not a valid DDLC mod archive.\nSelect a different mod ZIP and try again."),)
+                        interface.error(_("The mod ZIP you selected is not a valid DDLC mod archive.\nSelect a different mod ZIP and try again."),)
                         renpy.jump("front_page")
                 elif path.endswith('.rar'):
                     shutil.rmtree(project_dir)
-                    inteface.error(_("RAR files cannot be unzipped or unrarred by DDML.\nConvert the file to a ZIP file and try again."),)
+                    interface.error(_("RAR files cannot be unzipped or unrarred by DDML.\nConvert the file to a ZIP file and try again."),)
                     renpy.jump("front_page")
                 else:
                     shutil.rmtree(project_dir)
-                    inteface.error(_("Unknown file type.\nSelect a DDMC mod ZIP file and try again."),)
+                    interface.error(_("Unknown file type.\nSelect a DDMC mod ZIP file and try again."),)
                     renpy.jump("front_page")
 
             interface.interaction(_("Installing the Mod"), _("This process may take some time. Please wait."),)
