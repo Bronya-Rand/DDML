@@ -252,15 +252,24 @@ label scripts_rpa:
 
     python:
         interface.processing(_("Deleting scripts.rpa..."))
-        modman.delete_rpa(os.path.join(persistent.projects_directory, "/game"), "scripts.rpa")
-
+        try:
+            modman.delete_rpa(os.path.join(persistent.projects_directory, project.current.name), "scripts.rpa")
+            interface.info(_("DDML successfully deleted scripts.rpa from [project.current.name] without errors."),)
+        except:
+            interface.error(_("DDML was unable to delete images.rpa as it is missing, in-use or already deleted from [project.current.name]."),
+            _("Verify if the file was deleted in the game folder. If it still exists, try again or contact the developer on Github if the issue persists."),)
     jump front_page
 
 label images_rpa:
 
     python:
-        interface.processing(_("Deleting scripts.rpa..."))
-        modman.delete_rpa(os.path.join(persistent.projects_directory, "/game"), "images.rpa")
+        interface.processing(_("Deleting images.rpa..."))
+        try:
+            modman.delete_rpa(os.path.join(persistent.projects_directory, project.current.name), "images.rpa")
+            interface.info(_("DDML successfully deleted images.rpa from [project.current.name] without errors."),)
+        except:
+            interface.error(_("DDML was unable to delete images.rpa as it is missing, in-use or already deleted from [project.current.name]."),
+            _("Verify if the file was deleted in the game folder. If it still exists, try again or contact the developer on Github if the issue persists."),)
 
     jump front_page
 
@@ -312,7 +321,9 @@ label delete_mod_folder:
                 return
 
             elif mod_delete_response.lower() == "yes":
-
+                
+                interface.processing(_("Deleting [project.current.name]..."))
+                
                 with interface.error_handling(_("deleting mod.")):
                     modman.delete_mod(persistent.projects_directory, project.current.name)
 
