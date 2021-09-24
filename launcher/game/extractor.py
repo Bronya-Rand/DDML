@@ -53,7 +53,10 @@ class Extractor:
             with ZipFile(filePath, "r") as z:
                 z.extractall(td)
 
-            game_dir = os.path.join(td, os.listdir(td)[-1])
+            if sys.platform == "darwin":
+                game_dir = td
+            else:
+                game_dir = os.path.join(td, os.listdir(td)[-1])
         else:
             game_dir = filePath
 
