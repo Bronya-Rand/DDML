@@ -1,6 +1,7 @@
 
 import os
 import shutil
+import sys
 
 class ModManagement:
     '''
@@ -33,5 +34,13 @@ class ModManagement:
         '''
         This define deletes a RPA from the mod folder if confirmed by the user.
         '''
+
+        if sys.platform == "darwin":
+            for x in os.listdir(modFolder):
+                if x.endswith(".app"):
+                    modFolder = os.path.join(modFolder, x, 
+                                "Contents/Resources/autorun/game")
+        else:
+            modFolder = os.path.join(modFolder, "game")
 
         os.remove(os.path.join(modFolder, rpaName))
