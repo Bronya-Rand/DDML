@@ -166,7 +166,7 @@ label add_base_game:
         while True:
             modinstall_foldername = interface.input(
                 _("DDLC Name"),
-                _("Please type in the name of the folder you want to install DDLC onto."),
+                _("Please provide a name for this copy of DDLC."),
                 allow=interface.PROJECT_LETTERS,
                 cancel=Jump("front_page"),
                 default=modinstall_foldername,
@@ -174,19 +174,19 @@ label add_base_game:
             modinstall_foldername = modinstall_foldername.strip()
 
             if not modinstall_foldername:
-                interface.error(_("The DDLC folder name may not be empty."), label=None)
+                interface.error(_("The name may not be empty."), label=None)
                 continue
             if modinstall_foldername == "launcher":
-                interface.error(_("'launcher' is a reserved folder name. Please choose a different folder name."), label=None)
+                interface.error(_("'launcher' is a reserved name. Please choose a different name."), label=None)
                 continue
 
             project_dir = os.path.join(persistent.projects_directory, modinstall_foldername)
 
             if project.manager.get(modinstall_foldername) is not None:
-                interface.error(_("[modinstall_foldername!q] already exists. Please choose a different folder name."), modinstall_foldername=modinstall_foldername, label=None)
+                interface.error(_("[modinstall_foldername!q] already exists. Please choose a different name."), modinstall_foldername=modinstall_foldername, label=None)
                 continue
             if os.path.exists(project_dir):
-                interface.error(_("[project_dir!q] already exists. Please choose a different folder name."), project_dir=project_dir, label=None)
+                interface.error(_("[project_dir!q] already exists. Please choose a different name."), project_dir=project_dir, label=None)
                 continue
 
             interface.processing(_("Installing DDLC..."))
