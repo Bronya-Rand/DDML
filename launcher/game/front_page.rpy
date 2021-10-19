@@ -350,6 +350,9 @@ label move_mod_folder:
             interface.error(_("The operation has been cancelled."))
             renpy.jump("front_page")
 
+        if path == persistent.projects_directory:
+            inteface.error(_("The new mod folder path is the same as the current mod path."))
+        
         # Moves Mods from old folder to new folder
         mm_compat.ddmm_traceback_start()
         interface.processing(_("Moving your existing mods to the new mod folder. Please wait..."))
