@@ -90,9 +90,19 @@ screen update_channel(channels, criteria=None):
 
             has vbox
 
-            frame style "l_label":
+            frame style "l_alternate":
                 has hbox xfill True
                 text _("Mod List") style "l_label_text"
+
+            frame style "l_label":
+                has hbox xfill True
+            
+                text _("Select the mod you will like to download, then return to the home menu and install it with DDML."):
+                    style "l_small_text"
+                    size 15
+                    xpos INDENT 
+
+                add HALF_SPACER
                 
                 frame:
                     style "l_alternate"
@@ -102,16 +112,12 @@ screen update_channel(channels, criteria=None):
 
                     textbutton _("Search") action Jump("search")
 
-            add HALF_SPACER
-
             hbox:
                 frame:
                     style "l_indent"
                     xfill True
 
                     has vbox
-
-                    text _("Select the mod you will like to download. Afterwards return to the home menu and install it with DDML.")
 
                     if criteria is not None:
                         
@@ -146,20 +152,22 @@ screen update_channel(channels, criteria=None):
                         text "Found {} mods that are tagged with the following search phrases: ".format(
                             len(chosen_channels)) + ", ".join(filter_keywords) + "." style "l_small_text"
 
+                        add SPACER
+
                     for c in channels:
                         
                         if c['modShow']:
-                            
-                            add SPACER
 
-                            textbutton c["modName"].replace("[", "").replace("]", "") action OpenURL(c["modUploadURL"])
+                            textbutton c["modName"].replace("[", "[[").replace("]", "]]"): 
+                                text_style "mod_search_name"
+                                action OpenURL(c["modUploadURL"])
 
                             add HALF_SPACER
 
-                            text c["modShortDescription"] style "l_small_text"
+                            text c["modShortDescription"] style "mod_search_small_text"
 
                             python:
-                                playTime = "Playtime: "
+                                playTime = "Playtime: {i}"
 
                                 if c["modPlayTimeHours"]:
 
@@ -181,7 +189,13 @@ screen update_channel(channels, criteria=None):
 
                                     playTime += "Unknown"
 
-                            text playTime style "l_small_text"
+                            add SPACER
+                            
+                            text playTime + "{/i}" style "mod_search_playtime"
+
+                            add SPACER
+                            add SEPARATOR2 at mod_search_seperator
+                            add SPACER
 
     textbutton _("Return") action Jump("front_page") style "l_left_button"
 
@@ -234,3 +248,16 @@ label search:
             break
 
     jump front_page
+
+style mod_search_small_text is l_small_text:
+    size 18
+
+style mod_search_name is l_left_button_text:
+    size 20
+    underline True
+
+style mod_search_playtime is l_small_text:
+    size 16
+
+transform mod_search_seperator:
+    ysize 5

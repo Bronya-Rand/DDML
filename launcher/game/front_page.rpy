@@ -122,7 +122,7 @@ screen front_page:
                     vbox:
                         xfill True
 
-                        textbutton _("+ Change Mod Folder"):
+                        textbutton _("+ Move Mod Folder"):
                             left_margin (HALF_INDENT) 
                             action Jump("move_mod_folder")
 
@@ -352,6 +352,7 @@ label move_mod_folder:
 
         if path == persistent.projects_directory:
             inteface.error(_("The new mod folder path is the same as the current mod path."))
+            return
         
         # Moves Mods from old folder to new folder
         mm_compat.ddmm_traceback_start()

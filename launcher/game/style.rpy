@@ -31,7 +31,7 @@ init -1:
     # Should places where the regular font used be bolded?
     define gui.REGULAR_BOLD = False
 
-    default persistent.oneui = False
+    default persistent.oneui = True
 
 init -1 python:
 
