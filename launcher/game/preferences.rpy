@@ -199,15 +199,43 @@ screen preferences:
                         add HALF_SPACER
 
                         textbutton _("Reset Window Size") style "l_nonbox" action Preference("display", 1.0)
+                        textbutton _("Customize Launcher Images") style "l_nonbox" action OpenDirectory(os.getcwd() + "/launcher/game/images")
                         if renpy.windows:
                             textbutton _("Transfer DDMM Data") style "l_nonbox" action Jump("transfer")
-                        textbutton _("One UI Dark Mode") style "l_checkbox" action [ToggleField(persistent, "oneui"), Jump("restart_ddmm")]
+                        
                         textbutton _("Show NSFW Mods In Search") style "l_checkbox" action [ToggleField(persistent, "nsfw")]
                         
                         if not renpy.windows:
                             textbutton _("Developer Options") style "l_checkbox" action ToggleField(persistent, "b_ddml")
                         if persistent.b_ddml:
                             textbutton _("Build DDML") style "l_nonbox" action [project.Select("launcher"), Jump("build_distributions")]
+
+                frame:
+                    style "l_indent"
+                    if not renpy.macintosh:
+                        xmaximum ONETHIRD
+                        xfill True
+                    else:
+                        yminimum 75
+
+                    has vbox
+                    add SEPARATOR2 at mod_search_seperator
+                    add HALF_SPACER
+
+                    frame:
+                        style "l_indent"
+                        yminimum 75
+                        has vbox
+
+                        text _("Theme Options:")
+
+                        add HALF_SPACER
+
+                        textbutton _("One UI (Dark Mode)") style "l_checkbox" action [ToggleField(persistent, "oneui"), If(persistent.custom, true=SetField(persistent, "custom", False), false=None), Jump("restart_ddmm")]
+                        if renpy.loadable("images/custom_style.rpy"):
+                            textbutton _("Custom Theme") style "l_checkbox" action [ToggleField(persistent, "custom"), If(persistent.oneui, true=SetField(persistent, "oneui", False), false=None), Jump("restart_ddmm")]
+                        else:
+                            textbutton _("Custom Theme Unavailable") style "l_nonbox" action Call("no_custom_file")
 
     textbutton _("Return") action Jump("front_page") style "l_left_button"
 
@@ -236,3 +264,8 @@ label restart_ddmm:
     python:
         renpy.quit(relaunch=True)
     return 
+
+label no_custom_file:
+    python hide:
+        interface.info(_("Custom Theme is unavailable as the RPY needed to load the theme is missing.\nMake sure a file called {u}custom_style.rpy{/u} is in the {i}images{/i} folder and restart DDML."))
+    jump preferences

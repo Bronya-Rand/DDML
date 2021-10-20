@@ -78,7 +78,7 @@ init -1 python:
 
         # The color of input text.
         INPUT_COLOR = "#FAFAFA" #d86b45
-    else:
+    elif not persistent.custom:
         # The color of non-interactive text.
         TEXT = "#545454"
 
