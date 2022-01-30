@@ -254,6 +254,10 @@ init python in project:
             if persistent.navigate_library:
                 cmd.append("--json-dump-common")
 
+            if persistent.separate_saves:
+                cmd.append("--savedir")
+                cmd.append(self.name)
+
             cmd.append("--errors-in-editor")
 
             environ = dict(os.environ)

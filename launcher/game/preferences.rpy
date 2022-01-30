@@ -210,6 +210,8 @@ screen preferences:
                         if persistent.b_ddml:
                             textbutton _("Build DDML") style "l_nonbox" action [project.Select("launcher"), Jump("build_distributions")]
 
+                        textbutton _("Separate Save Data Per Install") style "l_checkbox" action [ToggleField(persistent, "separate_saves")]
+
                 frame:
                     style "l_indent"
                     if not renpy.macintosh:
