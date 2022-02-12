@@ -173,7 +173,7 @@ screen preferences:
                                 
                             add HALF_SPACER
 
-                            textbutton _("Change Auto-Extract Setting") action Jump("browser")
+                            textbutton _("Change Auto-Extract Setting") action Jump("auto_extract")
 
                         add SPACER
 

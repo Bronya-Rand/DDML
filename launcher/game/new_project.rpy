@@ -33,7 +33,7 @@ label add_a_mod:
         $ interface.error(_("The mod folder path could not be set. Please try again."))
     if renpy.macintosh:
         if persistent.safari is None:
-            call browser
+            call auto_extract
         if persistent.safari is None:
             $ interface.error(_("Couldn't check if the OS auto-extracts ZIPs. Please try again."))
     if persistent.zip_directory is None:
