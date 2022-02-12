@@ -13,6 +13,8 @@ class Extractor:
 
     def __init__(self):
         self.renpy_script_contents = ('.rpa', '.rpyc', '.rpy')
+        self.ddlc_base_contents = ("characters", "game", "lib", "renpy")
+        self.renpy_executables = (".exe", ".sh", ".app")
 
     def valid_zip(self, filePath):
         """
@@ -95,32 +97,37 @@ class Extractor:
         """
 
         if not copy:
+            mod_dir = tempfile.mkdtemp(prefix="NewDDML_",suffix="_TempArchive")
 
             with ZipFile(filePath, "r") as z:
-                if sys.platform == "darwin":
-                    z.extractall(os.path.join(modFolder, "DDLC.app/Contents/Resources/autorun"))
-                else:
-                    z.extractall(modFolder)
+                z.extractall(mod_dir)
 
         else:
             mod_dir = filePath
 
-            modFolder = os.path.join(modFolder, x, "Contents/Resources/autorun")
+        dst_dir = os.path.join(mod_dir, "ImproperMod")
+
+        if len(os.listdir(mod_dir)) > 1 or "game" in os.listdir(mod_dir):
+            os.makedirs(dst_dir)
 
             for mod_src, dirs, files in os.walk(mod_dir):
-                dst_dir = mod_src.replace(mod_dir, modFolder)
-                
                 for d in dirs:
                     os.makedirs(os.path.join(dst_dir, d))
-                
+                    
                 for f in files:
-                    mod_file = os.path.join(mod_src, f)
-                    dst_file = os.path.join(dst_dir, f)
+                    if f.endswith(self.renpy_executables) or f.endswith(".py") and mod_src + "/" + f == os.path.join(mod_src, f):
+                        shutil.move(os.path.join(mod_src, f), os.path.join(dst_dir, f))
+                    else:
+                        shutil.move(os.path.join(mod_src, f), os.path.join(dst_dir, "game", f))
 
-                    if os.path.exists(dst_file):
-                        if os.path.samefile(mod_file, dst_file):
-                            continue
+        mod_dir = os.path.join(mod_dir, os.listdir(mod_dir)[-1])
 
-                        os.remove(dst_file)
+        if sys.platform == "darwin":
+            modFolder = os.path.join(modFolder, "DDLC.app/Contents/Resources/autorun")
 
-                    shutil.move(mod_file, dst_file)
+        for mod_src, dirs, files in os.walk(mod_dir):
+            for d in dirs:
+                os.makedirs(os.path.join(modFolder, d))
+                
+            for f in files:
+                shutil.move(os.path.join(mod_src, f), os.path.join(modFolder, f))

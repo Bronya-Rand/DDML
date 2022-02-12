@@ -813,6 +813,8 @@ label ddlc_location:
         project.multipersistent.zip_directory = path
         project.multipersistent.save()
         project.manager.scan()
+    
+    return
 
 # Browser Prompt
 label auto_extract:
