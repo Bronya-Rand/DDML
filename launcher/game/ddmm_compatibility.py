@@ -29,6 +29,7 @@ class DDMM_Compatibility:
         """
         This define returns True if the DDMM directory in %APPDATA% is present.
         """
+
         logging.debug("Locating DDMM directory in %APPDATA%.")
 
         if not renpy.windows:
@@ -53,6 +54,7 @@ class DDMM_Compatibility:
         This define checks if the mod in the DDMM has not been setup already
         by DDML if transfer is started again.
         """
+
         logging.debug("Checking if " + x + " is DDML compliant.")
 
         return os.path.exists(os.path.join(project_dir, x, "install"))
@@ -80,16 +82,7 @@ class DDMM_Compatibility:
 
         main_path = os.path.join(project_dir, x)
 
-        for y in os.listdir(main_path):
-            if y != "install":
-                if os.path.isdir(os.path.join(main_path, y)):
-                    shutil.move(
-                        os.path.join(main_path, y), os.path.join(main_path, "install")
-                    )
-                else:
-                    shutil.copy2(
-                        os.path.join(main_path, y), os.path.join(main_path, "install")
-                    )
+        self.modman.move_mod_folder(main_path, os.path.join(project_dir, x, "install"))
 
         logging.debug("Reverted changes made to " + x + ".")
 
@@ -113,6 +106,6 @@ class DDMM_Compatibility:
         This define stops the transfer traceback when the transfer tool is not
         running.
         """
-        logging.debug("Stopped logging for this session.")
 
+        logging.debug("Stopped logging for this session.")
         logging.shutdown()

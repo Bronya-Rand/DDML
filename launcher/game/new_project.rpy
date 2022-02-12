@@ -40,14 +40,10 @@ label add_a_mod:
         call ddlc_location
     if persistent.zip_directory is None:
         $ interface.error(_("The DDLC path could not be set. Giving up."))
-    if persistent.zip_directory is None:
-        call ddlc_location
-    if persistent.zip_directory is None:
-        $ interface.error(_("The DDLC path could not be set. Giving up."))
 
     python:
-        modinstall_foldername = ""
         while True:
+            modinstall_foldername = ""
             modinstall_foldername = interface.input(
                 _("Mod Name"),
                 _("Please type in the name of the mod that you are installing."),
@@ -74,23 +70,14 @@ label add_a_mod:
                 continue
 
             interface.processing(_("Installing DDLC..."))
-            if renpy.macintosh and persistent.safari == True:
+            if persistent.safari and renpy.macintosh:
                 with interface.error_handling(_("Copying DDLC...")):
                     extract.game_installation(persistent.zip_directory, project_dir, True)
             else:
                 with interface.error_handling(_("Extracting DDLC...")):
-                    if not renpy.macintosh:
-                        if persistent.steam_release == True:
-                            extract.game_installation(persistent.zip_directory, project_dir, True)
-                        else:
-                            extract.game_installation(persistent.zip_directory, project_dir)
-                    else:
-                        if persistent.safari == True:
-                            extract.game_installation(persistent.zip_directory, project_dir, True)
-                        else:
-                            extract.game_installation(persistent.zip_directory, project_dir)
+                    extract.game_installation(persistent.zip_directory, project_dir)
 
-            if renpy.macintosh and persistent.safari == True:
+            if persistent.safari and renpy.macintosh:
                 interface.interaction(_("Mod Files"), _("Please select the the mod folder you wish to install."),)
                 
                 path, is_default = choose_directory(None)
@@ -104,7 +91,7 @@ label add_a_mod:
                 interface.error(_("The operation has been cancelled."))
                 renpy.jump("front_page")
 
-            if not persistent.safari or not renpy.macintosh:
+            if not persistent.safari:
                 interface.processing(_("Validating Mod..."))
                 if path.endswith('.zip'):
                     valid = extract.valid_zip(path)
@@ -118,23 +105,17 @@ label add_a_mod:
                     renpy.jump("front_page")
                 else:
                     shutil.rmtree(project_dir)
-                    interface.error(_("Unknown file type.\nSelect a DDMC mod ZIP file and try again."),)
+                    interface.error(_("Unknown file type.\nSelect a DDLC mod ZIP file and try again."),)
                     renpy.jump("front_page")
 
             interface.processing(_("Installing Selected Mod..."))
 
             with interface.error_handling(_("Installing Selected Mod...")):
 
-                if not renpy.macintosh:
-                    if persistent.steam_release == True:
-                        extract.installation(path, project_dir, True)
-                    else:
-                        extract.installation(path, project_dir)
+                if persistent.safari and renpy.macintosh:
+                    extract.installation(path, project_dir, True)
                 else:
-                    if persistent.safari == True:
-                        extract.installation(path, project_dir, True)
-                    else:
-                        extract.installation(path, project_dir)
+                    extract.installation(path, project_dir)
 
             interface.info(_("DDML has installed [modinstall_foldername!q] to the mod folder."), modinstall_foldername=modinstall_foldername)
             project.manager.scan()
@@ -156,14 +137,10 @@ label add_base_game:
         call ddlc_location
     if persistent.zip_directory is None:
         $ interface.error(_("The DDLC path could not be set. Giving up."))
-    if persistent.zip_directory is None:
-        call ddlc_location
-    if persistent.zip_directory is None:
-        $ interface.error(_("The DDLC path could not be set. Giving up."))
 
     python:
-        modinstall_foldername = ""
         while True:
+            modinstall_foldername = ""
             modinstall_foldername = interface.input(
                 _("DDLC Name"),
                 _("Please provide a name for this copy of DDLC."),
@@ -174,37 +151,28 @@ label add_base_game:
             modinstall_foldername = modinstall_foldername.strip()
 
             if not modinstall_foldername:
-                interface.error(_("The name may not be empty."), label=None)
+                interface.error(_("The mod name may not be empty."), label=None)
                 continue
             if modinstall_foldername == "launcher":
-                interface.error(_("'launcher' is a reserved name. Please choose a different name."), label=None)
+                interface.error(_("'launcher' is a reserved folder name. Please choose a different mod name."), label=None)
                 continue
 
             project_dir = os.path.join(persistent.projects_directory, modinstall_foldername)
 
             if project.manager.get(modinstall_foldername) is not None:
-                interface.error(_("[modinstall_foldername!q] already exists. Please choose a different name."), modinstall_foldername=modinstall_foldername, label=None)
+                interface.error(_("[modinstall_foldername!q] already exists. Please choose a different mod name."), modinstall_foldername=modinstall_foldername, label=None)
                 continue
             if os.path.exists(project_dir):
-                interface.error(_("[project_dir!q] already exists. Please choose a different name."), project_dir=project_dir, label=None)
+                interface.error(_("[project_dir!q] already exists. Please choose a different mod name."), project_dir=project_dir, label=None)
                 continue
 
             interface.processing(_("Installing DDLC..."))
-            if renpy.macintosh and persistent.safari == True:
+            if persistent.safari == True and renpy.macintosh:
                 with interface.error_handling(_("Copying DDLC...")):
                     extract.game_installation(persistent.zip_directory, project_dir, True)
             else:
                 with interface.error_handling(_("Extracting DDLC...")):
-                    if not renpy.macintosh:
-                        if persistent.steam_release == True:
-                            extract.game_installation(persistent.zip_directory, project_dir, True)
-                        else:
-                            extract.game_installation(persistent.zip_directory, project_dir)
-                    else:
-                        if persistent.safari == True:
-                            extract.game_installation(persistent.zip_directory, project_dir, True)
-                        else:
-                            extract.game_installation(persistent.zip_directory, project_dir)
+                    extract.game_installation(persistent.zip_directory, project_dir)
             
             interface.info(_("DDML has installed DDLC to the mod folder."), modinstall_foldername=modinstall_foldername)
             project.manager.scan()

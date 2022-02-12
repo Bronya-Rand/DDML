@@ -23,6 +23,9 @@
 
 init python:
     import os
+    from modmanagement import ModManagement
+    
+    modman = ModManagement()
 
 init python in project:
     from store import persistent, config, Action, renpy, _preferences, MultiPersistent
@@ -786,37 +789,15 @@ label choose_projects_directory:
     return
 
 label ddlc_location:
-
-    python:
-        if renpy.windows:
-            release_kind = interface.choice(
-                _("Where did you download DDLC? If you downloaded DDLC from Steam, select Steam. If you downloaded DDLC from ddlc.moe or itch.io, select DDLC.moe."),
-                [ ( 'ddlc_steam_release', _("Steam") ), ( 'ddlc_moe_release', _("DDLC.moe")) ],
-                "ddlc_moe_release",
-                cancel=Jump("front_page"),
-                )
-            renpy.jump(release_kind)
-        else:
-            renpy.jump('ddlc_moe_release')
-
-    return
-
-# Asks User where ddlc-win.zip is
-label ddlc_path:
     if renpy.macintosh:
         if persistent.safari is None:
-            call browser
+            call auto_extract
         if persistent.safari is None:
             $ interface.error(_("The browser could not be set. Giving up."))
 
     python:
-
         if renpy.macintosh and persistent.safari:
             interface.interaction(_("DDLC Folder"), _("Please select the DDLC folder you downloaded from DDLC.moe."),)
-
-            path, is_default = choose_directory(None)
-        elif persistent.steam_release:
-            interface.interaction(_("DDLC Folder"), _("Please select the \"common\" folder in Steam\steamapps."),)
 
             path, is_default = choose_directory(None)
         else:
@@ -827,22 +808,11 @@ label ddlc_path:
         if is_default:
             interface.error(_("The operation has been cancelled."))
             renpy.jump("front_page")
-        else:
-            persistent.zip_directory = path
-            persistent.steam_release = False
-            project.multipersistent.zip_directory = path
-            project.multipersistent.save()
-            project.manager.scan()
 
-    return
-
-label ddlc_moe_release:
-    $ persistent.steam_release = False
-    jump ddlc_path
-
-label ddlc_steam_release:
-    $ persistent.steam_release = True
-    jump ddlc_path
+        persistent.zip_directory = path
+        project.multipersistent.zip_directory = path
+        project.multipersistent.save()
+        project.manager.scan()
 
 # Browser Prompt
 label browser:
