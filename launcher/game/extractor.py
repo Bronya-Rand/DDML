@@ -105,12 +105,12 @@ class Extractor:
         else:
             mod_dir = filePath
 
-        dst_dir = os.path.join(mod_dir, "ImproperMod")
-
         if len(os.listdir(mod_dir)) > 1 or "game" in os.listdir(mod_dir):
-            os.makedirs(dst_dir)
+            os.makedirs(os.path.join(mod_dir, "ImproperMod"))
 
             for mod_src, dirs, files in os.walk(mod_dir):
+                dst_dir = mod_src.replace(mod_dir, os.path.join(mod_dir, "ImproperMod"))
+
                 for d in dirs:
                     os.makedirs(os.path.join(dst_dir, d))
                     
@@ -126,8 +126,10 @@ class Extractor:
             modFolder = os.path.join(modFolder, "DDLC.app/Contents/Resources/autorun")
 
         for mod_src, dirs, files in os.walk(mod_dir):
+            dst_dir = mod_src.replace(mod_dir, modFolder)
+
             for d in dirs:
-                os.makedirs(os.path.join(modFolder, d))
+                os.makedirs(os.path.join(dst_dir, d))
                 
             for f in files:
-                shutil.move(os.path.join(mod_src, f), os.path.join(modFolder, f))
+                shutil.move(os.path.join(mod_src, f), os.path.join(dst_dir, f))
