@@ -66,7 +66,7 @@ class Extractor:
                 except OSError: continue
             
             for f in files:
-                shutil.move(os.path.join(temp_src, d), os.path.join(dst_dir, f))
+                shutil.move(os.path.join(temp_src, f), os.path.join(dst_dir, f))
         
         if not copy:
             shutil.rmtree(game_dir)
@@ -104,7 +104,8 @@ class Extractor:
                 dst_dir = mod_src.replace(mod_dir, os.path.join(mod_dir, "ImproperMod"))
 
                 for d in dirs:
-                    os.makedirs(os.path.join(dst_dir, d))
+                    try: os.makedirs(os.path.join(dst_dir, d))
+                    except OSError: continue
                     
                 for f in files:
                     if f.endswith(self.renpy_executables) or f.endswith(".py") and mod_src + "/" + f == os.path.join(mod_src, f):
@@ -118,10 +119,11 @@ class Extractor:
             modFolder = os.path.join(modFolder, "DDLC.app/Contents/Resources/autorun")
 
         for mod_src, dirs, files in os.walk(temp_dir):
-            dst_dir = mod_src.replace(mod_dir, modFolder)
+            dst_dir = mod_src.replace(temp_dir, modFolder)
 
             for d in dirs:
-                os.makedirs(os.path.join(dst_dir, d))
+                try: os.makedirs(os.path.join(dst_dir, d))
+                except OSError: continue
                 
             for f in files:
                 shutil.move(os.path.join(mod_src, f), os.path.join(dst_dir, f))
