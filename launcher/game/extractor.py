@@ -62,19 +62,11 @@ class Extractor:
             dst_dir = temp_src.replace(game_dir, modFolder)
             
             for d in dirs:
-                os.makedirs(os.path.join(dst_dir, d))
+                try: os.makedirs(os.path.join(dst_dir, d))
+                except OSError: continue
             
             for f in files:
-                temp_file = os.path.join(temp_src, f)
-                dst_file = os.path.join(dst_dir, f)
-                
-                if os.path.exists(dst_file):
-                    if os.path.samefile(temp_file, dst_file):
-                        continue
-
-                    os.remove(dst_file)
-
-                shutil.move(temp_file, dst_file)
+                shutil.move(os.path.join(temp_src, d), os.path.join(dst_dir, f))
         
         if not copy:
             shutil.rmtree(game_dir)
@@ -120,12 +112,12 @@ class Extractor:
                     else:
                         shutil.move(os.path.join(mod_src, f), os.path.join(dst_dir, "game", f))
 
-        mod_dir = os.path.join(mod_dir, os.listdir(mod_dir)[-1])
+        temp_dir = os.path.join(mod_dir, os.listdir(mod_dir)[-1])
 
         if sys.platform == "darwin":
             modFolder = os.path.join(modFolder, "DDLC.app/Contents/Resources/autorun")
 
-        for mod_src, dirs, files in os.walk(mod_dir):
+        for mod_src, dirs, files in os.walk(temp_dir):
             dst_dir = mod_src.replace(mod_dir, modFolder)
 
             for d in dirs:
@@ -133,3 +125,6 @@ class Extractor:
                 
             for f in files:
                 shutil.move(os.path.join(mod_src, f), os.path.join(dst_dir, f))
+
+        if not copy:
+            shutil.rmtree(mod_dir)
