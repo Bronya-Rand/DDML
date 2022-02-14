@@ -97,29 +97,36 @@ class Extractor:
         else:
             mod_dir = filePath
 
+        # Fix the mod folder to be a Ren'Py build
         if len(os.listdir(mod_dir)) > 1 or "game" in os.listdir(mod_dir):
             os.makedirs(os.path.join(mod_dir, "ImproperMod"))
-
+            
             for mod_src, dirs, files in os.walk(mod_dir):
                 dst_dir = mod_src.replace(mod_dir, os.path.join(mod_dir, "ImproperMod"))
 
                 for d in dirs:
-                    try: os.makedirs(os.path.join(dst_dir, d))
-                    except OSError: continue
-                    
-                for f in files:
-                    if f.endswith(self.renpy_executables) or f.endswith(".py") and mod_src + "/" + f == os.path.join(mod_src, f):
-                        shutil.move(os.path.join(mod_src, f), os.path.join(dst_dir, f))
-                    else:
-                        shutil.move(os.path.join(mod_src, f), os.path.join(dst_dir, "game", f))
+                    if "ImproperMod" not in os.path.join(dst_dir, d):
+                        try: os.makedirs(os.path.join(dst_dir, d))
+                        except OSError: continue
 
+                    if not os.path.exists(os.path.join(dst_dir, "game")):
+                        os.makedirs(os.path.join(dst_dir, "game"))
+                
+                    for f in files:
+                        if f.endswith(self.renpy_executables) or (f.endswith(".py") and mod_src + "/" + f == os.path.join(mod_src, f)):
+                            shutil.move(os.path.join(mod_src, f), os.path.join(dst_dir, f))
+                        else:
+                            shutil.move(os.path.join(mod_src, f), os.path.join(dst_dir, "game", f))
+                    break
+
+        # Enter the fixed/Ren'Py build folder        
         temp_dir = os.path.join(mod_dir, os.listdir(mod_dir)[-1])
 
         if sys.platform == "darwin":
             modFolder = os.path.join(modFolder, "DDLC.app/Contents/Resources/autorun")
 
         for mod_src, dirs, files in os.walk(temp_dir):
-            dst_dir = mod_src.replace(temp_dir, modFolder)
+            dst_dir = mod_src.replace(temp_dir, modFolder)         
 
             for d in dirs:
                 try: os.makedirs(os.path.join(dst_dir, d))
