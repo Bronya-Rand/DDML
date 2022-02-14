@@ -109,15 +109,14 @@ class Extractor:
                         try: os.makedirs(os.path.join(dst_dir, d))
                         except OSError: continue
 
-                    if not os.path.exists(os.path.join(dst_dir, "game")):
-                        os.makedirs(os.path.join(dst_dir, "game"))
+                if not os.path.exists(os.path.join(dst_dir, "game")):
+                    os.makedirs(os.path.join(dst_dir, "game"))
                 
-                    for f in files:
-                        if f.endswith(self.renpy_executables) or (f.endswith(".py") and mod_src + "/" + f == os.path.join(mod_src, f)):
-                            shutil.move(os.path.join(mod_src, f), os.path.join(dst_dir, f))
-                        else:
-                            shutil.move(os.path.join(mod_src, f), os.path.join(dst_dir, "game", f))
-                    break
+                for f in files:
+                    if f.endswith(self.renpy_executables) or (f.endswith(".py") and mod_src + "/" + f == os.path.join(mod_src, f)):
+                        shutil.move(os.path.join(mod_src, f), os.path.join(dst_dir, f))
+                    else:
+                        shutil.move(os.path.join(mod_src, f), os.path.join(dst_dir, "game", f))
 
         # Enter the fixed/Ren'Py build folder        
         temp_dir = os.path.join(mod_dir, os.listdir(mod_dir)[-1])
