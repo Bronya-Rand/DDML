@@ -30,11 +30,10 @@ class ModManagement:
         """
 
         for mod_src, dirs, files in os.walk(modFolder):
-            for d in dirs:
-                os.makedirs(os.path.join(newModFolder, d))
+            dst_dir = mod_src.replace(modFolder, newModFolder)
 
-            for f in files:
-                shutil.move(os.path.join(mod_src, f), os.path.join(newModFolder, f))
+            for d in dirs:
+                shutil.move(os.path.join(mod_src, d), os.path.join(dst_dir, d))
 
     def delete_rpa(self, modFolder, rpaName):
         """
