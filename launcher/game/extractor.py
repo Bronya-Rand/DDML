@@ -78,6 +78,9 @@ class Extractor:
             try: os.remove(os.path.join(modFolder, "game/scripts.rpa"))
             except: pass
 
+        if not copy:
+            shutil.rmtree(td)
+
     def installation(self, filePath, modFolder, copy=False):
         """
         This define extracts the mod archive to the temp folder and installs it
