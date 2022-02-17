@@ -12,7 +12,7 @@ class Extractor:
     """
 
     def __init__(self):
-        self.renpy_script_contents = ('.rpa', '.rpyc', '.rpy')
+        self.renpy_script_contents = (".rpa", ".rpyc", ".rpy")
         self.ddlc_base_contents = ("characters", "game", "lib", "renpy")
         self.renpy_executables = (".exe", ".sh", ".app")
 
@@ -31,7 +31,7 @@ class Extractor:
             if x.endswith((self.renpy_script_contents)):
                 contents = []
                 return True
-                
+
         return False
 
     def game_installation(self, filePath, modFolder, copy=False):
@@ -46,7 +46,7 @@ class Extractor:
         os.makedirs(modFolder)
 
         if not copy:
-            td = tempfile.mkdtemp(prefix="NewDDML_",suffix="_TempGame")
+            td = tempfile.mkdtemp(prefix="NewDDML_", suffix="_TempGame")
 
             with ZipFile(filePath, "r") as z:
                 z.extractall(td)
@@ -60,36 +60,47 @@ class Extractor:
 
         for temp_src, dirs, files in os.walk(game_dir):
             dst_dir = temp_src.replace(game_dir, modFolder)
-            
+
             for d in dirs:
-                try: os.makedirs(os.path.join(dst_dir, d))
-                except OSError: continue
-            
+                try:
+                    os.makedirs(os.path.join(dst_dir, d))
+                except OSError:
+                    continue
+
             for f in files:
                 shutil.move(os.path.join(temp_src, f), os.path.join(dst_dir, f))
-        
+
         if not copy:
             shutil.rmtree(game_dir)
 
         if sys.platform == "darwin":
-            try: os.remove(os.path.join(modFolder, "DDLC.app/Contents/Resources/autorun/game/scripts.rpa"))
-            except: pass
+            try:
+                os.remove(
+                    os.path.join(
+                        modFolder,
+                        "DDLC.app/Contents/Resources/autorun/game/scripts.rpa",
+                    )
+                )
+            except:
+                pass
         else:
-            try: os.remove(os.path.join(modFolder, "game/scripts.rpa"))
-            except: pass
+            try:
+                os.remove(os.path.join(modFolder, "game/scripts.rpa"))
+            except:
+                pass
 
     def installation(self, filePath, modFolder, copy=False):
         """
         This define extracts the mod archive to the temp folder and installs it
         to the mod folder.
-        
+
         filepath - The given mod zip package.\n
         modFolder - The mod folder inside the mod install folder.
         copy - Makes sure this is a copy or a ZIP we are working with.
         """
 
         if not copy:
-            mod_dir = tempfile.mkdtemp(prefix="NewDDML_",suffix="_TempArchive")
+            mod_dir = tempfile.mkdtemp(prefix="NewDDML_", suffix="_TempArchive")
 
             with ZipFile(filePath, "r") as z:
                 z.extractall(mod_dir)
@@ -110,8 +121,8 @@ class Extractor:
 
         # If we were unable to get a directory from the above check, fix the archive
         # by sending it to an new temp folder and applying fixes.
-        if not base_files_dir:   
-            fix_dir = tempfile.mkdtemp(prefix="NewDDML_",suffix="_TempFixArchive")
+        if not base_files_dir:
+            fix_dir = tempfile.mkdtemp(prefix="NewDDML_", suffix="_TempFixArchive")
             os.makedirs(os.path.join(fix_dir, "game"))
 
             for mod_src, dirs, files in os.walk(mod_dir):
@@ -119,30 +130,41 @@ class Extractor:
 
                 for d in dirs:
                     if mod_src.endswith(self.ddlc_base_contents):
-                        try: os.makedirs(os.path.join(dst_dir, d))
-                        except OSError: continue
+                        try:
+                            os.makedirs(os.path.join(dst_dir, d))
+                        except OSError:
+                            continue
                     else:
-                        try: os.makedirs(os.path.join(dst_dir, "game", d))
-                        except OSError: continue
-                
+                        try:
+                            os.makedirs(os.path.join(dst_dir, "game", d))
+                        except OSError:
+                            continue
+
                 for f in files:
                     if mod_src.endswith(self.ddlc_base_contents):
                         shutil.move(os.path.join(mod_src, f), os.path.join(dst_dir, f))
                     else:
-                        shutil.move(os.path.join(mod_src, f), os.path.join(mod_src.replace(mod_dir, fix_dir + "/game"), f))
+                        shutil.move(
+                            os.path.join(mod_src, f),
+                            os.path.join(
+                                mod_src.replace(mod_dir, fix_dir + "/game"), f
+                            ),
+                        )
 
-            # Set the directory to the fixed mod folder      
+            # Set the directory to the fixed mod folder
             base_files_dir = fix_dir
 
         if sys.platform == "darwin":
             modFolder = os.path.join(modFolder, "DDLC.app/Contents/Resources/autorun")
 
         for mod_src, dirs, files in os.walk(base_files_dir):
-            dst_dir = mod_src.replace(base_files_dir, modFolder)         
+            dst_dir = mod_src.replace(base_files_dir, modFolder)
 
             for d in dirs:
-                try: os.makedirs(os.path.join(dst_dir, d))
-                except OSError: continue
-                
+                try:
+                    os.makedirs(os.path.join(dst_dir, d))
+                except OSError:
+                    continue
+
             for f in files:
                 shutil.move(os.path.join(mod_src, f), os.path.join(dst_dir, f))
