@@ -62,10 +62,8 @@ class Extractor:
             dst_dir = temp_src.replace(game_dir, modFolder)
 
             for d in dirs:
-                try:
+                if not os.path.exists(os.path.join(dst_dir, d)):
                     os.makedirs(os.path.join(dst_dir, d))
-                except OSError:
-                    continue
 
             for f in files:
                 shutil.move(os.path.join(temp_src, f), os.path.join(dst_dir, f))
@@ -74,20 +72,20 @@ class Extractor:
             shutil.rmtree(game_dir)
 
         if sys.platform == "darwin":
-            try:
+            if os.path.exists(
+                os.path.join(
+                    modFolder, "DDLC.app/Contents/Resources/autorun/game/scripts.rpa"
+                )
+            ):
                 os.remove(
                     os.path.join(
                         modFolder,
                         "DDLC.app/Contents/Resources/autorun/game/scripts.rpa",
                     )
                 )
-            except:
-                pass
         else:
-            try:
+            if os.path.exists(os.path.join(modFolder, "game/scripts.rpa")):
                 os.remove(os.path.join(modFolder, "game/scripts.rpa"))
-            except:
-                pass
 
     def installation(self, filePath, modFolder, copy=False):
         """
@@ -104,7 +102,6 @@ class Extractor:
 
             with ZipFile(filePath, "r") as z:
                 z.extractall(mod_dir)
-
         else:
             mod_dir = filePath
 
@@ -130,15 +127,11 @@ class Extractor:
 
                 for d in dirs:
                     if mod_src.endswith(self.ddlc_base_contents):
-                        try:
+                        if not os.path.exists(os.path.join(dst_dir, d)):
                             os.makedirs(os.path.join(dst_dir, d))
-                        except OSError:
-                            continue
                     else:
-                        try:
+                        if not os.path.exists(os.path.join(dst_dir, "game", d)):
                             os.makedirs(os.path.join(dst_dir, "game", d))
-                        except OSError:
-                            continue
 
                 for f in files:
                     if mod_src.endswith(self.ddlc_base_contents):
@@ -161,10 +154,8 @@ class Extractor:
             dst_dir = mod_src.replace(base_files_dir, modFolder)
 
             for d in dirs:
-                try:
+                if not os.path.exists(os.path.join(dst_dir, d)):
                     os.makedirs(os.path.join(dst_dir, d))
-                except OSError:
-                    continue
 
             for f in files:
                 shutil.move(os.path.join(mod_src, f), os.path.join(dst_dir, f))
