@@ -18,8 +18,9 @@ class Extractor:
 
     def valid_zip(self, filePath):
         """
-        This define checks if the ZIP is a valid DDLC mod.
-        archive.
+        Returns whether the given ZIP file is a valid Ren'Py/DDLC mod ZIP file.
+
+            filePath - the direct path to the ZIP file.
         """
 
         contents = []
@@ -36,11 +37,13 @@ class Extractor:
 
     def game_installation(self, filePath, modFolder, copy=False):
         """
-        This define extracts the game/tool archive to the temp folder.
+        Extracts DDLC/Ren'Py game to the mod folder.
 
-        filePath - The given game zip package.\n
-        modFolder - The mod folder inside the mod install folder.\n
-        copy - Makes sure this is a copy or a ZIP we are working with.
+            filePath - The given game zip package.
+
+            modFolder - The mod folder inside the mod install folder.
+
+            copy - Makes sure this is a folder or a ZIP we are working with.
         """
 
         os.makedirs(modFolder)
@@ -89,12 +92,14 @@ class Extractor:
 
     def installation(self, filePath, modFolder, copy=False):
         """
-        This define extracts the mod archive to the temp folder and installs it
-        to the mod folder.
+        Extracts the mod archive to the mod folder and attempts to fix the mod
+        for Ren'Py structure compliance.
 
-        filepath - The given mod zip package.\n
-        modFolder - The mod folder inside the mod install folder.
-        copy - Makes sure this is a copy or a ZIP we are working with.
+            filepath - The given mod zip package.
+
+            modFolder - The mod folder inside the mod install folder.
+
+            copy - Makes sure this is a folder or a ZIP we are working with.
         """
 
         if not copy:
