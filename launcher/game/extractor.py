@@ -78,9 +78,6 @@ class Extractor:
             try: os.remove(os.path.join(modFolder, "game/scripts.rpa"))
             except: pass
 
-        if not copy:
-            shutil.rmtree(td)
-
     def installation(self, filePath, modFolder, copy=False):
         """
         This define extracts the mod archive to the temp folder and installs it
@@ -102,40 +99,40 @@ class Extractor:
 
         base_files_dir = None
 
+        # Check if the folder copy/extracted has a Renpy7Mod/Mod folder or game
+        # folder inside to set directory.
         for mod_src, dirs, files in os.walk(mod_dir):
-            for f in files:
-                if f.endswith(self.renpy_executables):
-                    base_files_marker = False
+            for d in dirs:
+                if d.endswith(("Renpy7Mod", "Mod")):
+                    base_files_dir = os.path.join(mod_src, d)
+                elif d.endswith(("game")):
+                    base_files_dir = mod_src
 
-                    for x in os.path.join(mod_src, f).split("/"):
-                        if x in self.ddlc_base_contents:
-                            base_files_marker = True
-
-                    if not base_files_marker:
-                        base_files_dir = mod_src
-
+        # If we were unable to get a directory from the above check, fix the archive
+        # by sending it to an new temp folder and applying fixes.
         if not base_files_dir:   
-            os.makedirs(os.path.join(mod_dir, "ImproperMod"))
+            fix_dir = tempfile.mkdtemp(prefix="NewDDML_",suffix="_TempFixArchive")
+            os.makedirs(os.path.join(fix_dir, "game"))
 
             for mod_src, dirs, files in os.walk(mod_dir):
-                dst_dir = mod_src.replace(mod_dir, os.path.join(mod_dir, "ImproperMod"))
+                dst_dir = mod_src.replace(mod_dir, fix_dir)
 
                 for d in dirs:
-                    if "ImproperMod" not in os.path.join(dst_dir, d):
+                    if mod_src.endswith(self.ddlc_base_contents):
                         try: os.makedirs(os.path.join(dst_dir, d))
                         except OSError: continue
-
-                if not os.path.exists(os.path.join(dst_dir, "game")):
-                    os.makedirs(os.path.join(dst_dir, "game"))
+                    else:
+                        try: os.makedirs(os.path.join(dst_dir, "game", d))
+                        except OSError: continue
                 
                 for f in files:
-                    if f.endswith(self.renpy_executables) or (f.endswith(".py") and mod_dir + "/" + f == os.path.join(mod_src, f)):
+                    if mod_src.endswith(self.ddlc_base_contents):
                         shutil.move(os.path.join(mod_src, f), os.path.join(dst_dir, f))
                     else:
-                        shutil.move(os.path.join(mod_src, f), os.path.join(dst_dir, "game", f))
+                        shutil.move(os.path.join(mod_src, f), os.path.join(mod_src.replace(mod_dir, fix_dir + "/game"), f))
 
-            # Enter the fixed/Ren'Py build folder        
-            base_files_dir = os.path.join(mod_dir, os.listdir(mod_dir)[-1])
+            # Set the directory to the fixed mod folder      
+            base_files_dir = fix_dir
 
         if sys.platform == "darwin":
             modFolder = os.path.join(modFolder, "DDLC.app/Contents/Resources/autorun")
@@ -149,6 +146,3 @@ class Extractor:
                 
             for f in files:
                 shutil.move(os.path.join(mod_src, f), os.path.join(dst_dir, f))
-
-        if not copy:
-            shutil.rmtree(mod_dir)
