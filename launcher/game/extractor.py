@@ -71,9 +71,6 @@ class Extractor:
             for f in files:
                 shutil.move(os.path.join(temp_src, f), os.path.join(dst_dir, f))
 
-        if not copy:
-            shutil.rmtree(game_dir)
-
         if sys.platform == "darwin":
             if os.path.exists(
                 os.path.join(
@@ -120,6 +117,8 @@ class Extractor:
                     base_files_dir = os.path.join(mod_src, d)
                 elif d.endswith(("game")):
                     base_files_dir = mod_src
+                elif os.path.exists(mod_src, d, "game"):
+                    base_files_dir = os.path.join(mod_src, d)
 
         # If we were unable to get a directory from the above check, fix the archive
         # by sending it to an new temp folder and applying fixes.
@@ -139,9 +138,25 @@ class Extractor:
                             os.makedirs(os.path.join(dst_dir, "game", d))
 
                 for f in files:
-                    if mod_src.endswith(self.ddlc_base_contents):
+                    if f.endswith(self.renpy_executables):
+                        shutil.move(os.path.join(mod_src, f), os.path.join(dst_dir, f))
+                    elif f.endswith(".py") and os.path.join(mod_src, f) == os.path.join(mod_dir, f):
+                        shutil.move(os.path.join(mod_src, f), os.path.join(dst_dir, f))
+                    elif mod_src.endswith(self.ddlc_base_contents):
+                        if os.path.exists(os.path.join(dst_dir, f)):
+                            if os.path.samefile(os.path.join(mod_src, f), os.path.join(dst_dir, f)):
+                                continue
+
+                            os.remove(os.path.join(dst_dir, f))
+
                         shutil.move(os.path.join(mod_src, f), os.path.join(dst_dir, f))
                     else:
+                        if os.path.exists(os.path.join(mod_src.replace(mod_dir, fix_dir + "/game"), f)):
+                            if os.path.samefile(os.path.join(mod_src.replace(mod_dir, fix_dir + "/game"), f), os.path.join(dst_dir, f)):
+                                continue
+                            
+                            os.remove(os.path.join(mod_src.replace(mod_dir, fix_dir + "/game"), f))
+
                         shutil.move(
                             os.path.join(mod_src, f),
                             os.path.join(
