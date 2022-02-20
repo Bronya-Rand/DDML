@@ -71,22 +71,6 @@ class Extractor:
             for f in files:
                 shutil.move(os.path.join(temp_src, f), os.path.join(dst_dir, f))
 
-        if sys.platform == "darwin":
-            if os.path.exists(
-                os.path.join(
-                    modFolder, "DDLC.app/Contents/Resources/autorun/game/scripts.rpa"
-                )
-            ):
-                os.remove(
-                    os.path.join(
-                        modFolder,
-                        "DDLC.app/Contents/Resources/autorun/game/scripts.rpa",
-                    )
-                )
-        else:
-            if os.path.exists(os.path.join(modFolder, "game/scripts.rpa")):
-                os.remove(os.path.join(modFolder, "game/scripts.rpa"))
-
     def installation(self, filePath, modFolder, copy=False):
         """
         Extracts the mod archive to the mod folder and attempts to fix the mod
