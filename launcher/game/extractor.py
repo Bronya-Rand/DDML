@@ -117,7 +117,7 @@ class Extractor:
                     base_files_dir = os.path.join(mod_src, d)
                 elif d.endswith(("game")):
                     base_files_dir = mod_src
-                elif os.path.exists(mod_src, d, "game"):
+                elif os.path.exists(os.path.join(mod_src, d, "game")):
                     base_files_dir = os.path.join(mod_src, d)
 
         # If we were unable to get a directory from the above check, fix the archive
