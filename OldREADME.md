@@ -1,6 +1,6 @@
 # Welcome to the Doki Doki Mod Launcher (DDML) Repository
 
-[Download DDML Here!](https://github.com/GanstaKingofSA/DDML/releases/latest)
+[Download the last DDML version here](https://github.com/GanstaKingofSA/DDML/releases/latest)
 
 [![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/K3K22K8SU)
 
